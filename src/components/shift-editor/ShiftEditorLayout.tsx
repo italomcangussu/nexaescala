@@ -28,7 +28,6 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
         publishScale,
         handleAddShift,
         handleAddAssignment,
-        handleRemoveAssignment,
         checkConflict,
         updateShiftDetails,
         removeMemberFromShift,
