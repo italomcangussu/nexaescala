@@ -56,14 +56,13 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
                         }
                     }}
                     selectedMember={selectedMember}
-                    onSelectMember={(member) => {
-                        if (pendingShiftTarget) {
-                            handleAddAssignment(pendingShiftTarget.date, pendingShiftTarget.shiftId, member.id);
-                            setPendingShiftTarget(null);
+                    if (pendingShiftTarget) {
+                    handleAddAssignment(pendingShiftTarget.date, pendingShiftTarget.shiftId, member.profile.id);
+                setPendingShiftTarget(null);
                         } else {
-                            setSelectedMember(member);
+                    setSelectedMember(member);
                         }
-                        setIsSidebarOpen(false); // Close sidebar on selection for mobile flow
+                setIsSidebarOpen(false); // Close sidebar on selection for mobile flow
                     }}
                 />
 
@@ -179,7 +178,7 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
                         selectedMember={selectedMember} // Pass selected member
                         onSelectAssignment={(date, shiftId) => {
                             if (selectedMember) {
-                                handleAddAssignment(date, shiftId, selectedMember.id);
+                                handleAddAssignment(date, shiftId, selectedMember.profile.id);
                                 // Optional: Clear selection after assignment?
                                 // setSelectedMember(null);
                             }

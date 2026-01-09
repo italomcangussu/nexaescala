@@ -69,7 +69,7 @@ const EditorCalendarGrid: React.FC<EditorCalendarGridProps> = ({
                         selectedMember={selectedMember}
                         onSelectAssignment={onSelectAssignment}
                         onOpenMemberPicker={onOpenMemberPicker}
-                        isTargeted={pendingShiftTarget?.date === dayStr && pendingShiftTarget?.shiftId === dayShifts.find(s => s.id === pendingShiftTarget.shiftId)?.id}
+                        targetedShiftId={pendingShiftTarget?.date === dayStr ? pendingShiftTarget.shiftId : null}
                     />
                 );
             })}

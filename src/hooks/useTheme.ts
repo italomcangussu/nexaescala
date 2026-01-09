@@ -2,7 +2,16 @@ import { useState, useEffect } from 'react';
 import { ThemeOption } from '../types';
 
 export const useTheme = (initialTheme: ThemeOption = 'system') => {
-    const [themeMode, setThemeMode] = useState<ThemeOption>(initialTheme);
+    const [themeMode, setThemeMode] = useState<ThemeOption>(() => {
+        const saved = typeof window !== 'undefined' ? localStorage.getItem('nexa-theme') : null;
+        return (saved as ThemeOption) || initialTheme;
+    });
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('nexa-theme', themeMode);
+        }
+    }, [themeMode]);
 
     useEffect(() => {
         const root = window.document.documentElement;

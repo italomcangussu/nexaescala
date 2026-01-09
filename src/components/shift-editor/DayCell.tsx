@@ -18,7 +18,7 @@ interface DayCellProps {
     selectedMember?: GroupMember | null;
     onSelectAssignment?: (date: string, shiftId: string) => void;
     onOpenMemberPicker?: (date: string, shiftId: string) => void;
-    isTargeted?: boolean;
+    targetedShiftId?: string | null;
 }
 
 const DayCell: React.FC<DayCellProps> = ({
@@ -34,7 +34,7 @@ const DayCell: React.FC<DayCellProps> = ({
     selectedMember,
     onSelectAssignment,
     onOpenMemberPicker,
-    isTargeted
+    targetedShiftId
 }) => {
     const isToday = new Date().toISOString().split('T')[0] === date;
 
@@ -113,7 +113,7 @@ const DayCell: React.FC<DayCellProps> = ({
                             className={`p-2 rounded-lg border border-l-4 flex flex-col gap-2 transition-all ${styleClass} 
                                 cursor-pointer hover:shadow-md active:scale-95
                                 ${selectedMember && shiftAssignments.length < shift.quantity_needed ? 'ring-2 ring-primary/50 bg-primary/5' : ''}
-                                ${isTargeted ? 'ring-4 ring-primary ring-offset-2' : ''}
+                                ${targetedShiftId === shift.id ? 'ring-4 ring-primary ring-offset-2 shadow-2xl z-20 scale-105' : ''}
                             `}
                         >
                             {/* Shift Header */}
