@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, Save, ChevronLeft, ChevronRight, Grid } from 'lucide-react';
 import { Group, Profile, GroupMember } from '../../types';
 import EditorMemberSidebar from './EditorMemberSidebar';
@@ -28,8 +28,8 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
         checkConflict
     } = useShiftLogic(group);
 
-    const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
-    const [selectedMember, setSelectedMember] = React.useState<GroupMember | null>(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [selectedMember, setSelectedMember] = useState<GroupMember | null>(null);
 
     const monthName = currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
