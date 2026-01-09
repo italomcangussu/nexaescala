@@ -104,8 +104,6 @@ const DayCell: React.FC<DayCellProps> = ({
                         ? 'bg-slate-900 dark:bg-slate-950 border-slate-800 border-l-indigo-500 text-slate-400'
                         : 'bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700 border-l-orange-400 text-slate-500';
 
-                    const isSelectable = selectedMember && shiftAssignments.length < shift.quantity_needed;
-
                     return (
                         <div
                             key={shift.id}
