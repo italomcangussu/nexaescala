@@ -17,6 +17,8 @@ interface DayCellProps {
     checkConflict?: (memberId: string, date: string, startTime: string, endTime: string) => string | null;
     selectedMember?: GroupMember | null;
     onSelectAssignment?: (date: string, shiftId: string) => void;
+    onOpenMemberPicker?: (date: string, shiftId: string) => void;
+    isTargeted?: boolean;
 }
 
 const DayCell: React.FC<DayCellProps> = ({
@@ -30,7 +32,9 @@ const DayCell: React.FC<DayCellProps> = ({
     onAddShift,
     checkConflict,
     selectedMember,
-    onSelectAssignment
+    onSelectAssignment,
+    onOpenMemberPicker,
+    isTargeted
 }) => {
     const isToday = new Date().toISOString().split('T')[0] === date;
 
@@ -50,6 +54,8 @@ const DayCell: React.FC<DayCellProps> = ({
     const handleCellClick = (shiftId: string) => {
         if (selectedMember && onSelectAssignment) {
             onSelectAssignment(date, shiftId);
+        } else if (onOpenMemberPicker) {
+            onOpenMemberPicker(date, shiftId);
         }
     };
 
@@ -105,9 +111,11 @@ const DayCell: React.FC<DayCellProps> = ({
                             key={shift.id}
                             onDragOver={handleDragOver}
                             onDrop={(e) => handleDrop(e, shift.id)}
-                            onClick={() => isSelectable && handleCellClick(shift.id)}
+                            onClick={() => handleCellClick(shift.id)}
                             className={`p-2 rounded-lg border border-l-4 flex flex-col gap-2 transition-all ${styleClass} 
-                                ${isSelectable ? 'cursor-pointer ring-2 ring-primary/50 hover:bg-primary/5' : ''}
+                                cursor-pointer hover:shadow-md active:scale-95
+                                ${selectedMember && shiftAssignments.length < shift.quantity_needed ? 'ring-2 ring-primary/50 bg-primary/5' : ''}
+                                ${isTargeted ? 'ring-4 ring-primary ring-offset-2' : ''}
                             `}
                         >
                             {/* Shift Header */}

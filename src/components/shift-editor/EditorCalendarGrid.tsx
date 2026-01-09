@@ -13,6 +13,8 @@ interface EditorCalendarGridProps {
     checkConflict?: (memberId: string, date: string, startTime: string, endTime: string) => string | null;
     selectedMember?: GroupMember | null;
     onSelectAssignment?: (date: string, shiftId: string) => void;
+    onOpenMemberPicker?: (date: string, shiftId: string) => void;
+    pendingShiftTarget?: { date: string, shiftId: string } | null;
 }
 
 const EditorCalendarGrid: React.FC<EditorCalendarGridProps> = ({
@@ -25,7 +27,9 @@ const EditorCalendarGrid: React.FC<EditorCalendarGridProps> = ({
     onAddShift,
     checkConflict,
     selectedMember,
-    onSelectAssignment
+    onSelectAssignment,
+    onOpenMemberPicker,
+    pendingShiftTarget
 }) => {
 
     // Find first day of the month to add padding
@@ -64,6 +68,8 @@ const EditorCalendarGrid: React.FC<EditorCalendarGridProps> = ({
                         checkConflict={checkConflict}
                         selectedMember={selectedMember}
                         onSelectAssignment={onSelectAssignment}
+                        onOpenMemberPicker={onOpenMemberPicker}
+                        isTargeted={pendingShiftTarget?.date === dayStr && pendingShiftTarget?.shiftId === dayShifts.find(s => s.id === pendingShiftTarget.shiftId)?.id}
                     />
                 );
             })}

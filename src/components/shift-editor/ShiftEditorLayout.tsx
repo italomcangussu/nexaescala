@@ -30,6 +30,12 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<GroupMember | null>(null);
+    const [pendingShiftTarget, setPendingShiftTarget] = useState<{ date: string, shiftId: string } | null>(null);
+
+    const handleOpenMemberPicker = (date: string, shiftId: string) => {
+        setPendingShiftTarget({ date, shiftId });
+        setIsSidebarOpen(true);
+    };
 
     const monthName = currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
@@ -51,10 +57,25 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
                     }}
                     selectedMember={selectedMember}
                     onSelectMember={(member) => {
-                        setSelectedMember(member);
+                        if (pendingShiftTarget) {
+                            handleAddAssignment(pendingShiftTarget.date, pendingShiftTarget.shiftId, member.id);
+                            setPendingShiftTarget(null);
+                        } else {
+                            setSelectedMember(member);
+                        }
                         setIsSidebarOpen(false); // Close sidebar on selection for mobile flow
                     }}
                 />
+
+                {/* Instructions for Reverse Assignment */}
+                {pendingShiftTarget && (
+                    <div className="absolute top-20 left-0 right-0 bg-primary text-white p-3 text-xs font-bold z-[40] animate-bounce-slow flex items-center justify-between shadow-lg">
+                        <span>Escolha um médico para escalar neste turno</span>
+                        <button onClick={() => setPendingShiftTarget(null)} className="p-1 hover:bg-white/20 rounded">
+                            <Save size={14} />
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Mobile Overlay for Sidebar */}
@@ -163,6 +184,8 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
                                 // setSelectedMember(null);
                             }
                         }}
+                        onOpenMemberPicker={handleOpenMemberPicker}
+                        pendingShiftTarget={pendingShiftTarget}
                     />
                 </div>
             </div>
