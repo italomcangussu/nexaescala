@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Profile, Shift, ShiftAssignment, Group, AppRole } from '../types';
 import { getProfiles, getUserGroups, getMyShifts } from '../services/api';
-import { MOCK_PROFILES } from '../services/dataService';
+
 
 interface UseDashboardDataReturn {
     profiles: Profile[];

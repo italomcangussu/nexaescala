@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, Moon, Sun, Monitor } from 'lucide-react';
+import React from 'react';
+import { Plus, Trash2, Moon, Sun } from 'lucide-react';
 import { Shift, ShiftAssignment, Profile } from '../../types';
 
 interface DayCellProps {

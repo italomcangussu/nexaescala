@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Shift, ShiftAssignment } from '../../types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { X, Calendar } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface OfferShiftModalProps {
     isOpen: boolean;

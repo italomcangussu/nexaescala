@@ -1,7 +1,6 @@
 import React from 'react';
-import { ArrowLeft, ArrowRightLeft, Edit, Sun, Moon, MapPin, Sparkles } from 'lucide-react';
+import { ArrowRightLeft, Edit, Sun, Moon, MapPin, Sparkles } from 'lucide-react';
 import { Shift, ShiftAssignment, AppRole } from '../types';
-import { useAuth } from '../context/AuthContext';
 
 interface ShiftCardProps {
   shift: Shift;
@@ -13,7 +12,6 @@ interface ShiftCardProps {
 }
 
 const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRole, onEdit, hideProfile = false, accentColor }) => {
-  const { user } = useAuth();
   // Date Formatting
   const dateObj = new Date(shift.date + 'T12:00:00');
   const day = dateObj.getDate();

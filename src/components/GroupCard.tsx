@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, ChevronRight, Activity, MapPin } from 'lucide-react';
+import { Users, ChevronRight, Activity } from 'lucide-react';
 import { Group } from '../types';
 
 interface GroupCardProps {

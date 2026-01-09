@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Users, Settings, Grid, Bell, Shield, User, UserPlus, UserMinus, Save, Palette } from 'lucide-react';
-import { Group, Profile, GroupMember, ServiceRole } from '../../types';
+import { Calendar, Users, Settings, Grid, Bell, Shield, UserPlus, UserMinus, Save, Palette } from 'lucide-react';
+import { Group, Profile, GroupMember, ServiceRole, AppRole } from '../../types';
 import CalendarView from '../CalendarView';
 import { INITIAL_SHIFTS, INITIAL_ASSIGNMENTS } from '../../services/dataService';
 import { getGroupMembers, deleteGroup, updateGroup } from '../../services/api';
@@ -88,8 +88,7 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                             shifts={groupShifts}
                             assignments={INITIAL_ASSIGNMENTS}
                             currentUser={currentUser}
-                            currentUserRole="gestor"
-                            isPublished={true}
+                            currentUserRole={AppRole.GESTOR}
                             groupColor={group.color}
                             showAvailableShifts={false}
                         />
@@ -122,7 +121,7 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                 )}
 
                 {activeTab === 'notifications' && (
-                    <ShiftInbox groupId={group.id} currentUser={currentUser} isAdmin={true} />
+                    <ShiftInbox groupId={group.id} currentUser={currentUser} />
                 )}
 
                 {activeTab === 'members' && (
@@ -158,7 +157,7 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                                 // Refresh members list
                                 fetchMembers();
                             }}
-                            currentMemberIds={members.map(m => m.profile_id)}
+                            currentMemberIds={members.map(m => m.profile.id)}
                         />
 
                         <RemoveMemberModal

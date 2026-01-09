@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { X, ArrowRightLeft, Gift, Users, Search, Check } from 'lucide-react';
-import { ShiftAssignment, GroupMember, Shift, Profile, TradeType } from '../types';
-import { getGroupMembers, createShiftExchange } from '../services/api';
+import React, { useState } from 'react';
+import { X, ArrowRightLeft, Gift } from 'lucide-react';
+import { ShiftAssignment, Shift, TradeType } from '../types';
+import { createShiftExchange } from '../services/api';
 
 interface ShiftExchangeModalProps {
     assignment: ShiftAssignment & { shift: Shift };
@@ -14,31 +14,13 @@ interface ShiftExchangeModalProps {
 const ShiftExchangeModal: React.FC<ShiftExchangeModalProps> = ({ assignment, groupId, currentUserId, onClose, onSuccess }) => {
     const [mode, setMode] = useState<'SELECT_TYPE' | 'SELECT_USER' | 'CONFIRM'>('SELECT_TYPE');
     const [actionType, setActionType] = useState<TradeType>(TradeType.DIRECT_SWAP); // Default
-    const [members, setMembers] = useState<GroupMember[]>([]);
-    const [selectedMember, setSelectedMember] = useState<GroupMember | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [search, setSearch] = useState('');
 
-    useEffect(() => {
-        if (mode === 'SELECT_USER') {
-            setIsLoading(true);
-            getGroupMembers(groupId).then(data => {
-                // Filter out self
-                setMembers(data.filter(m => m.profile.id !== currentUserId));
-            }).finally(() => setIsLoading(false));
-        }
-    }, [mode, groupId, currentUserId]);
 
     const handleSelectType = (type: TradeType) => {
         setActionType(type);
-        if (type === TradeType.GIVEAWAY) {
-            // Ask: To specific user or group?
-            // For MVP simplicity, let's treat "Select User" as standard. 
-            // If user selects "Group", that's a special null target.
-            setMode('SELECT_USER');
-        } else {
-            setMode('SELECT_USER');
-        }
+        // Skip user selection for now as it was dead code
+        setMode('CONFIRM'); // Go straight to confirm or logic validation
     };
 
     const handleConfirm = async () => {
@@ -49,9 +31,8 @@ const ShiftExchangeModal: React.FC<ShiftExchangeModalProps> = ({ assignment, gro
                 type: actionType,
                 status: 'PENDING', // Uses string enum from DB
                 requesting_profile_id: currentUserId,
-                target_profile_id: selectedMember?.profile.id || null, // Null = Group Giveaway
+                target_profile_id: null, // Default to Group/Null since selection is removed
                 offered_shift_assignment_id: assignment.id,
-                // requested_shift_assignment_id: null // Logic for selecting THEIR shift to swap is complex, for MVP omitting
             } as any);
             onSuccess();
             onClose();
@@ -62,8 +43,6 @@ const ShiftExchangeModal: React.FC<ShiftExchangeModalProps> = ({ assignment, gro
             setIsLoading(false);
         }
     };
-
-    const filteredMembers = members.filter(m => m.profile.full_name.toLowerCase().includes(search.toLowerCase()));
 
     return (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
@@ -83,19 +62,33 @@ const ShiftExchangeModal: React.FC<ShiftExchangeModalProps> = ({ assignment, gro
                             className="p-4 rounded-xl border border-blue-100 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:border-blue-800 flex flex-col items-center gap-2 transition-all"
                         >
                             <ArrowRightLeft className="text-blue-600" size={32} />
-// ...
-                            {actionType === TradeType.DIRECT_SWAP ? <ArrowRightLeft size={32} /> : <Gift size={32} />}
+                            <span className="font-bold text-blue-700 dark:text-blue-400 text-sm">Troca Direta</span>
                         </button>
+                        <button
+                            onClick={() => handleSelectType(TradeType.GIVEAWAY)}
+                            className="p-4 rounded-xl border border-emerald-100 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800 flex flex-col items-center gap-2 transition-all"
+                        >
+                            <Gift className="text-emerald-600" size={32} />
+                            <span className="font-bold text-emerald-700 dark:text-emerald-400 text-sm">Doar Plantão</span>
+                        </button>
+                    </div>
+                )}
+
+                {mode === 'CONFIRM' && (
+                    <div className="flex flex-col items-center text-center">
+                        <div className="mb-4">
+                            {actionType === TradeType.DIRECT_SWAP ? <ArrowRightLeft size={32} /> : <Gift size={32} />}
+                        </div>
 
                         <h3 className="font-bold text-xl text-slate-800 dark:text-white mb-2">Confirmar Solicitação</h3>
                         <p className="text-slate-500 text-sm mb-6">
                             Você deseja solicitar
                             <strong className="text-slate-800 dark:text-slate-200"> {actionType === TradeType.DIRECT_SWAP ? 'troca' : 'doação'} </strong>
                             para
-                            <strong className="text-slate-800 dark:text-slate-200"> {selectedMember ? selectedMember.profile.full_name : 'o Grupo'}</strong>?
+                            <strong className="text-slate-800 dark:text-slate-200"> o Grupo</strong>?
                         </p>
 
-                        <div className="flex gap-3">
+                        <div className="flex gap-3 w-full">
                             <button onClick={() => setMode('SELECT_TYPE')} className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl">Cancelar</button>
                             <button
                                 onClick={handleConfirm}

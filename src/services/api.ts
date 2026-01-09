@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { Profile, Group, Shift, ShiftAssignment, FinancialRecord, FinancialConfig, ServiceRole, ShiftExchange, TradeType, TradeStatus, GroupMember, ChatMessage } from '../types';
+import { Profile, Group, Shift, ShiftAssignment, FinancialRecord, FinancialConfig, ServiceRole, ShiftExchange, TradeStatus, GroupMember, ChatMessage } from '../types';
 
 // --- PROFILES ---
 
@@ -130,37 +130,8 @@ export const getMemberAssignmentsForPeriod = async (memberIds: string[], startDa
     if (memberIds.length === 0) return [];
 
     // We need to fetch assignments and join with shifts to get the date/time
-    const { data, error } = await supabase
-        .from('shift_assignments')
-        .select(`
-            id,
-            profile_id,
-            is_confirmed,
-            shift:shifts (
-                id,
-                date,
-                start_time,
-                end_time,
-                group_id
-            )
-        `)
-        .in('profile_id', memberIds)
-        .gte('shift.date', startDate) // Note: Filtering nested relationship directly in Supabase requires trick or separate query if not using exact syntax
-    // Simpler approach for Supabase JS usually: select all for members then filter in app if volume is low, 
-    // OR use the !inner join syntax to filter by child.
-    // Let's try !inner approach for date filtering on the joined shift
-    // .select('..., shift!inner(...)') .gte('shift.date', ...)
+    // We need to fetch assignments and join with shifts
 
-    // Actually, let's just get the shifts first? No, we need assignments by profile.
-    // Let's use the !inner join to filter.
-    // Re-writing query:
-
-    /* 
-       Correct Supabase syntax for filtering on joined table:
-       .select('*, shift!inner(*)')
-       .gte('shift.date', startDate)
-       .lte('shift.date', endDate)
-    */
 
     const { data: result, error: err } = await supabase
         .from('shift_assignments')

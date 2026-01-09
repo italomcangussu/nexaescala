@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Clock, Users, ArrowRightLeft, Trash2, Edit2 } from 'lucide-react';
-import { Shift, ShiftAssignment, AppRole, Profile, Group } from '../types';
+import { Shift, ShiftAssignment, AppRole, Profile } from '../types';
 import ShiftExchangeModal from './ShiftExchangeModal'; // Import new modal
 
 interface DayDetailSheetProps {

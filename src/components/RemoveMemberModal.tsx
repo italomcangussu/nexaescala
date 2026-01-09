@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Search, Trash2, Shield } from 'lucide-react';
+import { X, Search } from 'lucide-react';
 import { GroupMember, ServiceRole } from '../types';
 import { removeGroupMember } from '../services/api';
 

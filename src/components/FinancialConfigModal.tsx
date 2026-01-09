@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FinancialConfig, PaymentModel, ContractType, Group } from '../types';
-import { X, Calculator, DollarSign, Building, Percent, Check, Loader } from 'lucide-react';
+import { X, Calculator, Building, Percent, Check, Loader } from 'lucide-react';
 
 interface FinancialConfigModalProps {
    group: Group;

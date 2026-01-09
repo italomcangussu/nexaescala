@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Send, Plus, AlertCircle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { Send, Plus } from 'lucide-react';
+// import { supabase } from '../lib/supabase';
 import { ChatMessage, Profile, Group, Shift, ShiftAssignment } from '../types';
 // import { fetchGroupMessages, sendGroupMessage, createShiftExchange, TradeType, TradeStatus } from '../services/api';
 // import MessageBubble from './chat/MessageBubble';
@@ -16,25 +16,24 @@ interface ServiceChatProps {
 const ServiceChat: React.FC<ServiceChatProps> = ({
     group,
     currentUser,
-    shifts = [],
-    assignments = []
+
 }) => {
     // State
-    const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [messages /*, setMessages */] = useState<ChatMessage[]>([]);
     const [inputText, setInputText] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+    // const [isLoading, setIsLoading] = useState(true);
+    // const [error, setError] = useState<string | null>(null);
+    // const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const mountedRef = useRef(true);
+    // const mountedRef = useRef(true);
 
     // Helpers
-    const scrollToBottom = () => {
+    /* const scrollToBottom = () => {
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
-    };
+    }; */
 
     // Load Messages
     // Load Messages
@@ -198,7 +197,7 @@ const ServiceChat: React.FC<ServiceChatProps> = ({
 
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-                {isLoading ? (
+                {/* {isLoading ? (
                     <div className="flex justify-center py-10">
                         <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
                     </div>
@@ -208,32 +207,32 @@ const ServiceChat: React.FC<ServiceChatProps> = ({
                         <p className="text-sm">{error}</p>
                         <button onClick={loadMessages} className="mt-2 text-primary text-xs underline">Tentar novamente</button>
                     </div>
-                ) : (!messages || messages.length === 0) ? (
-                    <div className="flex flex-col items-center justify-center h-full text-slate-400 opacity-60">
-                        <p className="text-sm">Nenhuma mensagem ainda.</p>
-                        <p className="text-xs">Comece a conversa!</p>
-                    </div>
-                ) : (
-                    <div className="text-center p-4">Messages disabled for debug</div>
-                    // messages.map(msg => (
-                    //     <MessageBubble
-                    //         key={msg.id || Math.random().toString()}
-                    //         message={msg}
-                    //         currentUser={currentUser}
-                    //         isOwnMessage={msg.sender_id === currentUser.id}
-                    //         showAvatar={msg.sender_id !== currentUser.id}
-                    //         // onAcceptOffer={handleAcceptOffer} // Disabled for now to simplify
-                    //         onAcceptOffer={(mId, sId) => alert("Funcionalidade em desenvolvimento.")}
-                    //     />
-                    // ))
-                )}
+                ) : */ (!messages || messages.length === 0) ? (
+                        <div className="flex flex-col items-center justify-center h-full text-slate-400 opacity-60">
+                            <p className="text-sm">Nenhuma mensagem ainda.</p>
+                            <p className="text-xs">Comece a conversa!</p>
+                        </div>
+                    ) : (
+                        <div className="text-center p-4">Messages disabled for debug</div>
+                        // messages.map(msg => (
+                        //     <MessageBubble
+                        //         key={msg.id || Math.random().toString()}
+                        //         message={msg}
+                        //         currentUser={currentUser}
+                        //         isOwnMessage={msg.sender_id === currentUser.id}
+                        //         showAvatar={msg.sender_id !== currentUser.id}
+                        //         // onAcceptOffer={handleAcceptOffer} // Disabled for now to simplify
+                        //         onAcceptOffer={(mId, sId) => alert("Funcionalidade em desenvolvimento.")}
+                        //     />
+                        // ))
+                    )}
                 <div ref={messagesEndRef} />
             </div>
 
             {/* Input Area */}
             <div className="p-3 bg-white dark:bg-slate-950 border-t border-gray-200 dark:border-slate-800 flex items-end gap-2">
                 <button
-                    onClick={() => setIsOfferModalOpen(true)}
+                    // onClick={() => setIsOfferModalOpen(true)}
                     className="p-3 text-slate-500 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-all"
                     title="Ofertar/Trocar Plantão"
                 >

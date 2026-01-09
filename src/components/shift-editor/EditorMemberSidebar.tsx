@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, User, Filter } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { GroupMember } from '../../types';
 
 interface EditorMemberSidebarProps {

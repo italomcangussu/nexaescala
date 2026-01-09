@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, ChevronRight, ChevronLeft, Building, Save, Clock, Plus, Trash2, Edit2, Search, CheckCircle, Crown } from 'lucide-react';
-import { Profile, ServiceRole, ShiftPreset } from '../types';
+import { Profile, ServiceRole } from '../types';
 import { useServiceCreation } from '../hooks/useServiceCreation';
 
 interface ServiceWizardProps {
@@ -15,7 +15,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
     serviceName, setServiceName,
     institution, setInstitution,
     color, setColor,
-    shifts, setShifts,
+    shifts,
     team,
     searchQuery, setSearchQuery,
     showInstitutionModal, setShowInstitutionModal,

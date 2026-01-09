@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Calendar, Users, History, Settings, LogOut, Bell } from 'lucide-react';
-import { Group, Profile } from '../../types';
+import { Calendar, Users, History, Settings, Bell } from 'lucide-react';
+import { Group, Profile, AppRole } from '../../types';
 import CalendarView from '../CalendarView';
-import { INITIAL_SHIFTS, INITIAL_ASSIGNMENTS, MOCK_PROFILES } from '../../services/dataService'; // Using mock data
+import { INITIAL_SHIFTS, INITIAL_ASSIGNMENTS } from '../../services/dataService'; // Using mock data
 import ShiftInbox from '../ShiftInbox';
 import ServiceChat from '../ServiceChat';
 
@@ -29,7 +29,7 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                             shifts={INITIAL_SHIFTS.filter(s => s.group_id === group.id)}
                             assignments={INITIAL_ASSIGNMENTS}
                             currentUser={currentUser}
-                            currentUserRole="plantonista"
+                            currentUserRole={AppRole.PLANTONISTA}
                             groupColor={group.color}
                             showAvailableShifts={false}
                         />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Search, UserPlus, Shield } from 'lucide-react';
+import { X, Search, UserPlus } from 'lucide-react';
 import { Profile, ServiceRole, Group } from '../types';
 import { searchProfiles, addGroupMember } from '../services/api';
 

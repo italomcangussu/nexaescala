@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Home, Calendar, Users, Search, Bell, Landmark, Settings } from 'lucide-react';
-import { AppRole, Profile, ThemeOption } from '../types';
+import { Home, Calendar, Users, Search, Bell, Landmark, Settings, LucideProps } from 'lucide-react';
+import { Profile, ThemeOption } from '../types';
 import Logo from './Logo';
 import SettingsMenu from './SettingsMenu';
 
@@ -136,7 +136,7 @@ const NavButton: React.FC<NavButtonProps> = ({ active, onClick, icon, label }) =
     >
       <div className={`${active ? 'scale-110 -translate-y-1' : 'scale-100'} transition-transform duration-300`}>
         {/* Fill the icon if active for solid look */}
-        {React.cloneElement(icon as React.ReactElement, {
+        {React.cloneElement(icon as React.ReactElement<LucideProps>, {
           strokeWidth: active ? 2.5 : 2,
           fill: active ? "currentColor" : "none",
           fillOpacity: active ? 0.2 : 0

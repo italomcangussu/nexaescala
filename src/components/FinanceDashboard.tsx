@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { getFinancialRecords, updateFinancialRecordPaidStatus, FinancialRecordWithGroup } from '../services/api';
 import { Profile, Group } from '../types';
-import { DollarSign, Filter, Check, AlertCircle, Settings, ChevronRight, Building, Plus, Loader, RefreshCw } from 'lucide-react';
+import { DollarSign, Filter, Check, Settings, ChevronRight, Building, Plus, Loader, RefreshCw } from 'lucide-react';
 
 interface FinanceDashboardProps {
    currentUser: Profile;

@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Bell, Check, X, ArrowRightLeft, Gift, Clock } from 'lucide-react';
-import { ShiftExchange, Profile, TradeStatus, TradeType, AppRole } from '../types';
+import { ShiftExchange, Profile, TradeStatus, TradeType } from '../types';
 import { getShiftExchanges, updateShiftExchangeStatus, executeExchangeTransaction } from '../services/api';
 
 interface ShiftInboxProps {
     groupId: string;
     currentUser: Profile;
-    onClose?: () => void;
 }
 
-const ShiftInbox: React.FC<ShiftInboxProps> = ({ groupId, currentUser, onClose }) => {
+const ShiftInbox: React.FC<ShiftInboxProps> = ({ groupId, currentUser }) => {
     const [exchanges, setExchanges] = useState<ShiftExchange[]>([]);
     const [loading, setLoading] = useState(true);
 

@@ -9,7 +9,7 @@ interface StatsViewProps {
 }
 
 const StatsView: React.FC<StatsViewProps> = ({ shifts, assignments, profiles }) => {
-  
+
   // Prepare Data: Shifts per Doctor
   const shiftsPerDoctor = profiles.map(profile => {
     const count = assignments.filter(a => a.profile_id === profile.id).length;
@@ -28,7 +28,7 @@ const StatsView: React.FC<StatsViewProps> = ({ shifts, assignments, profiles }) 
     { name: 'Preenchido', value: filledSlots },
     { name: 'Vago', value: emptySlots },
   ];
-  
+
   const COLORS = ['#2F4858', '#FCD34D']; // Primary, Alert
 
   return (
@@ -40,37 +40,37 @@ const StatsView: React.FC<StatsViewProps> = ({ shifts, assignments, profiles }) 
       <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800 mb-6 transition-colors">
         <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 uppercase tracking-wider">Cobertura da Escala</h3>
         <div className="h-48 w-full flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={coverageData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {coverageData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f1f5f9', borderRadius: '8px' }}
-                  itemStyle={{ color: '#f1f5f9' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={coverageData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={80}
+                paddingAngle={5}
+                dataKey="value"
+              >
+                {coverageData.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f1f5f9', borderRadius: '8px' }}
+                itemStyle={{ color: '#f1f5f9' }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
         <div className="flex justify-center space-x-6 mt-2">
-           <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 rounded-full bg-[#2F4858]"></div>
-              <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">{filledSlots} Preenchidos</span>
-           </div>
-           <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 rounded-full bg-[#FCD34D]"></div>
-              <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">{emptySlots} Vagos</span>
-           </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 rounded-full bg-[#2F4858]"></div>
+            <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">{filledSlots} Preenchidos</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 rounded-full bg-[#FCD34D]"></div>
+            <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">{emptySlots} Vagos</span>
+          </div>
         </div>
       </div>
 
@@ -84,20 +84,20 @@ const StatsView: React.FC<StatsViewProps> = ({ shifts, assignments, profiles }) 
               margin={{ top: 5, right: 30, left: -20, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" strokeOpacity={0.2} />
-              <XAxis 
-                dataKey="name" 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{fill: '#94a3b8', fontSize: 10}} 
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#94a3b8', fontSize: 10 }}
                 dy={10}
               />
-              <YAxis 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{fill: '#94a3b8', fontSize: 10}}
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#94a3b8', fontSize: 10 }}
               />
-              <Tooltip 
-                cursor={{fill: 'rgba(148, 163, 184, 0.1)'}}
+              <Tooltip
+                cursor={{ fill: 'rgba(148, 163, 184, 0.1)' }}
                 contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 itemStyle={{ color: '#f1f5f9' }}
               />

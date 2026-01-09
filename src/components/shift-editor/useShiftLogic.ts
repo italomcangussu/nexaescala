@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Group, Profile, Shift, ShiftAssignment, GroupMember, ShiftPreset } from '../../types';
-import { getGroupMembers, getShifts, getAssignments, createShift, deleteShift, createAssignment, deleteAssignment, getMemberAssignmentsForPeriod } from '../../services/api';
+import { Group, Shift, ShiftAssignment, GroupMember } from '../../types';
+import { getGroupMembers, getShifts, getAssignments, createShift, createAssignment, deleteAssignment, getMemberAssignmentsForPeriod } from '../../services/api';
 
 // Helper to get days in month
 const getDaysInMonth = (date: Date) => {
@@ -13,7 +13,7 @@ const getDaysInMonth = (date: Date) => {
     });
 };
 
-export const useShiftLogic = (group: Group, currentUser: Profile) => {
+export const useShiftLogic = (group: Group) => {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [members, setMembers] = useState<GroupMember[]>([]);
     const [shifts, setShifts] = useState<Shift[]>([]);
@@ -23,11 +23,11 @@ export const useShiftLogic = (group: Group, currentUser: Profile) => {
     const [externalAssignments, setExternalAssignments] = useState<any[]>([]); // Assignments from OTHER groups
 
     // Initial Data Snapshots (for diffing if needed, or just to know what's deleted)
-    const [originalShifts, setOriginalShifts] = useState<Shift[]>([]);
-    const [originalAssignments, setOriginalAssignments] = useState<ShiftAssignment[]>([]);
+    // const [originalShifts, setOriginalShifts] = useState<Shift[]>([]);
+    // const [originalAssignments, setOriginalAssignments] = useState<ShiftAssignment[]>([]);
 
     // Deleted Items Tracking
-    const [deletedShiftIds, setDeletedShiftIds] = useState<string[]>([]);
+    // const [deletedShiftIds, setDeletedShiftIds] = useState<string[]>([]);
     const [deletedAssignmentIds, setDeletedAssignmentIds] = useState<string[]>([]);
 
     const [isLoading, setIsLoading] = useState(true);
@@ -48,17 +48,17 @@ export const useShiftLogic = (group: Group, currentUser: Profile) => {
 
             setMembers(membersData);
             setShifts(shiftsData);
-            setOriginalShifts(JSON.parse(JSON.stringify(shiftsData)));
+            // setOriginalShifts(JSON.parse(JSON.stringify(shiftsData)));
 
             // Get local assignments
             const shiftIds = shiftsData.map(s => s.id);
             if (shiftIds.length > 0) {
                 const assignmentsData = await getAssignments(shiftIds);
                 setAssignments(assignmentsData);
-                setOriginalAssignments(JSON.parse(JSON.stringify(assignmentsData)));
+                // setOriginalAssignments(JSON.parse(JSON.stringify(assignmentsData)));
             } else {
                 setAssignments([]);
-                setOriginalAssignments([]);
+                // setOriginalAssignments([]);
             }
 
             // Fetch EXTERNAL assignments for conflict detection
@@ -78,7 +78,7 @@ export const useShiftLogic = (group: Group, currentUser: Profile) => {
             }
 
             // Reset Diff
-            setDeletedShiftIds([]);
+            // setDeletedShiftIds([]);
             setDeletedAssignmentIds([]);
 
         } catch (error) {
@@ -89,7 +89,7 @@ export const useShiftLogic = (group: Group, currentUser: Profile) => {
     };
 
     // Conflict Checker
-    const checkConflict = (memberId: string, date: string, startTime: string, endTime: string): string | null => {
+    const checkConflict = (memberId: string, date: string, startTime: string, _endTime: string): string | null => {
         // Find external assignment on same date/time overlap
         // Simplified overlap check:
         // Shifts are typically 07-19 or 19-07. 

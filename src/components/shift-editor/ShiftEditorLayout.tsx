@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Save, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Grid } from 'lucide-react';
+import { ArrowLeft, Save, ChevronLeft, ChevronRight, Grid } from 'lucide-react';
 import { Group, Profile } from '../../types';
 import EditorMemberSidebar from './EditorMemberSidebar';
 import EditorCalendarGrid from './EditorCalendarGrid';
@@ -11,7 +11,7 @@ interface ShiftEditorLayoutProps {
     onBack: () => void;
 }
 
-const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, currentUser, onBack }) => {
+const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) => {
     const {
         currentDate,
         nextMonth,
@@ -20,14 +20,13 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, currentUse
         days,
         shifts,
         assignments,
-        isLoading,
         isSaving,
         saveChanges,
         handleAddShift,
         handleAddAssignment,
         handleRemoveAssignment,
         checkConflict
-    } = useShiftLogic(group, currentUser);
+    } = useShiftLogic(group);
 
     const monthName = currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 

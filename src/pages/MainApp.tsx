@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Layout from '../components/Layout';
 import CalendarView from '../components/CalendarView';
 import ShiftCard from '../components/ShiftCard';
@@ -14,18 +14,14 @@ import FinancialConfigModal from '../components/FinancialConfigModal';
 import NotificationManager from '../components/NotificationManager';
 import Logo from '../components/Logo';
 import {
-  MOCK_PROFILES,
-  INITIAL_SHIFTS,
-  INITIAL_ASSIGNMENTS,
   MOCK_POSTS,
-  MOCK_GROUPS,
   MOCK_FINANCIAL_CONFIGS
 } from '../services/dataService';
 import { useAuth } from '../context/AuthContext';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { useTheme } from '../hooks/useTheme';
-import { AppRole, Profile, Shift, ShiftAssignment, ThemeOption, ServiceRole, Group, FinancialConfig } from '../types';
-import { Search, UserPlus, FilePlus, Share2, X, Plus, Calendar, Users } from 'lucide-react';
+import { Profile, Shift, ServiceRole, Group, FinancialConfig } from '../types';
+import { Search, FilePlus, Share2, X, Plus, Calendar, Users } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   // Navigation State
@@ -49,7 +45,6 @@ const Dashboard: React.FC = () => {
     shifts,
     assignments,
     userRole,
-    isLoading,
     refresh
   } = useDashboardData(currentUser);
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Repeat, Calendar, Check } from 'lucide-react';
-import { RecurrenceType } from './useShiftEditor';
+import { RecurrenceType } from '../../types';
 
 interface RecurrenceModalProps {
     isOpen: boolean;
@@ -29,8 +29,8 @@ const RecurrenceModal: React.FC<RecurrenceModalProps> = ({ isOpen, onClose, onSa
                     <button
                         onClick={() => onSave('NONE')}
                         className={`w-full p-4 rounded-xl border-2 flex items-center justify-between transition-all ${currentSelection === 'NONE'
-                                ? 'border-primary bg-primary/5 text-primary'
-                                : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                            ? 'border-primary bg-primary/5 text-primary'
+                            : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                             }`}
                     >
                         <div className="flex items-center gap-3">
@@ -49,8 +49,8 @@ const RecurrenceModal: React.FC<RecurrenceModalProps> = ({ isOpen, onClose, onSa
                     <button
                         onClick={() => onSave('WEEKLY')}
                         className={`w-full p-4 rounded-xl border-2 flex items-center justify-between transition-all ${currentSelection === 'WEEKLY'
-                                ? 'border-blue-500 bg-blue-500/5 text-blue-600'
-                                : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                            ? 'border-blue-500 bg-blue-500/5 text-blue-600'
+                            : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                             }`}
                     >
                         <div className="flex items-center gap-3">
@@ -69,8 +69,8 @@ const RecurrenceModal: React.FC<RecurrenceModalProps> = ({ isOpen, onClose, onSa
                     <button
                         onClick={() => onSave('BIWEEKLY')}
                         className={`w-full p-4 rounded-xl border-2 flex items-center justify-between transition-all ${currentSelection === 'BIWEEKLY'
-                                ? 'border-purple-500 bg-purple-500/5 text-purple-600'
-                                : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                            ? 'border-purple-500 bg-purple-500/5 text-purple-600'
+                            : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                             }`}
                     >
                         <div className="flex items-center gap-3">

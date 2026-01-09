@@ -3,7 +3,8 @@ export enum AppRole {
   GESTOR = 'gestor',
   AUXILIAR = 'auxiliar',
   MEDICO = 'medico',
-  OBSERVADOR = 'observador'
+  OBSERVADOR = 'observador',
+  PLANTONISTA = 'plantonista'
 }
 
 export enum ServiceRole {
@@ -211,3 +212,5 @@ export interface ChatMessage {
   created_at: string;
   sender?: Profile; // Joined
 }
+
+export type RecurrenceType = 'NONE' | 'WEEKLY' | 'BIWEEKLY';
