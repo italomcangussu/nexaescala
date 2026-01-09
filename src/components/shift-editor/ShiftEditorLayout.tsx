@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Save, ChevronLeft, ChevronRight, Grid } from 'lucide-react';
-import { Group, Profile, GroupMember } from '../../types';
+import { Group, Profile, GroupMember, Shift, ShiftAssignment } from '../../types';
 import EditorMemberSidebar from './EditorMemberSidebar';
 import EditorCalendarGrid from './EditorCalendarGrid';
 import { useShiftLogic } from './useShiftLogic';
+import EditShiftModal from './EditShiftModal';
+import MemberActionModal from './MemberActionModal';
 
 interface ShiftEditorLayoutProps {
     group: Group;
@@ -21,21 +23,42 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
         shifts,
         assignments,
         isSaving,
+        isPublishing,
         saveChanges,
         publishScale,
         handleAddShift,
         handleAddAssignment,
         handleRemoveAssignment,
-        checkConflict
+        checkConflict,
+        updateShiftDetails,
+        removeMemberFromShift,
+        swapMemberInShift
     } = useShiftLogic(group);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<GroupMember | null>(null);
     const [pendingShiftTarget, setPendingShiftTarget] = useState<{ date: string, shiftId: string } | null>(null);
 
+    // UI States for Modals
+    const [editingShift, setEditingShift] = useState<Shift | null>(null);
+    const [memberActionTarget, setMemberActionTarget] = useState<{ assignment: ShiftAssignment, member: Profile } | null>(null);
+    const [swappingAssignment, setSwappingAssignment] = useState<ShiftAssignment | null>(null);
+
     const handleOpenMemberPicker = (date: string, shiftId: string) => {
         setPendingShiftTarget({ date, shiftId });
         setIsSidebarOpen(true);
+    };
+
+    // Handlers passed to Grid
+    const handleEditShiftRequest = (shift: Shift) => {
+        setEditingShift(shift);
+    };
+
+    const handleMemberClickRequest = (assignment: ShiftAssignment) => {
+        const member = members.find(m => m.profile.id === assignment.profile_id)?.profile;
+        if (member) {
+            setMemberActionTarget({ assignment, member });
+        }
     };
 
     const monthName = currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
@@ -61,6 +84,9 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
                         if (pendingShiftTarget) {
                             handleAddAssignment(pendingShiftTarget.date, pendingShiftTarget.shiftId, member.profile.id);
                             setPendingShiftTarget(null);
+                        } else if (swappingAssignment) {
+                            swapMemberInShift(swappingAssignment, member.profile.id);
+                            setSwappingAssignment(null);
                         } else {
                             setSelectedMember(member);
                         }
@@ -68,12 +94,12 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
                     }}
                 />
 
-                {/* Instructions for Reverse Assignment */}
-                {pendingShiftTarget && (
+                {/* Instructions for Reverse Assignment / Swap */}
+                {(pendingShiftTarget || swappingAssignment) && (
                     <div className="absolute top-20 left-0 right-0 bg-primary text-white p-3 text-xs font-bold z-[40] animate-bounce-slow flex items-center justify-between shadow-lg">
-                        <span>Escolha um médico para escalar neste turno</span>
-                        <button onClick={() => setPendingShiftTarget(null)} className="p-1 hover:bg-white/20 rounded">
-                            <Save size={14} />
+                        <span>{swappingAssignment ? 'Escolha o substituto' : 'Escolha um médico para escalar neste turno'}</span>
+                        <button onClick={() => { setPendingShiftTarget(null); setSwappingAssignment(null); }} className="p-1 hover:bg-white/20 rounded">
+                            <Save size={14} /> {/* X icon replacement */}
                         </button>
                     </div>
                 )}
@@ -130,7 +156,7 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
 
                         <button
                             onClick={saveChanges}
-                            disabled={isSaving}
+                            disabled={isSaving || isPublishing}
                             className="flex items-center gap-2 px-4 md:px-6 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm font-bold rounded-xl hover:bg-slate-200 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0 border border-slate-200 dark:border-slate-700"
                         >
                             <Save size={18} />
@@ -176,7 +202,6 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
                         assignments={assignments}
                         members={members.map(gm => gm.profile)}
                         onDrop={handleAddAssignment}
-                        onRemoveAssignment={handleRemoveAssignment}
                         onAddShift={handleAddShift}
                         checkConflict={checkConflict}
                         selectedMember={selectedMember} // Pass selected member
@@ -189,6 +214,9 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
                         }}
                         onOpenMemberPicker={handleOpenMemberPicker}
                         pendingShiftTarget={pendingShiftTarget}
+                        // New handlers
+                        onEditShift={handleEditShiftRequest}
+                        onMemberClick={handleMemberClickRequest}
                     />
                 </div>
 
@@ -200,14 +228,36 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
                                 publishScale();
                             }
                         }}
-                        disabled={isSaving}
+                        disabled={isSaving || isPublishing}
                         className="pointer-events-auto flex items-center gap-3 px-8 py-4 bg-emerald-600 text-white font-bold rounded-2xl shadow-[0_8px_25px_-5px_rgba(16,185,129,0.5)] hover:bg-emerald-700 hover:shadow-emerald-200 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0 group"
                     >
-                        <div className={`w-2 h-2 rounded-full bg-white ${isSaving ? 'animate-ping' : 'animate-pulse'}`} />
-                        <span className="text-base tracking-tight">{isSaving ? 'Publicando...' : 'Publicar Escala'}</span>
+                        <div className={`w-2 h-2 rounded-full bg-white ${isPublishing ? 'animate-ping' : 'animate-pulse'}`} />
+                        <span className="text-base tracking-tight">{isPublishing ? 'Publicando...' : 'Publicar Escala'}</span>
                         <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
                     </button>
                 </div>
+
+                {/* Modals */}
+                {editingShift && (
+                    <EditShiftModal
+                        shift={editingShift}
+                        onClose={() => setEditingShift(null)}
+                        onSave={updateShiftDetails}
+                    // onDelete={} // Not implemented in logic yet, optional
+                    />
+                )}
+
+                {memberActionTarget && (
+                    <MemberActionModal
+                        member={memberActionTarget.member}
+                        onClose={() => setMemberActionTarget(null)}
+                        onRemove={() => removeMemberFromShift(memberActionTarget.assignment)}
+                        onSwap={() => {
+                            setSwappingAssignment(memberActionTarget.assignment);
+                            setIsSidebarOpen(true); // Open sidebar to pick new member
+                        }}
+                    />
+                )}
             </div >
         </div >
     );

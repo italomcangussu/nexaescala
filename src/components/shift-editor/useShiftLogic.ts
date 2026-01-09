@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Group, Shift, ShiftAssignment, GroupMember } from '../../types';
-import { getGroupMembers, getShifts, getAssignments, createShift, createAssignment, deleteAssignment, getMemberAssignmentsForPeriod, publishShifts, createNotificationsBulk } from '../../services/api';
+import { getGroupMembers, getShifts, getAssignments, createShift, createAssignment, deleteAssignment, getMemberAssignmentsForPeriod, publishShifts, createNotificationsBulk, updateShift } from '../../services/api';
 
 // Helper to get days in month
 const getDaysInMonth = (date: Date) => {
@@ -32,6 +32,7 @@ export const useShiftLogic = (group: Group) => {
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [isPublishing, setIsPublishing] = useState(false);
 
     // Initial Load
     useEffect(() => {
@@ -171,7 +172,7 @@ export const useShiftLogic = (group: Group) => {
         }
     };
 
-    const saveChanges = async () => {
+    const saveChanges = async (): Promise<boolean> => {
         // Final Validation before Save
         // Check ALL current assignments for conflicts
         for (const assign of assignments) {
@@ -182,7 +183,7 @@ export const useShiftLogic = (group: Group) => {
             if (conflict) {
                 const member = members.find(m => m.profile.id === assign.profile_id);
                 alert(`Impossível salvar: ${member?.profile.full_name} tem conflito no dia ${shift.date} (${conflict}). Remova o conflito antes de publicar.`);
-                return; // BLOCK
+                return false; // BLOCK
             }
         }
 
@@ -226,10 +227,12 @@ export const useShiftLogic = (group: Group) => {
 
             alert("Alterações salvas com sucesso!");
             await loadData(); // Reload to get cleanup state
+            return true;
 
         } catch (e) {
             console.error("Error saving:", e);
             alert("Erro ao salvar alterações.");
+            return false;
         } finally {
             setIsSaving(false);
         }
@@ -237,9 +240,13 @@ export const useShiftLogic = (group: Group) => {
 
     const publishScale = async () => {
         // 1. Save changes first to ensure all temp shifts are persisted
-        await saveChanges();
+        const saved = await saveChanges();
 
-        setIsSaving(true);
+        if (!saved) {
+            return;
+        }
+
+        setIsPublishing(true);
         try {
             // Get all shift IDs for the current month/view that are currently unpublished
             const unpublishedShiftIds = shifts
@@ -273,9 +280,45 @@ export const useShiftLogic = (group: Group) => {
             }
         } catch (e) {
             console.error("Error publishing:", e);
-            alert("Erro ao publicar escala.");
+            alert("Erro ao publicar escala. Verifique sua conexão e tente novamente.");
         } finally {
-            setIsSaving(false);
+            setIsPublishing(false);
+        }
+    };
+
+    // --- Shift Manipulation ---
+
+    const updateShiftDetails = async (shiftId: string, updates: Partial<Shift>) => {
+        // Optimistic
+        setShifts(prev => prev.map(s => s.id === shiftId ? { ...s, ...updates } : s));
+
+        // If not temp, call API
+        if (!shiftId.startsWith('temp_')) {
+            try {
+                await updateShift(shiftId, updates);
+            } catch (error) {
+                console.error("Error updating shift:", error);
+                await loadData();
+            }
+        }
+    };
+
+    const removeMemberFromShift = async (assignment: ShiftAssignment) => {
+        handleRemoveAssignment(assignment.id);
+        // handleRemoveAssignment handles state + deletion tracking.
+        // It puts it in `deletedAssignmentIds`.
+        // So `saveChanges` will catch it. This follows the Draft pattern. Good.
+    };
+
+    const swapMemberInShift = async (shiftAssignment: ShiftAssignment, newMemberId: string) => {
+        // 1. Remove old (track as deleted)
+        handleRemoveAssignment(shiftAssignment.id);
+
+        // 2. Add new (track as new)
+        // We need the date and shiftId.
+        const shift = shifts.find(s => s.id === shiftAssignment.shift_id);
+        if (shift) {
+            handleAddAssignment(shift.date, shift.id, newMemberId);
         }
     };
 
@@ -293,6 +336,7 @@ export const useShiftLogic = (group: Group) => {
         currentDate,
         isLoading,
         isSaving,
+        isPublishing,
         saveChanges,
         members,
         shifts,
@@ -307,6 +351,9 @@ export const useShiftLogic = (group: Group) => {
         publishScale,
         handleAddShift,
         handleAddAssignment,
-        handleRemoveAssignment
+        handleRemoveAssignment,
+        updateShiftDetails,
+        removeMemberFromShift,
+        swapMemberInShift
     };
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Trash2, Moon, Sun } from 'lucide-react';
+import { Plus, Moon, Sun } from 'lucide-react';
 import { Shift, ShiftAssignment, Profile } from '../../types';
 
 // ... imports ...
@@ -12,7 +12,7 @@ interface DayCellProps {
     assignments: ShiftAssignment[];
     members: Profile[]; // To resolve profile_id to avatar
     onDrop: (date: string, shiftId: string, memberId: string) => void;
-    onRemoveAssignment: (assignmentId: string) => void;
+    // onRemoveAssignment: (assignmentId: string) => void; // Removed, handled via modal
     onAddShift: (date: string, type: 'day' | 'night' | 'custom') => void;
     checkConflict?: (memberId: string, date: string, startTime: string, endTime: string) => string | null;
     selectedMember?: GroupMember | null;
@@ -20,6 +20,8 @@ interface DayCellProps {
     onOpenMemberPicker?: (date: string, shiftId: string) => void;
     targetedShiftId?: string | null;
     isCompleted?: boolean;
+    onEditShift?: (shift: Shift) => void;
+    onMemberClick?: (assignment: ShiftAssignment) => void;
 }
 
 const DayCell: React.FC<DayCellProps> = ({
@@ -29,14 +31,15 @@ const DayCell: React.FC<DayCellProps> = ({
     assignments,
     members,
     onDrop,
-    onRemoveAssignment,
     onAddShift,
     checkConflict,
     selectedMember,
     onSelectAssignment,
     onOpenMemberPicker,
     targetedShiftId,
-    isCompleted
+    isCompleted,
+    onEditShift,
+    onMemberClick
 }) => {
     const isToday = new Date().toISOString().split('T')[0] === date;
 
@@ -53,11 +56,13 @@ const DayCell: React.FC<DayCellProps> = ({
         }
     };
 
-    const handleCellClick = (shiftId: string) => {
+    const handleCellClick = (shift: Shift) => {
         if (selectedMember && onSelectAssignment) {
-            onSelectAssignment(date, shiftId);
+            onSelectAssignment(date, shift.id);
         } else if (onOpenMemberPicker) {
-            onOpenMemberPicker(date, shiftId);
+            onOpenMemberPicker(date, shift.id);
+        } else if (onEditShift) {
+            onEditShift(shift);
         }
     };
 
@@ -116,7 +121,7 @@ const DayCell: React.FC<DayCellProps> = ({
                             key={shift.id}
                             onDragOver={handleDragOver}
                             onDrop={(e) => handleDrop(e, shift.id)}
-                            onClick={() => handleCellClick(shift.id)}
+                            onClick={() => handleCellClick(shift)}
                             className={`p-2 rounded-lg border border-l-4 flex flex-col gap-2 transition-all ${styleClass} 
                                 cursor-pointer hover:shadow-md active:scale-95
                                 ${selectedMember && shiftAssignments.length < shift.quantity_needed ? 'ring-2 ring-primary/50 bg-primary/5' : ''}
@@ -143,7 +148,13 @@ const DayCell: React.FC<DayCellProps> = ({
 
                                     return (
                                         <div key={assignment.id} className="relative group/avatar">
-                                            <div className={`relative rounded-full ${conflict ? 'ring-2 ring-red-500' : ''}`}>
+                                            <div
+                                                className={`relative rounded-full ${conflict ? 'ring-2 ring-red-500' : ''}`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onMemberClick?.(assignment);
+                                                }}
+                                            >
                                                 <img
                                                     src={profile.avatar_url}
                                                     alt={profile.full_name}
@@ -154,16 +165,7 @@ const DayCell: React.FC<DayCellProps> = ({
                                                     <div className="absolute -bottom-1 -right-1 bg-red-500 text-white rounded-full w-3 h-3 flex items-center justify-center text-[8px] font-bold border border-white">!</div>
                                                 )}
                                             </div>
-                                            {/* Remove Button */}
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onRemoveAssignment(assignment.id);
-                                                }}
-                                                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover/avatar:opacity-100 transition-opacity hover:scale-110"
-                                            >
-                                                <Trash2 size={8} />
-                                            </button>
+                                            {/* Remove Button removed here, delegated to Modal */}
                                         </div>
                                     );
                                 })}

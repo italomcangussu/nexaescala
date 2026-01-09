@@ -330,6 +330,17 @@ export const createShift = async (shift: Partial<Shift>): Promise<Shift> => {
     return data as Shift;
 };
 
+export const updateShift = async (shiftId: string, updates: Partial<Shift>): Promise<Shift> => {
+    const { data, error } = await supabase
+        .from('shifts')
+        .update(updates)
+        .eq('id', shiftId)
+        .select()
+        .single();
+    if (error) throw error;
+    return data as Shift;
+};
+
 export const updateProfile = async (userId: string, updates: Partial<Profile>): Promise<Profile> => {
     const { data, error } = await supabase
         .from('profiles')

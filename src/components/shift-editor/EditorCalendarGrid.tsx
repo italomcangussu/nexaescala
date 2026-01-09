@@ -8,13 +8,15 @@ interface EditorCalendarGridProps {
     assignments: ShiftAssignment[];
     members: Profile[];
     onDrop: (date: string, shiftId: string, memberId: string) => void;
-    onRemoveAssignment: (assignmentId: string) => void;
+    // onRemoveAssignment: (assignmentId: string) => void; // Removed
     onAddShift: (date: string, type: 'day' | 'night' | 'custom') => void;
     checkConflict?: (memberId: string, date: string, startTime: string, endTime: string) => string | null;
     selectedMember?: GroupMember | null;
     onSelectAssignment?: (date: string, shiftId: string) => void;
     onOpenMemberPicker?: (date: string, shiftId: string) => void;
     pendingShiftTarget?: { date: string, shiftId: string } | null;
+    onEditShift?: (shift: Shift) => void;
+    onMemberClick?: (assignment: ShiftAssignment) => void;
 }
 
 const EditorCalendarGrid: React.FC<EditorCalendarGridProps> = ({
@@ -23,13 +25,14 @@ const EditorCalendarGrid: React.FC<EditorCalendarGridProps> = ({
     assignments,
     members,
     onDrop,
-    onRemoveAssignment,
     onAddShift,
     checkConflict,
     selectedMember,
     onSelectAssignment,
     onOpenMemberPicker,
-    pendingShiftTarget
+    pendingShiftTarget,
+    onEditShift,
+    onMemberClick
 }) => {
 
     // Find first day of the month to add padding
@@ -63,7 +66,6 @@ const EditorCalendarGrid: React.FC<EditorCalendarGridProps> = ({
                         assignments={dayAssignments}
                         members={members}
                         onDrop={onDrop}
-                        onRemoveAssignment={onRemoveAssignment}
                         onAddShift={onAddShift}
                         checkConflict={checkConflict}
                         selectedMember={selectedMember}
@@ -71,6 +73,8 @@ const EditorCalendarGrid: React.FC<EditorCalendarGridProps> = ({
                         onOpenMemberPicker={onOpenMemberPicker}
                         targetedShiftId={pendingShiftTarget?.date === dayStr ? pendingShiftTarget.shiftId : null}
                         isCompleted={dayShifts.length > 0 && dayShifts.every(s => assignments.filter(a => a.shift_id === s.id).length >= s.quantity_needed)}
+                        onEditShift={onEditShift}
+                        onMemberClick={onMemberClick}
                     />
                 );
             })}

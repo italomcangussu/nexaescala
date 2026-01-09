@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Profile, ServiceRole, ShiftPreset, Group, AppRole } from '../types';
-import { createService, addGroupMember, searchInstitutions, searchProfiles } from '../services/api';
+import { createService, addGroupMember, searchInstitutions, searchProfiles, createShift } from '../services/api';
 
 export const useServiceCreation = (currentUser: Profile, onFinish: (group?: Group, navigate?: boolean) => void) => {
     const [step, setStep] = useState(1);
@@ -136,6 +136,34 @@ export const useServiceCreation = (currentUser: Profile, onFinish: (group?: Grou
                 });
 
             await Promise.all(memberPromises);
+
+            // 4. Generate Shifts for Current Month
+            // Get current month details
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            const shiftPromises: Promise<any>[] = [];
+
+            // Iterate through all days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+                // Create each shift preset for this day
+                for (const preset of shifts) {
+                    shiftPromises.push(createShift({
+                        group_id: newGroup.id,
+                        date: dateStr,
+                        start_time: preset.start_time,
+                        end_time: preset.end_time,
+                        quantity_needed: 2, // Default quantity, could be configurable
+                        is_published: false // Draft mode
+                    }));
+                }
+            }
+
+            await Promise.all(shiftPromises);
 
             setCreatedGroup(newGroup);
             setShowCompletion(true);
