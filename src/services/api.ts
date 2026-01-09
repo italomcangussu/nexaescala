@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { Profile, Group, Shift, ShiftAssignment, FinancialRecord, FinancialConfig, ServiceRole, ShiftExchange, TradeStatus, GroupMember, ChatMessage } from '../types';
+import { Profile, Group, Shift, ShiftAssignment, FinancialRecord, FinancialConfig, ServiceRole, ShiftExchange, TradeStatus, GroupMember, ChatMessage, ShiftPreset, TeamMember, AppRole } from '../types';
 
 // --- PROFILES ---
 
@@ -409,6 +409,316 @@ export const searchInstitutions = async (query: string): Promise<string[]> => {
     // Deduplicate names
     const names = data.map((item: any) => item.institution);
     return Array.from(new Set(names)) as string[];
+};
+
+// --- SHIFT PRESETS ---
+
+export const getShiftPresets = async (groupId: string): Promise<ShiftPreset[]> => {
+    const { data, error } = await supabase
+        .from('shift_presets')
+        .select('*')
+        .eq('group_id', groupId)
+        .order('code');
+
+    if (error) throw error;
+    return data as ShiftPreset[];
+};
+
+export const createShiftPreset = async (preset: Omit<ShiftPreset, 'id'>): Promise<ShiftPreset> => {
+    const { data, error } = await supabase
+        .from('shift_presets')
+        .insert(preset)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data as ShiftPreset;
+};
+
+export const updateShiftPreset = async (presetId: string, updates: Partial<ShiftPreset>): Promise<void> => {
+    const { error } = await supabase
+        .from('shift_presets')
+        .update(updates)
+        .eq('id', presetId);
+
+    if (error) throw error;
+};
+
+export const deleteShiftPreset = async (presetId: string): Promise<void> => {
+    const { error } = await supabase
+        .from('shift_presets')
+        .delete()
+        .eq('id', presetId);
+
+    if (error) throw error;
+};
+
+export const createShiftPresetsBulk = async (groupId: string, presets: Omit<ShiftPreset, 'id' | 'group_id'>[]): Promise<ShiftPreset[]> => {
+    const presetsWithGroupId = presets.map(p => ({
+        ...p,
+        group_id: groupId
+    }));
+
+    const { data, error } = await supabase
+        .from('shift_presets')
+        .insert(presetsWithGroupId)
+        .select();
+
+    if (error) throw error;
+    return data as ShiftPreset[];
+};
+
+// --- SERVICE CREATION (Enhanced) ---
+
+export interface CreateServicePayload {
+    ownerId: string;
+    name: string;
+    institution: string;
+    color: string;
+    shiftPresets: Omit<ShiftPreset, 'id' | 'group_id'>[];
+    team: TeamMember[];
+}
+
+export const createServiceComplete = async (payload: CreateServicePayload): Promise<Group> => {
+    const { ownerId, name, institution, color, shiftPresets, team } = payload;
+
+    // 1. Create Group
+    const { data: groupData, error: groupError } = await supabase
+        .from('groups')
+        .insert({
+            owner_id: ownerId,
+            name,
+            institution,
+            color
+        })
+        .select()
+        .single();
+
+    if (groupError) throw groupError;
+
+    const groupId = groupData.id;
+
+    // 2. Create Shift Presets
+    if (shiftPresets.length > 0) {
+        const presetsWithGroupId = shiftPresets.map(p => ({
+            ...p,
+            group_id: groupId
+        }));
+
+        const { error: presetsError } = await supabase
+            .from('shift_presets')
+            .insert(presetsWithGroupId);
+
+        if (presetsError) {
+            console.error('Error creating shift presets:', presetsError);
+            // Continue even if presets fail - the main group was created
+        }
+    }
+
+    // 3. Add Members with their roles
+    const memberInserts = team.map(member => {
+        // Use the first role for primary service_role, store all in service_roles
+        const primaryRole = member.roles[0] || ServiceRole.PLANTONISTA;
+
+        // Map ServiceRole to AppRole
+        let appRole: AppRole = AppRole.MEDICO;
+        if (member.roles.includes(ServiceRole.ADMIN)) appRole = AppRole.GESTOR;
+        else if (member.roles.includes(ServiceRole.ADMIN_AUX)) appRole = AppRole.AUXILIAR;
+
+        return {
+            group_id: groupId,
+            profile_id: member.profile.id,
+            role: appRole,
+            service_role: primaryRole
+        };
+    });
+
+    if (memberInserts.length > 0) {
+        const { error: membersError } = await supabase
+            .from('group_members')
+            .insert(memberInserts);
+
+        if (membersError) {
+            console.error('Error adding members:', membersError);
+        }
+    }
+
+    // Return formatted group
+    return {
+        ...groupData,
+        user_role: ServiceRole.ADMIN,
+        member_count: team.length,
+        unread_messages: 0
+    } as Group;
+};
+
+// Update existing service with all data
+export const updateServiceComplete = async (
+    groupId: string,
+    updates: {
+        name?: string;
+        institution?: string;
+        color?: string;
+    },
+    shiftPresets?: ShiftPreset[],
+    team?: TeamMember[]
+): Promise<void> => {
+    // 1. Update Group basic info
+    if (Object.keys(updates).length > 0) {
+        const { error } = await supabase
+            .from('groups')
+            .update(updates)
+            .eq('id', groupId);
+
+        if (error) throw error;
+    }
+
+    // 2. Sync Shift Presets (delete all and recreate)
+    if (shiftPresets) {
+        // Delete existing
+        await supabase
+            .from('shift_presets')
+            .delete()
+            .eq('group_id', groupId);
+
+        // Create new
+        if (shiftPresets.length > 0) {
+            const presetsWithGroupId = shiftPresets.map(p => ({
+                code: p.code,
+                start_time: p.start_time,
+                end_time: p.end_time,
+                group_id: groupId
+            }));
+
+            const { error } = await supabase
+                .from('shift_presets')
+                .insert(presetsWithGroupId);
+
+            if (error) console.error('Error syncing shift presets:', error);
+        }
+    }
+
+    // 3. Sync Members (more complex - need to handle adds/removes)
+    if (team) {
+        // Get current members
+        const { data: currentMembers } = await supabase
+            .from('group_members')
+            .select('profile_id')
+            .eq('group_id', groupId);
+
+        const currentMemberIds = new Set((currentMembers || []).map(m => m.profile_id));
+        const newMemberIds = new Set(team.map(m => m.profile.id));
+
+        // Find members to remove
+        const toRemove = [...currentMemberIds].filter(id => !newMemberIds.has(id));
+
+        // Find members to add
+        const toAdd = team.filter(m => !currentMemberIds.has(m.profile.id));
+
+        // Remove members
+        if (toRemove.length > 0) {
+            await supabase
+                .from('group_members')
+                .delete()
+                .eq('group_id', groupId)
+                .in('profile_id', toRemove);
+        }
+
+        // Add new members
+        if (toAdd.length > 0) {
+            const memberInserts = toAdd.map(member => {
+                const primaryRole = member.roles[0] || ServiceRole.PLANTONISTA;
+                let appRole: AppRole = AppRole.MEDICO;
+                if (member.roles.includes(ServiceRole.ADMIN)) appRole = AppRole.GESTOR;
+                else if (member.roles.includes(ServiceRole.ADMIN_AUX)) appRole = AppRole.AUXILIAR;
+
+                return {
+                    group_id: groupId,
+                    profile_id: member.profile.id,
+                    role: appRole,
+                    service_role: primaryRole
+                };
+            });
+
+            await supabase
+                .from('group_members')
+                .insert(memberInserts);
+        }
+
+        // Update existing members' roles
+        for (const member of team) {
+            if (currentMemberIds.has(member.profile.id)) {
+                const primaryRole = member.roles[0] || ServiceRole.PLANTONISTA;
+                let appRole: AppRole = AppRole.MEDICO;
+                if (member.roles.includes(ServiceRole.ADMIN)) appRole = AppRole.GESTOR;
+                else if (member.roles.includes(ServiceRole.ADMIN_AUX)) appRole = AppRole.AUXILIAR;
+
+                await supabase
+                    .from('group_members')
+                    .update({ role: appRole, service_role: primaryRole })
+                    .eq('group_id', groupId)
+                    .eq('profile_id', member.profile.id);
+            }
+        }
+    }
+};
+
+// --- SHIFT GENERATION ---
+
+interface MonthSelection {
+    year: number;
+    month: number; // 0-indexed
+}
+
+// Helper: get all days in a month
+const getDaysInMonth = (year: number, month: number): string[] => {
+    const days = new Date(year, month + 1, 0).getDate();
+    return Array.from({ length: days }, (_, i) => {
+        const d = new Date(year, month, i + 1);
+        return d.toISOString().split('T')[0]; // YYYY-MM-DD
+    });
+};
+
+export const generateShiftsForGroup = async (
+    groupId: string,
+    months: MonthSelection[],
+    presets: { code: string; start_time: string; end_time: string }[],
+    quantityPerShift: number
+): Promise<number> => {
+    if (months.length === 0 || presets.length === 0) return 0;
+
+    const shiftsToInsert: any[] = [];
+
+    for (const { year, month } of months) {
+        const days = getDaysInMonth(year, month);
+
+        for (const day of days) {
+            for (const preset of presets) {
+                shiftsToInsert.push({
+                    group_id: groupId,
+                    date: day,
+                    start_time: preset.start_time,
+                    end_time: preset.end_time,
+                    quantity_needed: quantityPerShift,
+                    is_published: false // Draft state until user publishes
+                });
+            }
+        }
+    }
+
+    if (shiftsToInsert.length === 0) return 0;
+
+    // Batch insert (Supabase handles bulk inserts)
+    const { error } = await supabase
+        .from('shifts')
+        .insert(shiftsToInsert);
+
+    if (error) {
+        console.error('Error generating shifts:', error);
+        throw error;
+    }
+
+    return shiftsToInsert.length;
 };
 
 // --- SHIFT EXCHANGES ---

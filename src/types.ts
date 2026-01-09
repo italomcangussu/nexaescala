@@ -129,6 +129,7 @@ export interface Group {
 
 export interface ShiftPreset {
   id: string;
+  group_id?: string; // FK to groups table
   code: string; // ex: "NTN"
   start_time: string;
   end_time: string;
@@ -140,6 +141,75 @@ export interface GroupMember {
   profile: Profile;
   role: AppRole;
   service_role: ServiceRole;
+  service_roles?: ServiceRole[]; // Multiple roles support
+}
+
+// --- SERVICE EDITOR TYPES ---
+
+export interface TeamMember {
+  profile: Profile;
+  roles: ServiceRole[]; // Múltiplas roles por membro
+  isOwner: boolean;
+}
+
+export type ServiceEditorMode = 'create' | 'edit';
+
+export interface MonthOption {
+  year: number;
+  month: number; // 0-indexed
+  label: string;
+  selected: boolean;
+}
+
+export interface ServiceEditorState {
+  mode: ServiceEditorMode;
+  groupId?: string;
+  step: number;
+
+  // Step 1: Info
+  serviceName: string;
+  institution: string;
+  color: string;
+
+  // Step 2: Shifts
+  shiftPresets: ShiftPreset[];
+
+  // Step 3: Team
+  team: TeamMember[];
+
+  // Step 4: Generation
+  selectedMonths: MonthOption[];
+  quantityPerShift: number;
+
+  // UI State
+  isSaving: boolean;
+  showCompletion: boolean;
+  createdGroup: Group | null;
+
+  // Search
+  searchQuery: string;
+  searchResults: Profile[];
+  isSearching: boolean;
+
+  // Institution Modal
+  instSearch: string;
+  instSearchResults: string[];
+  showInstitutionModal: boolean;
+  showNewInstForm: boolean;
+  instForm: {
+    name: string;
+    city: string;
+    state: string;
+    phone: string;
+  };
+
+  // Shift Modal
+  showShiftModal: boolean;
+  editingShift: Partial<ShiftPreset> | null;
+
+  // Validation
+  errors: Record<string, string>;
+  touched: Record<string, boolean>;
 }
 
 export interface Shift {

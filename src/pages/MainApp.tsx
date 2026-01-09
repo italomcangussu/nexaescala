@@ -6,7 +6,7 @@ import GroupCard from '../components/GroupCard';
 import SocialFeedView from '../components/SocialFeedView';
 import ProfileView from '../components/ProfileView';
 import EditProfileModal from '../components/EditProfileModal';
-import ServiceWizard from '../components/ServiceWizard';
+import { ServiceEditor } from '../components/service-editor';
 import ServiceDetailView from '../components/ServiceDetailView';
 import FinanceDashboard from '../components/FinanceDashboard';
 import ShiftCheckoutModal from '../components/ShiftCheckoutModal';
@@ -303,9 +303,10 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Service Creation Wizard */}
+      {/* Service Creation/Editing Wizard */}
       {isWizardOpen && (
-        <ServiceWizard
+        <ServiceEditor
+          mode="create"
           onClose={() => setIsWizardOpen(false)}
           currentUser={currentUser}
           onFinish={handleFinishWizard}

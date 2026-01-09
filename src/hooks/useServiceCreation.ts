@@ -123,25 +123,29 @@ export const useServiceCreation = (currentUser: Profile, onFinish: (group?: Grou
             // 2. Add Owner as Admin
             await addGroupMember(newGroup.id, currentUser.id, 'gestor', ServiceRole.ADMIN);
 
-            // 3. Add Other Members
-            for (const member of team) {
-                if (member.profile.id === currentUser.id) continue;
+            // 3. Add Other Members in Parallel
+            const memberPromises = team
+                .filter(member => member.profile.id !== currentUser.id)
+                .map(member => {
+                    // Map ServiceRole to AppRole
+                    let appRole = AppRole.MEDICO;
+                    if (member.role === ServiceRole.ADMIN) appRole = AppRole.GESTOR;
+                    if (member.role === ServiceRole.ADMIN_AUX) appRole = AppRole.AUXILIAR;
 
-                // Map ServiceRole to AppRole roughly for now or just generic 'medico'
-                let appRole = AppRole.MEDICO;
-                if (member.role === ServiceRole.ADMIN) appRole = AppRole.GESTOR;
-                if (member.role === ServiceRole.ADMIN_AUX) appRole = AppRole.AUXILIAR;
+                    return addGroupMember(newGroup.id, member.profile.id, appRole, member.role);
+                });
 
-                await addGroupMember(newGroup.id, member.profile.id, appRole, member.role);
-            }
+            await Promise.all(memberPromises);
 
             setCreatedGroup(newGroup);
             setShowCompletion(true);
         } catch (err: any) {
-            console.error(err);
-            const errorMsg = err.message || 'Erro desconhecido';
+            console.error('Error creating service:', err);
+            const errorMsg = err.message || 'Erro desconhecido ao criar serviço.';
             const errorDetails = err.details || err.hint || '';
-            alert(`DEBUG ERRO:\nMsg: ${errorMsg}\nDetalhes: ${errorDetails}\nCode: ${err.code || 'N/A'}`);
+            // It's better to use a proper toast notification here if available, 
+            // but for now we'll stick to alert as a fallback or a state to show error in UI.
+            alert(`Falha ao criar serviço:\n${errorMsg}\n${errorDetails}`);
         } finally {
             setIsSaving(false);
         }
