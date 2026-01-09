@@ -18,8 +18,7 @@ interface AdminServiceViewProps {
 }
 
 const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser, isAux = false }) => {
-    const [activeTab, setActiveTab] = useState<'calendar' | 'members' | 'settings' | 'notifications'>('calendar');
-    const [isEditingScale, setIsEditingScale] = useState(false);
+    const [activeTab, setActiveTab] = useState<'calendar' | 'editor' | 'members' | 'settings' | 'notifications'>('calendar');
 
     // Members State
     const [members, setMembers] = useState<GroupMember[]>([]);
@@ -54,9 +53,7 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
         }
     };
 
-    if (isEditingScale) {
-        return <ShiftEditor group={group} currentUser={currentUser} onBack={() => setIsEditingScale(false)} />;
-    }
+
 
     return (
         <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 relative">
@@ -65,6 +62,10 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                 <button onClick={() => setActiveTab('calendar')} className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'calendar' ? 'text-primary bg-primary/5' : 'text-slate-400'}`}>
                     <Calendar size={20} />
                     <span className="text-[10px] font-bold">Escala</span>
+                </button>
+                <button onClick={() => setActiveTab('editor')} className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'editor' ? 'text-primary bg-primary/5' : 'text-slate-400'}`}>
+                    <Grid size={20} />
+                    <span className="text-[10px] font-bold text-center">Editor de Escala</span>
                 </button>
                 <button onClick={() => setActiveTab('notifications')} className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'notifications' ? 'text-primary bg-primary/5' : 'text-slate-400'}`}>
                     <Bell size={20} />
@@ -108,18 +109,11 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                                 assignments={INITIAL_ASSIGNMENTS}
                             />
                         </div>
-
-                        {/* Floating Edit Button */}
-                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
-                            <button
-                                onClick={() => setIsEditingScale(true)}
-                                className="flex items-center gap-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-3 rounded-full font-bold shadow-xl shadow-slate-300 dark:shadow-none hover:scale-105 transition-transform"
-                            >
-                                <Grid size={18} />
-                                Editor de Escala
-                            </button>
-                        </div>
                     </>
+                )}
+
+                {activeTab === 'editor' && (
+                    <ShiftEditor group={group} currentUser={currentUser} onBack={() => setActiveTab('calendar')} />
                 )}
 
                 {activeTab === 'notifications' && (

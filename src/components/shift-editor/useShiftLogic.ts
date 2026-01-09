@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Group, Shift, ShiftAssignment, GroupMember } from '../../types';
-import { getGroupMembers, getShifts, getAssignments, createShift, createAssignment, deleteAssignment, getMemberAssignmentsForPeriod } from '../../services/api';
+import { getGroupMembers, getShifts, getAssignments, createShift, createAssignment, deleteAssignment, getMemberAssignmentsForPeriod, publishShifts, createNotificationsBulk } from '../../services/api';
 
 // Helper to get days in month
 const getDaysInMonth = (date: Date) => {
@@ -130,7 +130,7 @@ export const useShiftLogic = (group: Group) => {
             start_time: type === 'night' ? '19:00' : '07:00',
             end_time: type === 'night' ? '07:00' : '19:00',
             quantity_needed: 2,
-            is_published: true
+            is_published: false
         };
         setShifts(prev => [...prev, newShift]);
     };
@@ -235,6 +235,50 @@ export const useShiftLogic = (group: Group) => {
         }
     };
 
+    const publishScale = async () => {
+        // 1. Save changes first to ensure all temp shifts are persisted
+        await saveChanges();
+
+        setIsSaving(true);
+        try {
+            // Get all shift IDs for the current month/view that are currently unpublished
+            const unpublishedShiftIds = shifts
+                .filter(s => !s.id.startsWith('temp_') && !s.is_published)
+                .map(s => s.id);
+
+            if (unpublishedShiftIds.length > 0) {
+                await publishShifts(group.id, unpublishedShiftIds);
+
+                // Create notifications for assigned members
+                const publishedAssignments = assignments.filter(a => unpublishedShiftIds.includes(a.shift_id));
+                const uniqueMemberIds = Array.from(new Set(publishedAssignments.map(a => a.profile_id)));
+
+                if (uniqueMemberIds.length > 0) {
+                    const monthName = currentDate.toLocaleDateString('pt-BR', { month: 'long' });
+                    const notifications = uniqueMemberIds.map(memberId => ({
+                        user_id: memberId,
+                        title: 'Nova Escala Publicada',
+                        message: `A escala de ${monthName} para o serviço ${group.name} foi publicada. Confira seus plantões!`,
+                        type: 'SHIFT_PUBLISHED' as const,
+                        is_read: false,
+                        metadata: { group_id: group.id, month: currentDate.getMonth(), year: currentDate.getFullYear() }
+                    }));
+                    await createNotificationsBulk(notifications);
+                }
+
+                alert("Escala publicada com sucesso! Agora está visível para os membros.");
+                await loadData();
+            } else {
+                alert("Não há novos plantões para publicar.");
+            }
+        } catch (e) {
+            console.error("Error publishing:", e);
+            alert("Erro ao publicar escala.");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     // Navigation
     const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
     const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
@@ -260,6 +304,7 @@ export const useShiftLogic = (group: Group) => {
         getShiftsForDay,
         getAssignmentsForShift,
         checkConflict, // expose for UI
+        publishScale,
         handleAddShift,
         handleAddAssignment,
         handleRemoveAssignment

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Users, History, Settings, Bell, Shield } from 'lucide-react';
-import { Group, Profile, AppRole, GroupMember, ServiceRole } from '../../types';
-import { getGroupMembers } from '../../services/api';
+import { Group, Profile, AppRole, GroupMember, ServiceRole, Shift, ShiftAssignment } from '../../types';
+import { getGroupMembers, getShifts, getAssignments } from '../../services/api';
 import CalendarView from '../CalendarView';
-import { INITIAL_SHIFTS, INITIAL_ASSIGNMENTS } from '../../services/dataService'; // Using mock data
 import ShiftInbox from '../ShiftInbox';
 import ServiceChat from '../ServiceChat';
 
@@ -17,25 +16,54 @@ interface PlantonistaServiceViewProps {
 const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, currentUser }) => {
     const [activeTab, setActiveTab] = useState<'calendar' | 'members' | 'history' | 'settings' | 'notifications'>('calendar');
 
-    // Members State
+    // Data State
     const [members, setMembers] = useState<GroupMember[]>([]);
-    const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+    const [shifts, setShifts] = useState<Shift[]>([]);
+    const [assignments, setAssignments] = useState<ShiftAssignment[]>([]);
+    const [isLoadingData, setIsLoadingData] = useState(false);
 
     useEffect(() => {
-        if (activeTab === 'members') {
+        loadData();
+    }, [group.id]);
+
+    const loadData = async () => {
+        setIsLoadingData(true);
+        try {
+            const memberPromise = getGroupMembers(group.id);
+            const shiftsPromise = getShifts(group.id);
+
+            const [membersData, shiftsData] = await Promise.all([memberPromise, shiftsPromise]);
+
+            setMembers(membersData);
+            setShifts(shiftsData);
+
+            const shiftIds = shiftsData.map(s => s.id);
+            if (shiftIds.length > 0) {
+                const assignmentsData = await getAssignments(shiftIds);
+                setAssignments(assignmentsData);
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+            setIsLoadingData(false);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === 'members' && members.length === 0) {
             fetchMembers();
         }
     }, [activeTab]);
 
     const fetchMembers = async () => {
-        setIsLoadingMembers(true);
+        setIsLoadingData(true); // Use isLoadingData for all data fetching
         try {
             const data = await getGroupMembers(group.id);
             setMembers(data);
         } catch (error) {
             console.error("Error fetching members:", error);
         } finally {
-            setIsLoadingMembers(false);
+            setIsLoadingData(false);
         }
     };
 
@@ -49,8 +77,8 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                 return (
                     <div className="flex flex-col h-full">
                         <CalendarView
-                            shifts={INITIAL_SHIFTS.filter(s => s.group_id === group.id)}
-                            assignments={INITIAL_ASSIGNMENTS}
+                            shifts={shifts}
+                            assignments={assignments}
                             currentUser={currentUser}
                             currentUserRole={AppRole.PLANTONISTA}
                             groupColor={group.color}
@@ -67,8 +95,8 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                             <ServiceChat
                                 group={group}
                                 currentUser={currentUser}
-                                shifts={INITIAL_SHIFTS.filter(s => s.group_id === group.id)}
-                                assignments={INITIAL_ASSIGNMENTS}
+                                shifts={shifts}
+                                assignments={assignments}
                             />
                         </div>
                     </div>
@@ -80,7 +108,7 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                             <h3 className="text-lg font-bold">Membros do Serviço ({members.length})</h3>
                         </div>
 
-                        {isLoadingMembers ? (
+                        {isLoadingData ? (
                             <div className="flex justify-center py-10">
                                 <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
                             </div>

@@ -68,10 +68,16 @@ const Dashboard: React.FC = () => {
     profile: profiles.find(p => p.id === a.profile_id)
   }));
 
-  const myShifts = shifts.filter(s =>
-    assignments.some(a => a.shift_id === s.id && a.profile_id === currentUser.id) ||
-    assignments.some(a => a.shift_id === s.id)
-  );
+  const myShifts = shifts.filter(s => {
+    // Check if user is admin of this specific group
+    const groupRole = userGroups.find(g => g.id === s.group_id)?.user_role;
+    const isAdmin = groupRole === ServiceRole.ADMIN || groupRole === ServiceRole.ADMIN_AUX;
+
+    // Only show published shifts to members
+    if (!isAdmin && !s.is_published) return false;
+
+    return assignments.some(a => a.shift_id === s.id && a.profile_id === currentUser.id);
+  });
 
   const handleEditShift = (shift: Shift) => {
     alert(`Editar configurações do plantão: ${shift.date}`);
@@ -194,7 +200,7 @@ const Dashboard: React.FC = () => {
                   return (
                     <div key={cat.title}>
                       <h3 className="text-xs font-bold text-textSecondary dark:text-slate-500 uppercase tracking-wider mb-2">{cat.title}</h3>
-                      <div onClick={() => setSelectedService(groups[0])}>
+                      <div>
                         {groups.map(group => (
                           <div key={group.id} onClick={() => setSelectedService(group)}>
                             <GroupCard group={group} />

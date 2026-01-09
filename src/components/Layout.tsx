@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Home, Calendar, Users, Search, Bell, Landmark, Settings, LucideProps } from 'lucide-react';
-import { Profile } from '../types';
+import { Profile, Notification } from '../types';
+import { getNotifications, markNotificationAsRead } from '../services/api';
 import Logo from './Logo';
 import SettingsMenu from './SettingsMenu';
 
@@ -22,6 +23,41 @@ const Layout: React.FC<LayoutProps> = ({
   onSignOut
 }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  React.useEffect(() => {
+    if (currentUser) {
+      fetchNotifications();
+    }
+  }, [currentUser]);
+
+  const fetchNotifications = async () => {
+    try {
+      const data = await getNotifications(currentUser.id);
+      setNotifications(data);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
+
+  const hasUnread = notifications.some(n => !n.is_read);
+
+  const handleBellClick = async () => {
+    setShowNotifications(!showNotifications);
+    if (!showNotifications && hasUnread) {
+      // Mark all as read when opening
+      try {
+        const unread = notifications.filter(n => !n.is_read);
+        for (const n of unread) {
+          await markNotificationAsRead(n.id);
+        }
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      } catch (error) {
+        console.error("Error marking notifications as read:", error);
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen bg-background dark:bg-slate-950 overflow-hidden relative font-sans transition-colors duration-300">
@@ -52,10 +88,51 @@ const Layout: React.FC<LayoutProps> = ({
           <button className="p-2 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-full transition-colors hidden sm:block">
             <Search size={20} strokeWidth={2.5} />
           </button>
-          <button className="p-2 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-full relative transition-colors">
+          <button
+            onClick={handleBellClick}
+            className={`p-2 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-full relative transition-colors ${showNotifications ? 'text-primary' : ''}`}
+          >
             <Bell size={20} strokeWidth={2.5} />
-            <span className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-error rounded-full ring-2 ring-white dark:ring-slate-900"></span>
+            {hasUnread && (
+              <span className="absolute top-2 right-2.5 w-2 h-2 bg-error rounded-full ring-2 ring-white dark:ring-slate-900 animate-pulse"></span>
+            )}
           </button>
+
+          {/* Notifications Dropdown */}
+          {showNotifications && (
+            <div className="absolute top-16 right-5 w-80 max-h-[400px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800 z-50 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="p-4 border-b border-gray-50 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
+                <h3 className="font-bold text-slate-800 dark:text-slate-100">Notificações</h3>
+                <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Recentes</span>
+              </div>
+              <div className="overflow-y-auto no-scrollbar flex-1">
+                {notifications.length === 0 ? (
+                  <div className="p-10 text-center text-slate-400">
+                    <Bell size={40} className="mx-auto mb-3 opacity-20" />
+                    <p className="text-sm">Nenhuma notificação por aqui.</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-50 dark:divide-slate-800">
+                    {notifications.map(n => (
+                      <div key={n.id} className="p-4 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group">
+                        <div className="flex gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${n.type === 'SHIFT_PUBLISHED' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}>
+                            {n.type === 'SHIFT_PUBLISHED' ? <Calendar size={16} /> : <Bell size={16} />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-primary transition-colors">{n.title}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2 leading-relaxed">{n.message}</p>
+                            <p className="text-[10px] text-slate-400 mt-2 font-medium">{new Date(n.created_at).toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <button
             onClick={() => setIsSettingsOpen(true)}
             className="p-2 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primaryLight active:scale-90 transform duration-200"

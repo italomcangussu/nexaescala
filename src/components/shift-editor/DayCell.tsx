@@ -19,6 +19,7 @@ interface DayCellProps {
     onSelectAssignment?: (date: string, shiftId: string) => void;
     onOpenMemberPicker?: (date: string, shiftId: string) => void;
     targetedShiftId?: string | null;
+    isCompleted?: boolean;
 }
 
 const DayCell: React.FC<DayCellProps> = ({
@@ -34,7 +35,8 @@ const DayCell: React.FC<DayCellProps> = ({
     selectedMember,
     onSelectAssignment,
     onOpenMemberPicker,
-    targetedShiftId
+    targetedShiftId,
+    isCompleted
 }) => {
     const isToday = new Date().toISOString().split('T')[0] === date;
 
@@ -74,7 +76,12 @@ const DayCell: React.FC<DayCellProps> = ({
 
             {/* Header */}
             <div className="flex justify-between items-start mb-2">
-                <span className={`text-sm font-bold ${isToday ? 'text-primary' : 'text-slate-700 dark:text-slate-300'}`}>{dayNum}</span>
+                <div className="flex items-center gap-2">
+                    <span className={`text-sm font-bold ${isToday ? 'text-primary' : 'text-slate-700 dark:text-slate-300'}`}>{dayNum}</span>
+                    {isCompleted && (
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" title="Escala concluída" />
+                    )}
+                </div>
 
                 {/* Add Shift Action (Visible on Hover) */}
                 <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity">

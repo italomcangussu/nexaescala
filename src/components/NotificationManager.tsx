@@ -1,37 +1,47 @@
 import React, { useEffect, useState } from 'react';
 import { Bell, X, Share, Smartphone } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { updatePushSubscription } from '../services/api';
 
 const NotificationManager: React.FC = () => {
     const [permission, setPermission] = useState<NotificationPermission>('default');
     const [showBanner, setShowBanner] = useState(false);
     const [isIOS, setIsIOS] = useState(false);
     const [isStandalone, setIsStandalone] = useState(false);
+    const { profile: currentUser } = useAuth();
+
+    // VAPID Public Key - Placeholder (Needs to be generated for production)
+    // You can generate one with 'npx web-push generate-vapid-keys'
+    const VAPID_PUBLIC_KEY = 'BI5QO8U-i2V7fO1oYp0m2p0m2p0m2p0m2p0m2p0m2p0m2p0m2p0m2p0m2p0m2p0m2p0m2p0m2p0m2p0';
 
     useEffect(() => {
-        // Check permission status
-        if (!('Notification' in window)) {
-            console.log('This browser does not support desktop notification');
-            return;
-        }
-
-        setPermission(Notification.permission);
-
-        // Platform detection
+        // Platform detection and base logic...
         const userAgent = window.navigator.userAgent.toLowerCase();
         const ios = /iphone|ipad|ipod/.test(userAgent);
         setIsIOS(ios);
 
-        // Standalone detection
         const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
         setIsStandalone(!!isStandaloneMode);
 
-        // Show banner logic: If default permission
-        if (Notification.permission === 'default') {
-            // Delay to avoid overwhelming strictly on load
-            const timer = setTimeout(() => setShowBanner(true), 2500);
-            return () => clearTimeout(timer);
+        if ('Notification' in window) {
+            setPermission(Notification.permission);
+            if (Notification.permission === 'default') {
+                const timer = setTimeout(() => setShowBanner(true), 2500);
+                return () => clearTimeout(timer);
+            }
         }
     }, []);
+
+    const urlBase64ToUint8Array = (base64String: string) => {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    };
 
     const handleRequestPermission = async () => {
         try {
@@ -39,11 +49,27 @@ const NotificationManager: React.FC = () => {
             setPermission(result);
             if (result === 'granted') {
                 setShowBanner(false);
-                // Here we would typically trigger the subscription to the Push Service
-                console.log('Notification permission granted!');
+                await subscribeUserToPush();
             }
         } catch (error) {
             console.error('Error requesting permission:', error);
+        }
+    };
+
+    const subscribeUserToPush = async () => {
+        try {
+            if (!('serviceWorker' in navigator) || !currentUser) return;
+
+            const registration = await navigator.serviceWorker.ready;
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+            });
+
+            console.log('User is subscribed:', subscription);
+            await updatePushSubscription(currentUser.id, subscription);
+        } catch (error) {
+            console.error('Failed to subscribe the user: ', error);
         }
     };
 

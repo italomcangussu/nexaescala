@@ -22,6 +22,7 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
         assignments,
         isSaving,
         saveChanges,
+        publishScale,
         handleAddShift,
         handleAddAssignment,
         handleRemoveAssignment,
@@ -130,32 +131,34 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
                         <button
                             onClick={saveChanges}
                             disabled={isSaving}
-                            className="flex items-center gap-2 px-4 md:px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold rounded-xl hover:shadow-lg active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                            className="flex items-center gap-2 px-4 md:px-6 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm font-bold rounded-xl hover:bg-slate-200 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0 border border-slate-200 dark:border-slate-700"
                         >
                             <Save size={18} />
-                            <span className="hidden sm:inline">{isSaving ? 'Salvando...' : 'Salvar'}</span>
+                            <span className="hidden sm:inline">{isSaving ? 'Salvando...' : 'Salvar Rascunho'}</span>
                         </button>
                     </div>
                 </header>
 
                 {/* Selected Member Indicator (Mobile) */}
-                {selectedMember && (
-                    <div className="md:hidden bg-primary/10 border-b border-primary/20 px-4 py-2 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-primary">Selecionado:</span>
+                {
+                    selectedMember && (
+                        <div className="md:hidden bg-primary/10 border-b border-primary/20 px-4 py-2 flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <img src={selectedMember.profile.avatar_url} className="w-5 h-5 rounded-full" alt="" />
-                                <span className="text-xs font-medium text-slate-700 dark:text-slate-200">{selectedMember.profile.full_name}</span>
+                                <span className="text-xs font-bold text-primary">Selecionado:</span>
+                                <div className="flex items-center gap-2">
+                                    <img src={selectedMember.profile.avatar_url} className="w-5 h-5 rounded-full" alt="" />
+                                    <span className="text-xs font-medium text-slate-700 dark:text-slate-200">{selectedMember.profile.full_name}</span>
+                                </div>
                             </div>
+                            <button
+                                onClick={() => setSelectedMember(null)}
+                                className="text-xs font-bold text-slate-400 hover:text-slate-600"
+                            >
+                                Cancelar
+                            </button>
                         </div>
-                        <button
-                            onClick={() => setSelectedMember(null)}
-                            className="text-xs font-bold text-slate-400 hover:text-slate-600"
-                        >
-                            Cancelar
-                        </button>
-                    </div>
-                )}
+                    )
+                }
 
 
                 {/* Calendar Grid Area */}
@@ -188,8 +191,25 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
                         pendingShiftTarget={pendingShiftTarget}
                     />
                 </div>
-            </div>
-        </div>
+
+                {/* Floating Publish Button */}
+                <div className="fixed bottom-6 left-0 right-0 px-6 z-20 flex justify-center pointer-events-none">
+                    <button
+                        onClick={() => {
+                            if (window.confirm("Tem certeza que deseja publicar a escala? Ela ficará visível para todos os membros.")) {
+                                publishScale();
+                            }
+                        }}
+                        disabled={isSaving}
+                        className="pointer-events-auto flex items-center gap-3 px-8 py-4 bg-emerald-600 text-white font-bold rounded-2xl shadow-[0_8px_25px_-5px_rgba(16,185,129,0.5)] hover:bg-emerald-700 hover:shadow-emerald-200 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0 group"
+                    >
+                        <div className={`w-2 h-2 rounded-full bg-white ${isSaving ? 'animate-ping' : 'animate-pulse'}`} />
+                        <span className="text-base tracking-tight">{isSaving ? 'Publicando...' : 'Publicar Escala'}</span>
+                        <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                    </button>
+                </div>
+            </div >
+        </div >
     );
 };
 

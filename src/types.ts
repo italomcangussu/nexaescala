@@ -77,6 +77,8 @@ export interface Profile {
   full_name: string;
   crm?: string;
   avatar_url: string;
+  push_subscription?: string; // JSON string of PushSubscription
+  updated_at: string;
   phone?: string;
   email?: string;
 
@@ -281,6 +283,16 @@ export interface ChatMessage {
   metadata?: any;
   created_at: string;
   sender?: Profile; // Joined
+}
+export interface Notification {
+  id: string;
+  user_id: string;
+  title: string;
+  message: string;
+  type: 'SHIFT_PUBLISHED' | 'SHIFT_SWAP' | 'SYSTEM';
+  is_read: boolean;
+  created_at: string;
+  metadata?: any;
 }
 
 export type RecurrenceType = 'NONE' | 'WEEKLY' | 'BIWEEKLY';

@@ -37,8 +37,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, curren
   const firstDay = getFirstDayOfMonth(currentDate.getFullYear(), currentDate.getMonth());
   const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
+  // Determine if user can see unpublished shifts
+  const canSeeUnpublished = currentUserRole === AppRole.GESTOR || currentUserRole === AppRole.AUXILIAR;
+
+  // Filter shifts based on publication status
+  const visibleShifts = canSeeUnpublished ? shifts : shifts.filter(s => s.is_published);
+
   // Filter shifts available for trading (exclude current user's shifts)
-  const availableShifts = shifts.filter(shift => {
+  const availableShifts = visibleShifts.filter(shift => {
     const assignment = assignments.find(a => a.shift_id === shift.id);
     return assignment && assignment.profile_id !== currentUser.id;
   });
@@ -61,7 +67,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, curren
       checkDate.setHours(0, 0, 0, 0);
       const isPast = checkDate < today;
 
-      const dayShifts = shifts.filter(s => s.date === dateStr);
+      const dayShifts = visibleShifts.filter(s => s.date === dateStr);
 
       // Check if user has a shift
       const myShiftOnThisDay = dayShifts.some(s =>
@@ -79,31 +85,31 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, curren
         currentDate.getFullYear() === today.getFullYear();
 
       // Determine Style Classes based on state
-      let dayCircleClasses = "w-9 h-9 flex items-center justify-center text-sm font-medium rounded-full transition-all duration-200 border-2";
+      let dayCircleClasses = "w-9 h-9 flex items-center justify-center text-sm font-bold rounded-full transition-all duration-200";
 
       if (isSelected) {
         dayCircleClasses += " text-white shadow-md scale-110 z-10";
       } else if (myShiftOnThisDay) {
         if (isPast) {
           // Past Shift
-          dayCircleClasses += " bg-opacity-5 text-opacity-50";
+          dayCircleClasses += " border-2 bg-transparent";
         } else {
           // Future/Present Shift
-          dayCircleClasses += " bg-opacity-10 font-bold shadow-sm";
+          dayCircleClasses += " text-white shadow-sm";
         }
       } else if (isToday) {
-        dayCircleClasses += " border-gray-300 dark:border-slate-600 font-extrabold bg-gray-50 dark:bg-slate-800";
+        dayCircleClasses += " border-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100";
       } else {
-        dayCircleClasses += " border-transparent text-textPrimary dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800";
+        dayCircleClasses += " text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800";
       }
 
       const dayStyle = isSelected
-        ? { backgroundColor: groupColor || 'var(--color-primary)', borderColor: groupColor || 'var(--color-primary)' }
+        ? { backgroundColor: groupColor || 'var(--color-primary)' }
         : myShiftOnThisDay
           ? {
-            borderColor: groupColor || 'var(--color-primary)',
-            backgroundColor: groupColor ? `${groupColor}15` : undefined,
-            color: groupColor || 'var(--color-primary)'
+            borderColor: isPast ? groupColor || 'var(--color-primary)' : 'transparent',
+            backgroundColor: isPast ? 'transparent' : groupColor || 'var(--color-primary)',
+            color: isPast ? groupColor || 'var(--color-primary)' : 'white'
           }
           : isToday && groupColor ? { color: groupColor } : {};
 
@@ -121,7 +127,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, curren
           {/* Secondary Indicators (Dots below number) */}
           <div className="flex gap-1 mt-1.5 h-1.5">
             {!myShiftOnThisDay && hasAnyShift && (
-              <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white/50' : 'bg-gray-300 dark:bg-slate-600'}`}></div>
+              <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white/50' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
             )}
           </div>
         </div>
@@ -216,7 +222,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, curren
         isOpen={!!selectedDate}
         onClose={() => setSelectedDate(null)}
         date={selectedDate}
-        shifts={selectedDate ? shifts.filter(s => s.date === selectedDate) : []}
+        shifts={selectedDate ? visibleShifts.filter(s => s.date === selectedDate) : []}
         assignments={assignments}
         currentUser={currentUser}
         currentUserRole={currentUserRole}

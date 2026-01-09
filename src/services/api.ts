@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { Profile, Group, Shift, ShiftAssignment, FinancialRecord, FinancialConfig, ServiceRole, ShiftExchange, TradeStatus, GroupMember, ChatMessage, ShiftPreset, TeamMember, AppRole, GroupRelationship } from '../types';
+import { Profile, Group, Shift, ShiftAssignment, FinancialRecord, FinancialConfig, ServiceRole, ShiftExchange, TradeStatus, GroupMember, ChatMessage, ShiftPreset, TeamMember, AppRole, GroupRelationship, Notification } from '../types';
 
 // --- PROFILES ---
 
@@ -330,7 +330,38 @@ export const createShift = async (shift: Partial<Shift>): Promise<Shift> => {
     return data as Shift;
 };
 
-export const deleteShift = async (shiftId: string): Promise<void> => {
+export const updateProfile = async (userId: string, updates: Partial<Profile>): Promise<Profile> => {
+    const { data, error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', userId)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data as Profile;
+};
+
+export const updatePushSubscription = async (userId: string, subscription: PushSubscription | null): Promise<void> => {
+    const { error } = await supabase
+        .from('profiles')
+        .update({ push_subscription: subscription ? JSON.stringify(subscription) : null })
+        .eq('id', userId);
+
+    if (error) throw error;
+};
+
+export const publishShifts = async (groupId: string, shiftIds: string[]): Promise<void> => {
+    if (shiftIds.length === 0) return;
+    const { error } = await supabase
+        .from('shifts')
+        .update({ is_published: true })
+        .eq('group_id', groupId)
+        .in('id', shiftIds);
+    if (error) throw error;
+};
+
+export const deleteShift = async (shiftId: string) => {
     const { error } = await supabase
         .from('shifts')
         .delete()
@@ -721,6 +752,48 @@ export const generateShiftsForGroup = async (
     return shiftsToInsert.length;
 };
 
+// --- NOTIFICATIONS ---
+
+export const getNotifications = async (userId: string): Promise<Notification[]> => {
+    const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data as Notification[];
+};
+
+export const markNotificationAsRead = async (notificationId: string): Promise<void> => {
+    const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', notificationId);
+
+    if (error) throw error;
+};
+
+export const createNotification = async (notification: Partial<Notification>): Promise<Notification> => {
+    const { data, error } = await supabase
+        .from('notifications')
+        .insert(notification)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data as Notification;
+};
+
+export const createNotificationsBulk = async (notifications: Partial<Notification>[]): Promise<void> => {
+    if (notifications.length === 0) return;
+    const { error } = await supabase
+        .from('notifications')
+        .insert(notifications);
+
+    if (error) throw error;
+};
+
 // --- SHIFT EXCHANGES ---
 
 export const createShiftExchange = async (exchange: Partial<ShiftExchange>): Promise<void> => {
@@ -736,17 +809,17 @@ export const getShiftExchanges = async (groupId: string): Promise<ShiftExchange[
         .from('shift_exchanges')
         .select(`
             *,
-            requesting_profile:profiles!requesting_profile_id(*),
-            target_profile:profiles!target_profile_id(*),
-            offered_shift:shift_assignments!offered_shift_assignment_id(
+            requesting_profile: profiles!requesting_profile_id(*),
+            target_profile: profiles!target_profile_id(*),
+            offered_shift: shift_assignments!offered_shift_assignment_id(
                 id,
                 date,
-                shift:shifts(*)
+                shift: shifts(*)
             ),
-            requested_shift:shift_assignments!requested_shift_assignment_id(
+            requested_shift: shift_assignments!requested_shift_assignment_id(
                 id,
                 date,
-                shift:shifts(*)
+                shift: shifts(*)
             )
         `)
         .eq('group_id', groupId)
@@ -841,7 +914,7 @@ export const getRelatedGroups = async (groupId: string): Promise<GroupRelationsh
         .from('group_relationships')
         .select(`
             *,
-            related_group:groups!related_group_id(*)
+            related_group: groups!related_group_id(*)
         `)
         .eq('source_group_id', groupId);
 
@@ -878,7 +951,7 @@ export const getAdminGroups = async (userId: string): Promise<Group[]> => {
     const { data, error } = await supabase
         .from('group_members')
         .select(`
-            group:groups(*)
+            group: groups(*)
         `)
         .eq('profile_id', userId)
         .in('service_role', [ServiceRole.ADMIN, ServiceRole.ADMIN_AUX]);
@@ -905,9 +978,9 @@ export const getRelatedShiftsForDay = async (groupId: string, date: string): Pro
             .select(`
                 id,
                 start_time,
-                assignments:shift_assignments(
+                assignments: shift_assignments(
                     id,
-                    profile:profiles(*)
+                    profile: profiles(*)
                 )
             `)
             .eq('group_id', rel.related_group_id)
