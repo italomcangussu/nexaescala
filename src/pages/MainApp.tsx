@@ -34,9 +34,6 @@ const Dashboard: React.FC = () => {
   // Data State
   const { profile: currentUser, signOut } = useAuth();
 
-  // Guard clause
-  if (!currentUser) return null;
-
   // Custom Hooks for Data
   const {
     profiles,
@@ -47,6 +44,8 @@ const Dashboard: React.FC = () => {
     userRole,
     refresh
   } = useDashboardData(currentUser);
+
+
 
   // Overlay States
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
@@ -60,6 +59,9 @@ const Dashboard: React.FC = () => {
   const [checkoutShift, setCheckoutShift] = useState<Shift | null>(null);
   const [isFinConfigOpen, setIsFinConfigOpen] = useState(false);
   const [finConfigGroup, setFinConfigGroup] = useState<Group | null>(null);
+
+  // Guard clause - MUST be after all hooks
+  if (!currentUser) return null;
 
   // Hydrate data
   const hydratedAssignments = assignments.map(a => ({

@@ -1,6 +1,6 @@
 import React from 'react';
 import DayCell from './DayCell';
-import { Shift, ShiftAssignment, Profile } from '../../types';
+import { Shift, ShiftAssignment, Profile, GroupMember } from '../../types';
 
 interface EditorCalendarGridProps {
     days: string[]; // YYYY-MM-DD strings
@@ -11,6 +11,8 @@ interface EditorCalendarGridProps {
     onRemoveAssignment: (assignmentId: string) => void;
     onAddShift: (date: string, type: 'day' | 'night' | 'custom') => void;
     checkConflict?: (memberId: string, date: string, startTime: string, endTime: string) => string | null;
+    selectedMember?: GroupMember | null;
+    onSelectAssignment?: (date: string, shiftId: string) => void;
 }
 
 const EditorCalendarGrid: React.FC<EditorCalendarGridProps> = ({
@@ -21,7 +23,9 @@ const EditorCalendarGrid: React.FC<EditorCalendarGridProps> = ({
     onDrop,
     onRemoveAssignment,
     onAddShift,
-    checkConflict
+    checkConflict,
+    selectedMember,
+    onSelectAssignment
 }) => {
 
     // Find first day of the month to add padding
@@ -32,10 +36,10 @@ const EditorCalendarGrid: React.FC<EditorCalendarGridProps> = ({
     const paddingDays = Array.from({ length: startDayOfWeek });
 
     return (
-        <div className="grid grid-cols-7 gap-4 auto-rows-fr pb-10">
-            {/* Padding for empty start days */}
+        <div className="grid grid-cols-1 md:grid-cols-7 gap-4 auto-rows-fr pb-10">
+            {/* Padding for empty start days - Hidden on mobile */}
             {paddingDays.map((_, i) => (
-                <div key={`pad-${i}`} className="min-h-[140px] opacity-20 pointer-events-none" />
+                <div key={`pad-${i}`} className="hidden md:block min-h-[140px] opacity-20 pointer-events-none" />
             ))}
 
             {days.map(dayStr => {
@@ -58,6 +62,8 @@ const EditorCalendarGrid: React.FC<EditorCalendarGridProps> = ({
                         onRemoveAssignment={onRemoveAssignment}
                         onAddShift={onAddShift}
                         checkConflict={checkConflict}
+                        selectedMember={selectedMember}
+                        onSelectAssignment={onSelectAssignment}
                     />
                 );
             })}

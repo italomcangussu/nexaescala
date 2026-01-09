@@ -2,6 +2,9 @@ import React from 'react';
 import { Plus, Trash2, Moon, Sun } from 'lucide-react';
 import { Shift, ShiftAssignment, Profile } from '../../types';
 
+// ... imports ...
+import { GroupMember } from '../../types'; // Added import
+
 interface DayCellProps {
     date: string; // YYYY-MM-DD
     dayNum: number;
@@ -12,6 +15,8 @@ interface DayCellProps {
     onRemoveAssignment: (assignmentId: string) => void;
     onAddShift: (date: string, type: 'day' | 'night' | 'custom') => void;
     checkConflict?: (memberId: string, date: string, startTime: string, endTime: string) => string | null;
+    selectedMember?: GroupMember | null;
+    onSelectAssignment?: (date: string, shiftId: string) => void;
 }
 
 const DayCell: React.FC<DayCellProps> = ({
@@ -23,7 +28,9 @@ const DayCell: React.FC<DayCellProps> = ({
     onDrop,
     onRemoveAssignment,
     onAddShift,
-    checkConflict
+    checkConflict,
+    selectedMember,
+    onSelectAssignment
 }) => {
     const isToday = new Date().toISOString().split('T')[0] === date;
 
@@ -37,6 +44,12 @@ const DayCell: React.FC<DayCellProps> = ({
         const memberId = e.dataTransfer.getData('memberId');
         if (memberId) {
             onDrop(date, shiftId, memberId);
+        }
+    };
+
+    const handleCellClick = (shiftId: string) => {
+        if (selectedMember && onSelectAssignment) {
+            onSelectAssignment(date, shiftId);
         }
     };
 
@@ -85,12 +98,17 @@ const DayCell: React.FC<DayCellProps> = ({
                         ? 'bg-slate-900 dark:bg-slate-950 border-slate-800 border-l-indigo-500 text-slate-400'
                         : 'bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700 border-l-orange-400 text-slate-500';
 
+                    const isSelectable = selectedMember && shiftAssignments.length < shift.quantity_needed;
+
                     return (
                         <div
                             key={shift.id}
                             onDragOver={handleDragOver}
                             onDrop={(e) => handleDrop(e, shift.id)}
-                            className={`p-2 rounded-lg border border-l-4 flex flex-col gap-2 transition-all ${styleClass}`}
+                            onClick={() => isSelectable && handleCellClick(shift.id)}
+                            className={`p-2 rounded-lg border border-l-4 flex flex-col gap-2 transition-all ${styleClass} 
+                                ${isSelectable ? 'cursor-pointer ring-2 ring-primary/50 hover:bg-primary/5' : ''}
+                            `}
                         >
                             {/* Shift Header */}
                             <div className="flex justify-between items-center">
@@ -125,7 +143,10 @@ const DayCell: React.FC<DayCellProps> = ({
                                             </div>
                                             {/* Remove Button */}
                                             <button
-                                                onClick={() => onRemoveAssignment(assignment.id)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onRemoveAssignment(assignment.id);
+                                                }}
                                                 className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover/avatar:opacity-100 transition-opacity hover:scale-110"
                                             >
                                                 <Trash2 size={8} />
@@ -136,8 +157,8 @@ const DayCell: React.FC<DayCellProps> = ({
 
                                 {/* Placeholder for Empty Slots */}
                                 {shiftAssignments.length < shift.quantity_needed && (
-                                    <div className="w-6 h-6 rounded-full border-2 border-dashed border-slate-300/50 flex items-center justify-center">
-                                        <Plus size={10} className="text-slate-400" />
+                                    <div className={`w-6 h-6 rounded-full border-2 border-dashed flex items-center justify-center ${selectedMember ? 'border-primary bg-primary/20 animate-pulse' : 'border-slate-300/50'}`}>
+                                        <Plus size={10} className={selectedMember ? 'text-primary' : 'text-slate-400'} />
                                     </div>
                                 )}
                             </div>

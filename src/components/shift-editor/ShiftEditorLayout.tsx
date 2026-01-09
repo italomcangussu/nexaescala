@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowLeft, Save, ChevronLeft, ChevronRight, Grid } from 'lucide-react';
-import { Group, Profile } from '../../types';
+import { Group, Profile, GroupMember } from '../../types';
 import EditorMemberSidebar from './EditorMemberSidebar';
 import EditorCalendarGrid from './EditorCalendarGrid';
 import { useShiftLogic } from './useShiftLogic';
@@ -28,34 +28,63 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
         checkConflict
     } = useShiftLogic(group);
 
+    const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+    const [selectedMember, setSelectedMember] = React.useState<GroupMember | null>(null);
+
     const monthName = currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
     return (
         <div className="flex h-full bg-slate-50 dark:bg-slate-950 overflow-hidden relative">
 
-            {/* Sidebar */}
-            <EditorMemberSidebar members={members} />
+            {/* Sidebar (Desktop: Fixed, Mobile: Drawer) */}
+            <div className={`
+                fixed inset-y-0 left-0 z-30 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0
+                ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+            `}>
+                <EditorMemberSidebar
+                    members={members}
+                    onDragStart={() => {
+                        // Desktop drag start
+                        if (window.innerWidth < 768) {
+                            setIsSidebarOpen(false); // Close sidebar on mobile drag (less common but good fallback)
+                        }
+                    }}
+                    selectedMember={selectedMember}
+                    onSelectMember={(member) => {
+                        setSelectedMember(member);
+                        setIsSidebarOpen(false); // Close sidebar on selection for mobile flow
+                    }}
+                />
+            </div>
+
+            {/* Mobile Overlay for Sidebar */}
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-20 md:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col h-full min-w-0">
 
                 {/* Header */}
-                <header className="px-6 py-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm z-10">
-                    <div className="flex items-center gap-4">
-                        <button onClick={onBack} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-500 transition-colors">
+                <header className="px-4 md:px-6 py-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm z-10 shrink-0 gap-2">
+                    <div className="flex items-center gap-2 md:gap-4 overflow-hidden">
+                        <button onClick={onBack} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-500 transition-colors shrink-0">
                             <ArrowLeft size={20} />
                         </button>
-                        <div className="flex flex-col">
-                            <h2 className="text-xl font-bold text-slate-800 dark:text-white leading-tight">Editor de Escala</h2>
-                            <span className="text-xs text-slate-500 font-medium">{group.name}</span>
+                        <div className="flex flex-col min-w-0">
+                            <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-white leading-tight truncate">Editor de Escala</h2>
+                            <span className="text-xs text-slate-500 font-medium truncate hidden md:block">{group.name}</span>
                         </div>
 
-                        {/* Month Navigation */}
-                        <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1 ml-6">
+                        {/* Month Navigation - Mobile Compact */}
+                        <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1 ml-2 md:ml-6 shrink-0">
                             <button onClick={prevMonth} className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded-md shadow-sm transition-all text-slate-600 dark:text-slate-300">
                                 <ChevronLeft size={16} />
                             </button>
-                            <span className="px-4 text-sm font-bold text-slate-700 dark:text-slate-200 capitalize min-w-[140px] text-center">
+                            <span className="px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 capitalize w-[90px] md:min-w-[140px] text-center truncate">
                                 {monthName}
                             </span>
                             <button onClick={nextMonth} className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded-md shadow-sm transition-all text-slate-600 dark:text-slate-300">
@@ -64,26 +93,54 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <button className="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-slate-300 text-sm font-bold hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                    <div className="flex items-center gap-2">
+                        {/* Mobile: Toggle Sidebar */}
+                        <button
+                            onClick={() => setIsSidebarOpen(true)}
+                            className={`md:hidden flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-xl transition-colors ${selectedMember ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-slate-100 text-slate-600'}`}
+                        >
                             <Grid size={18} />
-                            <span>Visualizar</span>
+                            <span className="hidden sm:inline">Equipe</span>
+                            {selectedMember && (
+                                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                            )}
                         </button>
+
                         <button
                             onClick={saveChanges}
                             disabled={isSaving}
-                            className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold rounded-xl hover:shadow-lg active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-2 px-4 md:px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold rounded-xl hover:shadow-lg active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                         >
                             <Save size={18} />
-                            <span>{isSaving ? 'Salvando...' : 'Salvar Alterações'}</span>
+                            <span className="hidden sm:inline">{isSaving ? 'Salvando...' : 'Salvar'}</span>
                         </button>
                     </div>
                 </header>
 
+                {/* Selected Member Indicator (Mobile) */}
+                {selectedMember && (
+                    <div className="md:hidden bg-primary/10 border-b border-primary/20 px-4 py-2 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-primary">Selecionado:</span>
+                            <div className="flex items-center gap-2">
+                                <img src={selectedMember.profile.avatar_url} className="w-5 h-5 rounded-full" alt="" />
+                                <span className="text-xs font-medium text-slate-700 dark:text-slate-200">{selectedMember.profile.full_name}</span>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setSelectedMember(null)}
+                            className="text-xs font-bold text-slate-400 hover:text-slate-600"
+                        >
+                            Cancelar
+                        </button>
+                    </div>
+                )}
+
+
                 {/* Calendar Grid Area */}
-                <div className="flex-1 overflow-auto p-6 relative">
-                    {/* Weekday Headers */}
-                    <div className="grid grid-cols-7 gap-4 mb-4">
+                <div className="flex-1 overflow-auto p-2 md:p-6 relative">
+                    {/* Weekday Headers - Hidden on mobile if stacking */}
+                    <div className="hidden md:grid grid-cols-7 gap-4 mb-4">
                         {['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'].map(day => (
                             <div key={day} className="text-center text-xs font-bold text-slate-400 uppercase tracking-wider">{day}</div>
                         ))}
@@ -98,6 +155,14 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
                         onRemoveAssignment={handleRemoveAssignment}
                         onAddShift={handleAddShift}
                         checkConflict={checkConflict}
+                        selectedMember={selectedMember} // Pass selected member
+                        onSelectAssignment={(date, shiftId) => {
+                            if (selectedMember) {
+                                handleAddAssignment(date, shiftId, selectedMember.id);
+                                // Optional: Clear selection after assignment?
+                                // setSelectedMember(null);
+                            }
+                        }}
                     />
                 </div>
             </div>

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Calendar, Users, History, Settings, Bell } from 'lucide-react';
-import { Group, Profile, AppRole } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { Calendar, Users, History, Settings, Bell, Shield } from 'lucide-react';
+import { Group, Profile, AppRole, GroupMember, ServiceRole } from '../../types';
+import { getGroupMembers } from '../../services/api';
 import CalendarView from '../CalendarView';
 import { INITIAL_SHIFTS, INITIAL_ASSIGNMENTS } from '../../services/dataService'; // Using mock data
 import ShiftInbox from '../ShiftInbox';
@@ -15,6 +16,28 @@ interface PlantonistaServiceViewProps {
 
 const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, currentUser }) => {
     const [activeTab, setActiveTab] = useState<'calendar' | 'members' | 'history' | 'settings' | 'notifications'>('calendar');
+
+    // Members State
+    const [members, setMembers] = useState<GroupMember[]>([]);
+    const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+
+    useEffect(() => {
+        if (activeTab === 'members') {
+            fetchMembers();
+        }
+    }, [activeTab]);
+
+    const fetchMembers = async () => {
+        setIsLoadingMembers(true);
+        try {
+            const data = await getGroupMembers(group.id);
+            setMembers(data);
+        } catch (error) {
+            console.error("Error fetching members:", error);
+        } finally {
+            setIsLoadingMembers(false);
+        }
+    };
 
     // ... 
 
@@ -48,6 +71,50 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                                 assignments={INITIAL_ASSIGNMENTS}
                             />
                         </div>
+                    </div>
+                );
+            case 'members':
+                return (
+                    <div className="p-4">
+                        <div className="flex items-center justify-between mb-4 px-2">
+                            <h3 className="text-lg font-bold">Membros do Serviço ({members.length})</h3>
+                        </div>
+
+                        {isLoadingMembers ? (
+                            <div className="flex justify-center py-10">
+                                <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                            </div>
+                        ) : members.length === 0 ? (
+                            <div className="text-center py-10 text-slate-400">
+                                Nenhum membro encontrado.
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {members.map(member => (
+                                    <div key={member.id} className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0">
+                                            <img src={member.profile.avatar_url} alt={member.profile.full_name} className="w-full h-full object-cover" />
+                                        </div>
+
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="font-bold text-slate-800 dark:text-slate-100 truncate">{member.profile.full_name}</h4>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase flex items-center gap-1 ${member.service_role === ServiceRole.ADMIN ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-300' :
+                                                    member.service_role === ServiceRole.ADMIN_AUX ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300' :
+                                                        'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-300'
+                                                    }`}>
+                                                    {member.service_role === ServiceRole.ADMIN && <Shield size={10} />}
+                                                    {member.service_role === ServiceRole.ADMIN ? 'ADM' : member.service_role === ServiceRole.ADMIN_AUX ? 'AUX' : 'Plantonista'}
+                                                </span>
+                                                {member.profile.crm && (
+                                                    <span className="text-xs text-slate-400 font-medium">CRM {member.profile.crm}</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 );
         }
