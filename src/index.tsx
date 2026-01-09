@@ -10,12 +10,16 @@ if (!rootElement) {
   throw new Error("Could not find root element to mount to");
 }
 
+import ErrorBoundary from './components/ErrorBoundary';
+
 const root = ReactDOM.createRoot(rootElement);
 console.log("DEBUG: index.tsx - Mounting App...");
 root.render(
   <React.StrictMode>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );

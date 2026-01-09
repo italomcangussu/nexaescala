@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Lock, Mail, Loader, AlertCircle, Eye, EyeOff, CheckCircle, Circle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-// Logo URL from Supabase Storage
-const LOGO_URL = 'https://vjlcfkkyfeteljutwfet.supabase.co/storage/v1/object/public/logo/Gemini_Generated_Image_yup0wjyup0wjyup0.png';
+// Local Assets
+const LOGO_LIGHT = '/assets/logo-1.png';
+const LOGO_DARK = '/assets/logo-2.png';
 
 // Error message translations
 const ERROR_MESSAGES: Record<string, string> = {
@@ -31,9 +34,6 @@ const checkPasswordStrength = (password: string): PasswordStrength => ({
     hasLowercase: /[a-z]/.test(password),
     hasSpecialChar: /[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\;'/`~]/.test(password),
 });
-
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 
 const LoginPage: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -153,46 +153,48 @@ const LoginPage: React.FC = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center p-4">
-            <div className="max-w-md w-full bg-white dark:bg-slate-800 rounded-3xl shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden animate-fade-in-up">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
+            {/* Background Elements */}
+            <div className="absolute inset-0 z-0">
+                <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] bg-emerald-400/20 dark:bg-emerald-900/10 rounded-full blur-[120px] animate-pulse-slow"></div>
+                <div className="absolute top-[40%] -right-[10%] w-[60%] h-[60%] bg-blue-400/20 dark:bg-blue-900/10 rounded-full blur-[120px] animate-pulse-slow delay-1000"></div>
+                <div className="absolute -bottom-[20%] left-[20%] w-[50%] h-[50%] bg-teal-400/20 dark:bg-teal-900/10 rounded-full blur-[100px] animate-pulse-slow delay-2000"></div>
+            </div>
 
-                {/* Header with Logo */}
-                <div className="relative bg-gradient-to-br from-primary/10 via-emerald-50 to-teal-50/50 dark:from-primary/20 dark:via-slate-800 dark:to-slate-800 p-8 text-center overflow-hidden">
-                    {/* Decorative Elements */}
-                    <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-400 via-primary to-teal-500"></div>
-                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl"></div>
-                    <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl"></div>
+            <div className="max-w-md w-full backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border border-white/50 dark:border-slate-700/50 rounded-3xl shadow-2xl shadow-slate-200/50 dark:shadow-black/50 overflow-hidden relative z-10 animate-fade-in-up">
 
-                    {/* Logo */}
-                    <div className="relative inline-flex p-3 bg-white dark:bg-slate-900 rounded-2xl shadow-lg shadow-emerald-100 dark:shadow-none mb-4">
+                {/* Header */}
+                <div className="pt-10 pb-6 px-8 text-center">
+                    <div className="flex justify-center mb-6">
                         <img
-                            src={LOGO_URL}
+                            src={LOGO_LIGHT}
                             alt="NexaEscala"
-                            className="w-16 h-16 object-contain"
-                            onError={(e) => {
-                                // Fallback if logo fails to load
-                                (e.target as HTMLImageElement).style.display = 'none';
-                            }}
+                            className="w-40 h-40 object-contain dark:hidden transform hover:scale-105 transition-transform duration-500"
+                        />
+                        <img
+                            src={LOGO_DARK}
+                            alt="NexaEscala"
+                            className="w-40 h-40 object-contain hidden dark:block transform hover:scale-105 transition-transform duration-500"
                         />
                     </div>
 
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-teal-600 bg-clip-text text-transparent">
+                    <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-emerald-800 to-slate-900 dark:from-white dark:via-emerald-400 dark:to-white tracking-tight mb-2">
                         NexaEscala
                     </h1>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-                        Gestão Inteligente de Plantões
+                    <p className="text-slate-500 dark:text-slate-400 font-medium">
+                        Gestão inteligente para sua equipe
                     </p>
                 </div>
 
-                {/* Form */}
-                <div className="p-8">
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-6 text-center">
-                        {forgotPassword ? 'Recuperar Senha' : (isSignUp ? 'Crie sua conta' : 'Bem-vindo de volta')}
+                {/* Form Section */}
+                <div className="p-8 pt-2">
+                    <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-6 text-center">
+                        {forgotPassword ? 'Recuperar Acesso' : (isSignUp ? 'Criar Nova Conta' : 'Acesse sua conta')}
                     </h2>
 
                     {/* Error Alert */}
                     {error && (
-                        <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-xl flex items-start gap-3 animate-fade-in-up">
+                        <div className="mb-4 p-4 bg-red-50/80 dark:bg-red-900/20 border border-red-100 dark:border-red-800/30 text-red-600 dark:text-red-400 text-sm rounded-xl flex items-start gap-3 animate-shake">
                             <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />
                             <span>{error}</span>
                         </div>
@@ -200,30 +202,30 @@ const LoginPage: React.FC = () => {
 
                     {/* Success Alert */}
                     {successMessage && (
-                        <div className="mb-4 p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-sm rounded-xl flex items-start gap-3 animate-fade-in-up">
+                        <div className="mb-4 p-4 bg-emerald-50/80 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 text-emerald-600 dark:text-emerald-400 text-sm rounded-xl flex items-start gap-3 animate-fade-in">
                             <CheckCircle size={20} className="flex-shrink-0 mt-0.5" />
                             <span>{successMessage}</span>
                         </div>
                     )}
 
-                    {/* Forgot Password Form */}
+                    {/* Forgot Password Flow */}
                     {forgotPassword ? (
                         <form onSubmit={handleForgotPassword} className="space-y-4">
-                            <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-4">
-                                Digite seu email e enviaremos um link para redefinir sua senha.
+                            <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-4 leading-relaxed">
+                                Digite seu email cadastrado para receber as instruções de recuperação de senha.
                             </p>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Email</label>
+                            <div className="group">
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1.5 ml-1">Email</label>
                                 <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                        <Mail size={18} className="text-slate-400" />
+                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors group-focus-within:text-emerald-500">
+                                        <Mail size={18} className="text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
                                     </div>
                                     <input
                                         type="email"
                                         required
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full pl-11 p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 dark:text-slate-200"
+                                        className="w-full pl-11 p-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 font-medium"
                                         placeholder="seu@email.com"
                                     />
                                 </div>
@@ -232,60 +234,60 @@ const LoginPage: React.FC = () => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/30 hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2"
                             >
-                                {loading ? <Loader className="animate-spin" size={20} /> : 'Enviar Link'}
+                                {loading ? <Loader className="animate-spin" size={20} /> : 'Enviar Link de Recuperação'}
                             </button>
 
                             <button
                                 type="button"
                                 onClick={() => { setForgotPassword(false); setError(null); setSuccessMessage(null); }}
-                                className="w-full py-3 text-slate-500 hover:text-emerald-600 font-medium transition-colors"
+                                className="w-full py-3 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium transition-colors text-sm"
                             >
                                 Voltar ao Login
                             </button>
                         </form>
                     ) : (
                         <form onSubmit={handleAuth} className="space-y-4">
-                            {/* Full Name (Sign Up only) */}
+                            {/* Sign Up Name Field */}
                             {isSignUp && (
-                                <div className="animate-fade-in-up">
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Nome Completo</label>
+                                <div className="animate-fade-in-up group">
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1.5 ml-1">Nome Completo</label>
                                     <input
                                         type="text"
                                         required
                                         value={fullName}
                                         onChange={(e) => setFullName(e.target.value)}
-                                        className="w-full p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 dark:text-slate-200"
-                                        placeholder="Dr. João Silva"
+                                        className="w-full p-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 font-medium"
+                                        placeholder="Ex: Ana Silva"
                                     />
                                 </div>
                             )}
 
-                            {/* Email */}
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Email</label>
+                            {/* Email Field */}
+                            <div className="group">
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1.5 ml-1">Email</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                        <Mail size={18} className="text-slate-400" />
+                                        <Mail size={18} className="text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
                                     </div>
                                     <input
                                         type="email"
                                         required
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full pl-11 p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 dark:text-slate-200"
+                                        className="w-full pl-11 p-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 font-medium"
                                         placeholder="seu@email.com"
                                     />
                                 </div>
                             </div>
 
-                            {/* Password */}
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Senha</label>
+                            {/* Password Field */}
+                            <div className="group">
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1.5 ml-1">Senha</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                        <Lock size={18} className="text-slate-400" />
+                                        <Lock size={18} className="text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
                                     </div>
                                     <input
                                         type={showPassword ? 'text' : 'password'}
@@ -294,45 +296,47 @@ const LoginPage: React.FC = () => {
                                         onChange={(e) => setPassword(e.target.value)}
                                         onFocus={() => isSignUp && setShowPasswordHints(true)}
                                         onBlur={() => setShowPasswordHints(false)}
-                                        className="w-full pl-11 pr-11 p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 dark:text-slate-200"
+                                        className="w-full pl-11 pr-11 p-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 font-medium"
                                         placeholder="••••••"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600"
+                                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                                     >
                                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 </div>
 
-                                {/* Password Requirements (Sign Up only) */}
+                                {/* Password Strength Requirements */}
                                 {isSignUp && showPasswordHints && (
-                                    <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg space-y-1.5 animate-fade-in-up">
+                                    <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-xl space-y-2 animate-fade-in-up">
                                         <PasswordRequirement met={passwordStrength.hasMinLength} text="Mínimo 8 caracteres" />
-                                        <PasswordRequirement met={passwordStrength.hasUppercase} text="Pelo menos uma letra maiúscula" />
-                                        <PasswordRequirement met={passwordStrength.hasLowercase} text="Pelo menos uma letra minúscula" />
-                                        <PasswordRequirement met={passwordStrength.hasSpecialChar} text="Pelo menos um caractere especial (!@#$%...)" />
+                                        <PasswordRequirement met={passwordStrength.hasUppercase} text="Letra maiúscula" />
+                                        <PasswordRequirement met={passwordStrength.hasLowercase} text="Letra minúscula" />
+                                        <PasswordRequirement met={passwordStrength.hasSpecialChar} text="Caractere especial" />
                                     </div>
                                 )}
 
                                 {/* Forgot Password Link */}
                                 {!isSignUp && !forgotPassword && (
-                                    <button
-                                        type="button"
-                                        onClick={() => { setForgotPassword(true); setError(null); setSuccessMessage(null); }}
-                                        className="mt-2 text-sm text-emerald-600 hover:text-emerald-700 font-medium"
-                                    >
-                                        Esqueceu a senha?
-                                    </button>
+                                    <div className="flex justify-end mt-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => { setForgotPassword(true); setError(null); setSuccessMessage(null); }}
+                                            className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-500 dark:hover:text-emerald-400 transition-colors"
+                                        >
+                                            Esqueceu a senha?
+                                        </button>
+                                    </div>
                                 )}
                             </div>
 
-                            {/* Submit Button */}
+                            {/* Main Action Button */}
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/30 hover:shadow-xl hover:shadow-emerald-600/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2"
                             >
                                 {loading ? <Loader className="animate-spin" size={20} /> : (isSignUp ? 'Criar Conta' : 'Entrar')}
                             </button>
@@ -343,17 +347,17 @@ const LoginPage: React.FC = () => {
                     {!forgotPassword && (
                         <div className="flex items-center my-6">
                             <div className="flex-1 border-t border-slate-200 dark:border-slate-700"></div>
-                            <span className="px-4 text-sm text-slate-400">ou</span>
+                            <span className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wide">ou</span>
                             <div className="flex-1 border-t border-slate-200 dark:border-slate-700"></div>
                         </div>
                     )}
 
-                    {/* Google Login Button */}
+                    {/* Google Login */}
                     {!forgotPassword && (
                         <button
                             onClick={handleGoogleLogin}
                             disabled={loading}
-                            className="w-full py-3.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-600 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-3"
+                            className="w-full py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-750 hover:border-slate-300 dark:hover:border-slate-600 transition-all flex items-center justify-center gap-3 shadow-sm hover:shadow"
                         >
                             <svg className="w-5 h-5" viewBox="0 0 24 24">
                                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -367,19 +371,25 @@ const LoginPage: React.FC = () => {
 
                     {/* Toggle Sign Up / Sign In */}
                     {!forgotPassword && (
-                        <div className="mt-6 text-center">
+                        <div className="mt-8 text-center">
                             <button
                                 onClick={() => {
                                     setIsSignUp(!isSignUp);
                                     setError(null);
                                 }}
-                                className="text-sm font-semibold text-slate-500 hover:text-primary transition-colors"
+                                className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                             >
-                                {isSignUp ? 'Já tem conta? Entrar' : 'Não tem conta? Cadastre-se'}
+                                {isSignUp ? 'Já tem uma conta? ' : 'Ainda não tem conta? '}
+                                <span className="font-bold underline decoration-2 decoration-transparent hover:decoration-current transition-all">
+                                    {isSignUp ? 'Faça Login' : 'Cadastre-se'}
+                                </span>
                             </button>
                         </div>
                     )}
                 </div>
+
+                {/* Decorative bottom bar */}
+                <div className="h-1.5 w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500"></div>
             </div>
         </div>
     );

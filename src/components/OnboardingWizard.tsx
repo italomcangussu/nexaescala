@@ -13,8 +13,9 @@ import {
     Sparkles
 } from 'lucide-react';
 
-// Logo URL from Supabase Storage
-const LOGO_URL = 'https://vjlcfkkyfeteljutwfet.supabase.co/storage/v1/object/public/logo/Gemini_Generated_Image_yup0wjyup0wjyup0.png';
+// Logo URLs from Supabase Storage
+const LOGO_LIGHT = 'https://vjlcfkkyfeteljutwfet.supabase.co/storage/v1/object/public/logo/logo1.PNG';
+const LOGO_DARK = 'https://vjlcfkkyfeteljutwfet.supabase.co/storage/v1/object/public/logo/logo2.PNG';
 
 interface OnboardingWizardProps {
     user: { id: string; email?: string };
@@ -143,7 +144,8 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
                 return (
                     <div className="text-center py-8 animate-fade-in-up">
                         <div className="inline-flex p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-lg shadow-emerald-100 dark:shadow-none mb-6">
-                            <img src={LOGO_URL} alt="NexaEscala" className="w-20 h-20 object-contain" />
+                            <img src={LOGO_LIGHT} alt="NexaEscala" className="w-20 h-20 object-contain dark:hidden" />
+                            <img src={LOGO_DARK} alt="NexaEscala" className="w-20 h-20 object-contain hidden dark:block" />
                         </div>
                         <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
                             Bem-vindo ao NexaEscala!

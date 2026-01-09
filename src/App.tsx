@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Lazy load pages for better performance
 const Dashboard = React.lazy(() => import('./pages/MainApp'));
@@ -25,7 +26,9 @@ const App: React.FC = () => {
                         path="/*"
                         element={
                             <ProtectedRoute>
-                                <Dashboard />
+                                <ErrorBoundary>
+                                    <Dashboard />
+                                </ErrorBoundary>
                             </ProtectedRoute>
                         }
                     />
