@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: 5 150 105; /* Emerald 600 */
+    --color-surface: 248 250 252; /* Slate 50 */
+    --color-surface-dark: 15 23 42; /* Slate 900 */
+  }
+}
