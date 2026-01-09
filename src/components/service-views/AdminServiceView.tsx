@@ -9,6 +9,7 @@ import ShiftInbox from '../ShiftInbox';
 import AddMemberModal from '../AddMemberModal';
 import RemoveMemberModal from '../RemoveMemberModal';
 import ServiceChat from '../ServiceChat';
+import RelatedServicesSection from './RelatedServicesSection';
 
 interface AdminServiceViewProps {
     group: Group;
@@ -91,6 +92,7 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                             currentUserRole={AppRole.GESTOR}
                             groupColor={group.color}
                             showAvailableShifts={false}
+                            groupId={group.id}
                         />
 
                         {/* Service Chat Section */}
@@ -304,6 +306,9 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                                 )}
                             </button>
                         </div>
+
+                        {/* Related Services */}
+                        <RelatedServicesSection group={group} currentUser={currentUser} />
 
                         {!isAux && (
                             <div className="pt-6 border-t border-slate-100 dark:border-slate-800">

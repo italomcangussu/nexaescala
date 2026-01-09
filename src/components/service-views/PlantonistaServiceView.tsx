@@ -32,6 +32,7 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                             currentUserRole={AppRole.PLANTONISTA}
                             groupColor={group.color}
                             showAvailableShifts={false}
+                            groupId={group.id}
                         />
 
                         {/* Service Chat Section */}

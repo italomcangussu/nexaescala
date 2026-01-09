@@ -284,3 +284,12 @@ export interface ChatMessage {
 }
 
 export type RecurrenceType = 'NONE' | 'WEEKLY' | 'BIWEEKLY';
+
+export interface GroupRelationship {
+  id: string;
+  source_group_id: string;
+  related_group_id: string;
+  relationship_type: string; // 'related', etc.
+  display_label: string | null;
+  related_group?: Group; // Hydrated
+}

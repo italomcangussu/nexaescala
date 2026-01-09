@@ -1,7 +1,8 @@
 import React from 'react';
 import { X, Clock, Users, ArrowRightLeft, Trash2, Edit2 } from 'lucide-react';
-import { Shift, ShiftAssignment, AppRole, Profile } from '../types';
+import { Shift, ShiftAssignment, AppRole, Profile, Group } from '../types';
 import ShiftExchangeModal from './ShiftExchangeModal'; // Import new modal
+import { getRelatedShiftsForDay } from '../services/api';
 
 interface DayDetailSheetProps {
   isOpen: boolean;
@@ -25,6 +26,31 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
   groupId
 }) => {
   const [exchangeAssignment, setExchangeAssignment] = React.useState<any | null>(null);
+  const [relatedShifts, setRelatedShifts] = React.useState<{
+    group: Group;
+    label: string | null;
+    assignments: ShiftAssignment[];
+  }[]>([]);
+  const [isLoadingRelated, setIsLoadingRelated] = React.useState(false);
+
+  React.useEffect(() => {
+    if (isOpen && date && groupId) {
+      fetchRelatedShifts();
+    }
+  }, [isOpen, date, groupId]);
+
+  const fetchRelatedShifts = async () => {
+    if (!date || !groupId) return;
+    setIsLoadingRelated(true);
+    try {
+      const data = await getRelatedShiftsForDay(groupId, date);
+      setRelatedShifts(data);
+    } catch (error) {
+      console.error('Failed to fetch related shifts', error);
+    } finally {
+      setIsLoadingRelated(false);
+    }
+  };
 
   if (!isOpen || !date) return null;
 
@@ -184,6 +210,59 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
             })
           )}
         </div>
+
+
+        {/* Related Services Section */}
+        {relatedShifts.length > 0 && (
+          <div className="px-6 pb-10 bg-background dark:bg-slate-950">
+            <div className="h-px bg-slate-200 dark:bg-slate-800 mb-6" />
+            <h3 className="text-lg font-bold mb-4 text-slate-800 dark:text-slate-200 flex items-center gap-2">
+              <Users size={18} className="text-primary" />
+              Serviços Relacionados
+            </h3>
+
+            {isLoadingRelated ? (
+              <div className="flex justify-center py-4">
+                <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {relatedShifts.map((rel, index) => (
+                  <div key={index} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                    <div className="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                      <div>
+                        <h4 className="font-bold text-slate-700 dark:text-slate-200">{rel.group.name}</h4>
+                        {rel.label && (
+                          <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full mt-0.5 inline-block">
+                            {rel.label}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-slate-400 font-medium">{rel.group.institution}</span>
+                    </div>
+
+                    <div className="p-3 grid gap-3">
+                      {rel.assignments.length > 0 ? rel.assignments.map(assign => (
+                        <div key={assign.id} className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
+                            <img src={assign.profile?.avatar_url} alt="" className="w-full h-full object-cover" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-slate-700 dark:text-slate-300">{assign.profile?.full_name}</p>
+                            <p className="text-xs text-slate-400">CRM {assign.profile?.crm}</p>
+                          </div>
+                        </div>
+                      )) : (
+                        <p className="text-sm text-slate-400 italic px-2">Nenhum plantonista escalado.</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
 
       {exchangeAssignment && groupId && (
@@ -198,7 +277,8 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
             // onClose(); // Optional: close sheet too
           }}
         />
-      )}
+      )
+      }
 
       <style>{`
         .animate-slide-up {

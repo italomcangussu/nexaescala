@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 import { Shift, ShiftAssignment, AppRole, Profile } from '../types';
-// import DayDetailSheet from './DayDetailSheet';
+import DayDetailSheet from './DayDetailSheet';
 import ShiftCard from './ShiftCard';
 
 interface CalendarViewProps {
@@ -11,9 +11,10 @@ interface CalendarViewProps {
   currentUserRole: AppRole;
   groupColor?: string;
   showAvailableShifts?: boolean;
+  groupId?: string; // Optional (e.g. for MainApp aggregated view)
 }
 
-const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, currentUser, currentUserRole, groupColor, showAvailableShifts = true }) => {
+const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, currentUser, currentUserRole, groupColor, showAvailableShifts = true, groupId }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
@@ -211,8 +212,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, curren
         </div>
       )}
 
-      {/* 
-      <DayDetailSheet 
+      <DayDetailSheet
         isOpen={!!selectedDate}
         onClose={() => setSelectedDate(null)}
         date={selectedDate}
@@ -220,8 +220,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, curren
         assignments={assignments}
         currentUser={currentUser}
         currentUserRole={currentUserRole}
-      /> 
-      */}
+        groupId={groupId}
+      />
     </div>
   );
 };

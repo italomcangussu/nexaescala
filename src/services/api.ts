@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { Profile, Group, Shift, ShiftAssignment, FinancialRecord, FinancialConfig, ServiceRole, ShiftExchange, TradeStatus, GroupMember, ChatMessage, ShiftPreset, TeamMember, AppRole } from '../types';
+import { Profile, Group, Shift, ShiftAssignment, FinancialRecord, FinancialConfig, ServiceRole, ShiftExchange, TradeStatus, GroupMember, ChatMessage, ShiftPreset, TeamMember, AppRole, GroupRelationship } from '../types';
 
 // --- PROFILES ---
 
@@ -832,4 +832,103 @@ export const sendGroupMessage = async (message: Partial<ChatMessage>): Promise<C
 
     if (error) throw error;
     return data as ChatMessage;
+};
+
+// --- RELATED SERVICES ---
+
+export const getRelatedGroups = async (groupId: string): Promise<GroupRelationship[]> => {
+    const { data, error } = await supabase
+        .from('group_relationships')
+        .select(`
+            *,
+            related_group:groups!related_group_id(*)
+        `)
+        .eq('source_group_id', groupId);
+
+    if (error) throw error;
+    return data as GroupRelationship[];
+};
+
+export const addRelatedGroup = async (
+    sourceGroupId: string,
+    relatedGroupId: string,
+    label?: string
+): Promise<void> => {
+    const { error } = await supabase
+        .from('group_relationships')
+        .insert({
+            source_group_id: sourceGroupId,
+            related_group_id: relatedGroupId,
+            display_label: label
+        });
+
+    if (error) throw error;
+};
+
+export const removeRelatedGroup = async (relationshipId: string): Promise<void> => {
+    const { error } = await supabase
+        .from('group_relationships')
+        .delete()
+        .eq('id', relationshipId);
+
+    if (error) throw error;
+};
+
+export const getAdminGroups = async (userId: string): Promise<Group[]> => {
+    const { data, error } = await supabase
+        .from('group_members')
+        .select(`
+            group:groups(*)
+        `)
+        .eq('profile_id', userId)
+        .in('service_role', [ServiceRole.ADMIN, ServiceRole.ADMIN_AUX]);
+
+    if (error) throw error;
+
+    // Extract groups from the join result
+    return data.map((item: any) => item.group) as Group[];
+};
+
+export const getRelatedShiftsForDay = async (groupId: string, date: string): Promise<{
+    group: Group;
+    label: string | null;
+    assignments: ShiftAssignment[];
+}[]> => {
+    // 1. Get related groups
+    const relationships = await getRelatedGroups(groupId);
+    if (relationships.length === 0) return [];
+
+    const results = await Promise.all(relationships.map(async (rel) => {
+        // 2. Get shifts for that group on that day
+        const { data: shifts } = await supabase
+            .from('shifts')
+            .select(`
+                id,
+                start_time,
+                assignments:shift_assignments(
+                    id,
+                    profile:profiles(*)
+                )
+            `)
+            .eq('group_id', rel.related_group_id)
+            .eq('date', date)
+            .eq('is_published', true);
+
+        if (!shifts || shifts.length === 0) return null;
+
+        // Flatten assignments from all shifts of the day
+        const allAssignments = shifts.flatMap(s => s.assignments);
+
+        return {
+            group: rel.related_group!,
+            label: rel.display_label,
+            assignments: allAssignments as unknown as ShiftAssignment[]
+        };
+    }));
+
+    return results.filter(Boolean) as {
+        group: Group;
+        label: string | null;
+        assignments: ShiftAssignment[];
+    }[];
 };
