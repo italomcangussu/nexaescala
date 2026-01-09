@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, Lock, Bell, Moon, HelpCircle, Info, ChevronRight, LogOut } from 'lucide-react';
+import { Settings, Lock, Bell, HelpCircle, Info, ChevronRight, LogOut } from 'lucide-react';
 import Logo from '../Logo';
 
 interface SettingsMainProps {
@@ -12,7 +12,6 @@ const SettingsMain: React.FC<SettingsMainProps> = ({ onNavigate, onSignOut }) =>
         { icon: Settings, label: 'Configurações', sub: 'Geral', view: 'main' }, // view 'main' is circular but here for structure if needed
         { icon: Lock, label: 'Privacidade', sub: 'Senhas e dados', view: 'privacy' },
         { icon: Bell, label: 'Notificações', sub: 'Sons e alertas', view: 'notifications' },
-        { icon: Moon, label: 'Aparência', sub: 'Tema claro/escuro', view: 'appearance' },
         { icon: HelpCircle, label: 'Ajuda', sub: 'FAQ e Suporte', view: 'help' }, // Placeholder view
         { icon: Info, label: 'Sobre', sub: 'Versão 1.0.2', view: 'about' }, // Placeholder view
     ];

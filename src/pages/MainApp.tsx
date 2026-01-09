@@ -19,7 +19,7 @@ import {
 } from '../services/dataService';
 import { useAuth } from '../context/AuthContext';
 import { useDashboardData } from '../hooks/useDashboardData';
-import { useTheme } from '../hooks/useTheme';
+
 import { Profile, Shift, ServiceRole, Group, FinancialConfig } from '../types';
 import { Search, FilePlus, Share2, X, Plus, Calendar, Users } from 'lucide-react';
 
@@ -28,8 +28,7 @@ const Dashboard: React.FC = () => {
   const [activeBottomTab, setActiveBottomTab] = useState('home');
   const [activeHomeTab, setActiveHomeTab] = useState<'shifts' | 'groups'>('shifts');
 
-  // Theme State
-  const { themeMode, setThemeMode } = useTheme('system');
+
 
   // Data State
   const { profile: currentUser, signOut } = useAuth();
@@ -241,8 +240,6 @@ const Dashboard: React.FC = () => {
       onTabChange={setActiveBottomTab}
       currentUser={currentUser}
       onProfileClick={() => handleProfileClick(currentUser.id)}
-      currentTheme={themeMode}
-      onThemeChange={setThemeMode}
       onSignOut={signOut}
     >
       <NotificationManager />

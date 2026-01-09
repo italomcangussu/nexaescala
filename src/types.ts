@@ -14,7 +14,7 @@ export enum ServiceRole {
   VISITANTE = 'VISITANTE'
 }
 
-export type ThemeOption = 'light' | 'dark' | 'system' | 'auto';
+export type ThemeOption = 'light';
 
 export enum TradeStatus {
   PENDING = 'PENDING',

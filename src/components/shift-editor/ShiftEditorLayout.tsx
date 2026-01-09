@@ -56,13 +56,14 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
                         }
                     }}
                     selectedMember={selectedMember}
-                    if (pendingShiftTarget) {
-                    handleAddAssignment(pendingShiftTarget.date, pendingShiftTarget.shiftId, member.profile.id);
-                setPendingShiftTarget(null);
+                    onSelectMember={(member) => {
+                        if (pendingShiftTarget) {
+                            handleAddAssignment(pendingShiftTarget.date, pendingShiftTarget.shiftId, member.profile.id);
+                            setPendingShiftTarget(null);
                         } else {
-                    setSelectedMember(member);
+                            setSelectedMember(member);
                         }
-                setIsSidebarOpen(false); // Close sidebar on selection for mobile flow
+                        setIsSidebarOpen(false); // Close sidebar on selection for mobile flow
                     }}
                 />
 

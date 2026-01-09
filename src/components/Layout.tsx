@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Home, Calendar, Users, Search, Bell, Landmark, Settings, LucideProps } from 'lucide-react';
-import { Profile, ThemeOption } from '../types';
+import { Profile } from '../types';
 import Logo from './Logo';
 import SettingsMenu from './SettingsMenu';
 
@@ -10,8 +10,6 @@ interface LayoutProps {
   onTabChange: (tab: string) => void;
   currentUser: Profile;
   onProfileClick: () => void;
-  currentTheme: ThemeOption;
-  onThemeChange: (theme: ThemeOption) => void;
   onSignOut: () => void;
 }
 
@@ -21,8 +19,6 @@ const Layout: React.FC<LayoutProps> = ({
   onTabChange,
   currentUser,
   onProfileClick,
-  currentTheme,
-  onThemeChange,
   onSignOut
 }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -113,8 +109,6 @@ const Layout: React.FC<LayoutProps> = ({
       <SettingsMenu
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
-        currentTheme={currentTheme}
-        onThemeChange={onThemeChange}
         onSignOut={onSignOut}
       />
     </div>

@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
-import { ThemeOption } from '../types';
 
 import SettingsMain from './settings/SettingsMain';
-import SettingsAppearance from './settings/SettingsAppearance';
 import SettingsNotifications from './settings/SettingsNotifications';
 import SettingsPrivacy from './settings/SettingsPrivacy';
 import SettingsPassword from './settings/SettingsPassword';
@@ -14,8 +12,6 @@ import SettingsPrivacyPolicy from './settings/SettingsPrivacyPolicy';
 interface SettingsMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  currentTheme: ThemeOption;
-  onThemeChange: (theme: ThemeOption) => void;
   onSignOut: () => void;
 }
 
@@ -27,11 +23,10 @@ type SettingsView =
   | 'account_edit'
   | 'privacy_policy'
   | 'delete_account'
-  | 'appearance'
   | 'help'
   | 'about';
 
-const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, currentTheme, onThemeChange, onSignOut }) => {
+const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onSignOut }) => {
   const [showContent, setShowContent] = useState(false);
   const [currentView, setCurrentView] = useState<SettingsView>('main');
 
@@ -53,8 +48,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, currentThe
     switch (currentView) {
       case 'main':
         return <SettingsMain onNavigate={(view) => setCurrentView(view as SettingsView)} onSignOut={onSignOut} />;
-      case 'appearance':
-        return <SettingsAppearance currentTheme={currentTheme} onThemeChange={onThemeChange} onBack={() => setCurrentView('main')} />;
+
       case 'notifications':
         return <SettingsNotifications onBack={() => setCurrentView('main')} />;
       case 'privacy':
