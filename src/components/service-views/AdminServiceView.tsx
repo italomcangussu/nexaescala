@@ -34,7 +34,7 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
     const [isSavingSettings, setIsSavingSettings] = useState(false);
 
     // Filter shifts
-    const groupShifts = INITIAL_SHIFTS.filter(s => s.group_id === group.id || Math.random() > 0.5);
+    const groupShifts = INITIAL_SHIFTS.filter(s => s.group_id === group.id);
 
     useEffect(() => {
         if (activeTab === 'members') {
