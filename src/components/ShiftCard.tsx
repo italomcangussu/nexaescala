@@ -42,7 +42,8 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
     orb1: 'from-indigo-900/60 to-purple-900/20',
     orb2: 'bg-indigo-900/30',
     editBtnHover: 'hover:text-indigo-400 hover:bg-slate-800',
-    divider: 'border-slate-800'
+    divider: 'border-slate-800',
+    buttonBg: 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-900/40 hover:shadow-indigo-800/50'
   } : {
     // Day Shift Styles (Adaptive)
     container: 'bg-white dark:bg-slate-800 border-emerald-50 dark:border-slate-700 shadow-card dark:shadow-none',
@@ -54,7 +55,8 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
     orb1: 'from-emerald-100/40 to-teal-50/20 dark:from-emerald-900/20 dark:to-teal-900/10 group-hover:from-emerald-200/40',
     orb2: 'bg-green-50/50 dark:bg-green-900/20',
     editBtnHover: 'hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-slate-700',
-    divider: 'border-slate-50 dark:border-slate-700'
+    divider: 'border-slate-50 dark:border-slate-700',
+    buttonBg: 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200 hover:shadow-emerald-300 dark:shadow-none'
   };
 
   return (
@@ -168,7 +170,7 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
 
               {/* Premium Button with Shimmer Effect - Adjusted for Night */}
               <button
-                className={`relative overflow-hidden group/btn flex items-center px-5 py-2.5 rounded-xl text-white shadow-lg active:scale-95 transition-all duration-300 ${isNightShift ? 'bg-gradient-to-r from-indigo-600 to-purple-600 shadow-indigo-900/40 hover:shadow-indigo-800/50' : 'bg-gradient-to-r from-emerald-500 to-green-400 shadow-emerald-200 hover:shadow-emerald-300 dark:shadow-none'}`}
+                className={`relative overflow-hidden group/btn flex items-center px-5 py-2.5 rounded-xl text-white shadow-lg active:scale-95 transition-all duration-300 ${cardStyles.buttonBg}`}
               >
                 <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer"></div>
                 <ArrowRightLeft size={14} className="mr-2 group-hover/btn:rotate-180 transition-transform duration-500" />
