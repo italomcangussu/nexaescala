@@ -73,8 +73,8 @@ const createInitialState = (currentUser: Profile): ServiceEditorState => ({
 
     // Step 2: Shifts - Default presets
     shiftPresets: [
-        { id: 'default-1', code: 'DT', start_time: '07:00', end_time: '19:00' },
-        { id: 'default-2', code: 'NT', start_time: '19:00', end_time: '07:00' },
+        { id: 'default-1', code: 'MT', start_time: '07:00', end_time: '19:00', quantity_needed: 1 },
+        { id: 'default-2', code: 'SN', start_time: '19:00', end_time: '07:00', quantity_needed: 1 },
     ],
 
     // Step 3: Team - Owner always included
@@ -367,8 +367,6 @@ export const useServiceEditor = (
                 return !validateField('shiftPresets', state.shiftPresets);
             case 3:
                 return true; // Team always has at least owner
-            case 4:
-                return true; // Generation is optional
             default:
                 return false;
         }
@@ -420,7 +418,7 @@ export const useServiceEditor = (
     const actions = {
         // Navigation
         nextStep: () => {
-            if (validateStep(state.step) && state.step < 4) {
+            if (validateStep(state.step) && state.step < 3) {
                 dispatch({ type: 'SET_STEP', step: state.step + 1 });
             }
         },
@@ -586,23 +584,27 @@ export const useServiceEditor = (
                         team: state.team,
                     });
 
-                    // Generate shifts for selected months
-                    const selectedMonths = state.selectedMonths
-                        .filter(m => m.selected)
-                        .map(m => ({ year: m.year, month: m.month }));
+                    // Generate shifts for NEXT Month automatically
+                    const now = new Date();
+                    // Target next month
+                    const targetDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-                    if (selectedMonths.length > 0) {
-                        await generateShiftsForGroup(
-                            resultGroup.id,
-                            selectedMonths,
-                            state.shiftPresets.map(p => ({
-                                code: p.code,
-                                start_time: p.start_time,
-                                end_time: p.end_time,
-                            })),
-                            state.quantityPerShift
-                        );
-                    }
+                    const nextMonth = {
+                        year: targetDate.getFullYear(),
+                        month: targetDate.getMonth()
+                    };
+
+                    await generateShiftsForGroup(
+                        resultGroup.id,
+                        [nextMonth],
+                        state.shiftPresets.map(p => ({
+                            code: p.code,
+                            start_time: p.start_time,
+                            end_time: p.end_time,
+                            quantity_needed: p.quantity_needed || 2
+                        })),
+                        2 // Fallback quantity (though presets should handle it)
+                    );
                 } else {
                     await updateServiceComplete(
                         state.groupId!,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Profile, ServiceRole, ShiftPreset, Group, AppRole } from '../types';
-import { createService, addGroupMember, searchInstitutions, searchProfiles, createShift } from '../services/api';
+import { createService, addGroupMember, searchInstitutions, searchProfiles, createShift, createShiftPresetsBulk } from '../services/api';
 
 export const useServiceCreation = (currentUser: Profile, onFinish: (group?: Group, navigate?: boolean) => void) => {
     const [step, setStep] = useState(1);
@@ -12,8 +12,8 @@ export const useServiceCreation = (currentUser: Profile, onFinish: (group?: Grou
 
     // Step 2: Shifts
     const [shifts, setShifts] = useState<ShiftPreset[]>([
-        { id: '1', code: 'DT', start_time: '07:00', end_time: '19:00' },
-        { id: '2', code: 'NT', start_time: '19:00', end_time: '07:00' },
+        { id: '1', code: 'MT', start_time: '07:00', end_time: '19:00', quantity_needed: 1 },
+        { id: '2', code: 'SN', start_time: '19:00', end_time: '07:00', quantity_needed: 1 },
     ]);
 
     // Step 3: Team
@@ -137,11 +137,22 @@ export const useServiceCreation = (currentUser: Profile, onFinish: (group?: Grou
 
             await Promise.all(memberPromises);
 
-            // 4. Generate Shifts for Current Month
-            // Get current month details
+            // 3.1. Save Shift Presets
+            await createShiftPresetsBulk(newGroup.id, shifts.map(s => ({
+                code: s.code,
+                start_time: s.start_time,
+                end_time: s.end_time,
+                quantity_needed: s.quantity_needed ?? 1
+            })));
+
+            // 4. Generate Shifts for NEXT Month
+            // Get next month details
             const now = new Date();
-            const year = now.getFullYear();
-            const month = now.getMonth();
+            // Create a date for the 1st of the next month to avoid edge cases (e.g. Jan 31 -> Feb 28/29)
+            const targetDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+            const year = targetDate.getFullYear();
+            const month = targetDate.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
             const shiftPromises: Promise<any>[] = [];
@@ -157,7 +168,7 @@ export const useServiceCreation = (currentUser: Profile, onFinish: (group?: Grou
                         date: dateStr,
                         start_time: preset.start_time,
                         end_time: preset.end_time,
-                        quantity_needed: 2, // Default quantity, could be configurable
+                        quantity_needed: preset.quantity_needed || 2, // Use preset quantity
                         is_published: false // Draft mode
                     }));
                 }
@@ -165,7 +176,27 @@ export const useServiceCreation = (currentUser: Profile, onFinish: (group?: Grou
 
             await Promise.all(shiftPromises);
 
-            setCreatedGroup(newGroup);
+            // Construct the group object with members for the UI
+            const createdGroupWithMembers: Group = {
+                ...newGroup,
+                members: team.map((t, index) => {
+                    // Map ServiceRole to AppRole
+                    let appRole = AppRole.MEDICO;
+                    if (t.role === ServiceRole.ADMIN) appRole = AppRole.GESTOR;
+                    if (t.role === ServiceRole.ADMIN_AUX) appRole = AppRole.AUXILIAR;
+
+                    return {
+                        id: `temp-member-${index}`, // We don't have the real ID yet, but that's okay for UI
+                        group_id: newGroup.id,
+                        profile: t.profile,
+                        role: appRole,
+                        service_role: t.role,
+                        joined_at: new Date().toISOString()
+                    };
+                })
+            };
+
+            setCreatedGroup(createdGroupWithMembers);
             setShowCompletion(true);
         } catch (err: any) {
             console.error('Error creating service:', err);

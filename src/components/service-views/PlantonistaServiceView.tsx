@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Users, History, Settings, Bell, Shield } from 'lucide-react';
+import { Calendar, Users, History, Settings, Bell, Shield, LogOut, Info, ClipboardList } from 'lucide-react';
 import { Group, Profile, AppRole, GroupMember, ServiceRole, Shift, ShiftAssignment } from '../../types';
 import { getGroupMembers, getShifts, getAssignments } from '../../services/api';
 import CalendarView from '../CalendarView';
@@ -84,6 +84,7 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                             groupColor={group.color}
                             showAvailableShifts={false}
                             groupId={group.id}
+                            userServiceRole={group.user_role}
                         />
 
                         {/* Service Chat Section */}
@@ -143,6 +144,83 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                                 ))}
                             </div>
                         )}
+                    </div>
+                );
+            case 'history':
+                return (
+                    <div className="p-6">
+                        <div className="flex items-center gap-2 mb-6">
+                            <ClipboardList className="text-primary" size={24} />
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Log de Atividades</h3>
+                        </div>
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-8 text-center">
+                            <History size={48} className="mx-auto text-slate-200 dark:text-slate-700 mb-4" />
+                            <p className="text-slate-500 dark:text-slate-400 font-medium">Nenhuma atividade recente registrada.</p>
+                            <p className="text-xs text-slate-400 mt-1">As alterações na escala e equipe aparecerão aqui.</p>
+                        </div>
+                    </div>
+                );
+            case 'settings':
+                return (
+                    <div className="p-6 space-y-6">
+                        <div className="flex items-center gap-2 mb-2">
+                            <Settings className="text-primary" size={24} />
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Ajustes do Serviço</h3>
+                        </div>
+
+                        {/* Info Card */}
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 shadow-sm">
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg" style={{ backgroundColor: group.color || '#3b82f6' }}>
+                                    {group.name.charAt(0)}
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-slate-800 dark:text-slate-100">{group.name}</h4>
+                                    <p className="text-xs text-slate-500">{group.institution}</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-3 pt-3 border-t border-slate-50 dark:border-slate-800">
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-slate-500">Seu Vínculo</span>
+                                    <span className="font-bold text-slate-700 dark:text-slate-200">Plantonista</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-slate-500">Membros na Equipe</span>
+                                    <span className="font-bold text-slate-700 dark:text-slate-200">{members.length}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="space-y-3">
+                            <button className="w-full flex items-center justify-between p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 hover:bg-slate-50 transition-colors group">
+                                <div className="flex items-center gap-3">
+                                    <Bell size={20} className="text-slate-400 group-hover:text-primary" />
+                                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Notificações do Grupo</span>
+                                </div>
+                                <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    if (confirm('Deseja realmente sair deste serviço? Você precisará de um novo convite para retornar.')) {
+                                        alert('Funcionalidade de saída em desenvolvimento.');
+                                    }
+                                }}
+                                className="w-full flex items-center gap-3 p-4 bg-red-50 dark:bg-red-900/10 rounded-2xl border border-red-100 dark:border-red-900/20 text-red-600 hover:bg-red-100 transition-colors"
+                            >
+                                <LogOut size={20} />
+                                <span className="text-sm font-bold">Sair do Serviço</span>
+                            </button>
+                        </div>
+
+                        <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 flex gap-3">
+                            <Info size={20} className="text-primary shrink-0 mt-0.5" />
+                            <p className="text-xs text-primary/80 leading-relaxed">
+                                Apenas administradores podem alterar o nome, cor ou configurações financeiras deste serviço.
+                            </p>
+                        </div>
                     </div>
                 );
         }

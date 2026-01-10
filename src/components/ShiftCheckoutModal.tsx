@@ -9,7 +9,7 @@ interface ShiftCheckoutModalProps {
    onConfirm: (data: any) => void;
 }
 
-const ShiftCheckoutModal: React.FC<ShiftCheckoutModalProps> = ({ config, onClose, onConfirm }) => {
+const ShiftCheckoutModal: React.FC<ShiftCheckoutModalProps> = ({ shift, config, onClose, onConfirm }) => {
 
    const [productionQty, setProductionQty] = useState<number>(0);
    const [extraValue, setExtraValue] = useState<number>(0);
@@ -36,7 +36,7 @@ const ShiftCheckoutModal: React.FC<ShiftCheckoutModalProps> = ({ config, onClose
                      <DollarSign size={32} className="text-white" />
                   </div>
                   <h2 className="text-2xl font-bold">Fim de Plantão!</h2>
-                  <p className="text-emerald-100 text-sm">Vamos fechar a conta do dia?</p>
+                  <p className="text-emerald-100 text-sm">{shift.institution_name} • {new Date(shift.date).toLocaleDateString('pt-BR')}</p>
                </div>
                <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 text-white transition-colors">
                   <X size={18} />
@@ -155,7 +155,9 @@ const ShiftCheckoutModal: React.FC<ShiftCheckoutModalProps> = ({ config, onClose
                      extraValue,
                      extraDesc,
                      grossTotal,
-                     netTotal
+                     netTotal,
+                     fixed_earnings: fixedEarnings,
+                     production_value_unit: config.production_value_unit
                   })}
                   className="w-full py-4 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primaryDark active:scale-95 transition-all flex items-center justify-center gap-2"
                >

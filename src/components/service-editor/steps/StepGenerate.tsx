@@ -115,8 +115,8 @@ const StepGenerate: React.FC<StepGenerateProps> = ({
                             type="button"
                             onClick={() => onToggleMonth(monthOpt.year, monthOpt.month)}
                             className={`p-3 rounded-xl border-2 text-left transition-all ${monthOpt.selected
-                                    ? 'bg-primary/10 border-primary text-primary font-bold'
-                                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-primary/50'
+                                ? 'bg-primary/10 border-primary text-primary font-bold'
+                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-primary/50'
                                 }`}
                         >
                             <div className="flex items-center gap-2">
@@ -142,7 +142,7 @@ const StepGenerate: React.FC<StepGenerateProps> = ({
                         </div>
                         <div className="text-right">
                             <p className="text-2xl font-bold text-primary">{totalShifts.toLocaleString()}</p>
-                            <p className="text-xs text-slate-400">{totalSlots.toLocaleString()} vagas</p>
+                            <p className="text-xs text-slate-400">{totalSlots.toLocaleString()} Plantonistas</p>
                         </div>
                     </div>
                 </div>

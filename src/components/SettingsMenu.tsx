@@ -8,6 +8,8 @@ import SettingsPassword from './settings/SettingsPassword';
 import SettingsAccount from './settings/SettingsAccount';
 import SettingsDeleteAccount from './settings/SettingsDeleteAccount';
 import SettingsPrivacyPolicy from './settings/SettingsPrivacyPolicy';
+import SettingsHelp from './settings/SettingsHelp';
+import SettingsAbout from './settings/SettingsAbout';
 
 interface SettingsMenuProps {
   isOpen: boolean;
@@ -61,6 +63,10 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onSignOut 
         return <SettingsPrivacyPolicy onBack={() => setCurrentView('privacy')} onDeleteAccount={() => setCurrentView('delete_account')} />;
       case 'delete_account':
         return <SettingsDeleteAccount onBack={() => setCurrentView('privacy')} onCloseMenu={onClose} />;
+      case 'help':
+        return <SettingsHelp onBack={() => setCurrentView('main')} />;
+      case 'about':
+        return <SettingsAbout onBack={() => setCurrentView('main')} />;
       default:
         return <SettingsMain onNavigate={(view) => setCurrentView(view as SettingsView)} onSignOut={onSignOut} />;
     }

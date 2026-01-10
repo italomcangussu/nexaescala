@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Group, ServiceRole, Profile } from '../types';
 // Cleaned imports
-import { X, Settings, LogOut, Users } from 'lucide-react';
+import { X, Settings, LogOut, Users, Calendar } from 'lucide-react';
 import AdminServiceView from './service-views/AdminServiceView';
 import PlantonistaServiceView from './service-views/PlantonistaServiceView';
 import { getGroupMembers } from '../services/api';
@@ -10,9 +10,10 @@ interface ServiceDetailViewProps {
   group: Group;
   currentUser: Profile;
   onClose: () => void;
+  onOpenScaleEditor?: (group: Group) => void;
 }
 
-const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUser, onClose }) => {
+const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUser, onClose, onOpenScaleEditor }) => {
   const isAdmin = group.user_role === ServiceRole.ADMIN || group.user_role === ServiceRole.ADMIN_AUX;
   const isAux = group.user_role === ServiceRole.ADMIN_AUX;
   const isPlantonista = group.user_role === ServiceRole.PLANTONISTA;
@@ -61,6 +62,15 @@ const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUse
               <LogOut size={18} />
             </button>
           )}
+          {isAdmin && onOpenScaleEditor && (
+            <button
+              onClick={() => onOpenScaleEditor(group)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-100 transition-colors font-bold text-xs"
+            >
+              <Calendar size={14} />
+              Editor de Escala
+            </button>
+          )}
           {isAdmin && !isAux && (
             <button className="p-2 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-300 rounded-full hover:bg-slate-100 transition-colors">
               <Settings size={18} />
@@ -75,7 +85,12 @@ const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUse
       {/* Content based on Role */}
       <div className="flex-1 overflow-hidden relative bg-slate-50 dark:bg-slate-950">
         {(group.user_role === ServiceRole.ADMIN || group.user_role === ServiceRole.ADMIN_AUX) ? (
-          <AdminServiceView group={group} currentUser={currentUser} isAux={group.user_role === ServiceRole.ADMIN_AUX} />
+          <AdminServiceView
+            group={group}
+            currentUser={currentUser}
+            isAux={group.user_role === ServiceRole.ADMIN_AUX}
+            onOpenEditor={onOpenScaleEditor}
+          />
         ) : (
           <PlantonistaServiceView group={group} currentUser={currentUser} />
         )}

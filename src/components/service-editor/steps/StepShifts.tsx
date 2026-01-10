@@ -43,7 +43,7 @@ const StepShifts: React.FC<StepShiftsProps> = ({
 
             {/* Shift List */}
             <div className="space-y-3">
-                {shifts.map((shift, index) => (
+                {shifts.map((shift) => (
                     <div
                         key={shift.id}
                         className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-slate-700 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow group"
@@ -65,7 +65,7 @@ const StepShifts: React.FC<StepShiftsProps> = ({
                                     <span>{shift.end_time}</span>
                                 </div>
                                 <p className="text-xs text-slate-400 mt-0.5">
-                                    Turno #{index + 1}
+                                    Nº de Plantonistas: {shift.quantity_needed || 1}
                                 </p>
                             </div>
                         </div>
@@ -106,8 +106,8 @@ const StepShifts: React.FC<StepShiftsProps> = ({
             {/* Tips */}
             <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700/50">
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                    <span className="font-bold text-primary">💡 Dica:</span> Use siglas curtas como "DT" (Diurno), "NT" (Noturno),
-                    "SD" (Sobreaviso Dia). Os horários podem ultrapassar meia-noite.
+                    <span className="font-bold text-primary">💡 Dica:</span> Use siglas curtas como "T" (Tarde), "M" (Manhã),
+                    "MT", "SN". Os horários podem ultrapassar meia-noite.
                 </p>
             </div>
         </div>

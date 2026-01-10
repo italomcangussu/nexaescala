@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Users, Settings, Grid, Bell, Shield, UserPlus, UserMinus, Save, Palette } from 'lucide-react';
+import { Calendar, Users, Settings, Grid, Bell, Shield, UserPlus, UserMinus, Save, Palette, History, ClipboardList } from 'lucide-react';
 import { Group, Profile, GroupMember, ServiceRole, AppRole } from '../../types';
 import CalendarView from '../CalendarView';
-import { INITIAL_SHIFTS, INITIAL_ASSIGNMENTS } from '../../services/dataService';
-import { getGroupMembers, deleteGroup, updateGroup } from '../../services/api';
-import ShiftEditor from '../shift-editor/ShiftEditor';
+import { getGroupMembers, deleteGroup, updateGroup, getShifts, getAssignments, addGroupMember } from '../../services/api';
+import { Shift, ShiftAssignment } from '../../types';
 import ShiftInbox from '../ShiftInbox';
 import AddMemberModal from '../AddMemberModal';
 import RemoveMemberModal from '../RemoveMemberModal';
@@ -15,14 +14,19 @@ interface AdminServiceViewProps {
     group: Group;
     currentUser: Profile;
     isAux?: boolean; // If true, disable some features
+    onOpenEditor?: (group: Group) => void;
 }
 
-const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser, isAux = false }) => {
-    const [activeTab, setActiveTab] = useState<'calendar' | 'editor' | 'members' | 'settings' | 'notifications'>('calendar');
+const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser, isAux = false, onOpenEditor }) => {
+    const [activeTab, setActiveTab] = useState<'calendar' | 'editor' | 'members' | 'settings' | 'notifications' | 'history'>('calendar');
 
-    // Members State
+    // Data State
     const [members, setMembers] = useState<GroupMember[]>([]);
-    const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+    const [groupShifts, setGroupShifts] = useState<Shift[]>([]);
+    const [groupAssignments, setGroupAssignments] = useState<ShiftAssignment[]>([]);
+    const [isLoadingData, setIsLoadingData] = useState(false);
+
+    // Modals State
     const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
     const [isRemoveMemberModalOpen, setIsRemoveMemberModalOpen] = useState(false);
 
@@ -32,24 +36,52 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
     const [editColor, setEditColor] = useState(group.color || '#3b82f6');
     const [isSavingSettings, setIsSavingSettings] = useState(false);
 
-    // Filter shifts
-    const groupShifts = INITIAL_SHIFTS.filter(s => s.group_id === group.id);
-
     useEffect(() => {
-        if (activeTab === 'members') {
-            fetchMembers();
+        loadData();
+    }, [group.id]);
+
+    const loadData = async () => {
+        setIsLoadingData(true);
+        try {
+            const memberPromise = getGroupMembers(group.id);
+            const shiftsPromise = getShifts(group.id);
+
+            const [membersData, shiftsData] = await Promise.all([memberPromise, shiftsPromise]);
+
+            setMembers(membersData);
+            setGroupShifts(shiftsData);
+
+            const shiftIds = shiftsData.map(s => s.id);
+            if (shiftIds.length > 0) {
+                const assignmentsData = await getAssignments(shiftIds);
+                setGroupAssignments(assignmentsData);
+            }
+        } catch (error) {
+            console.error("Error fetching admin view data:", error);
+        } finally {
+            setIsLoadingData(false);
         }
-    }, [activeTab]);
+    };
 
     const fetchMembers = async () => {
-        setIsLoadingMembers(true);
+        // Kept for modal callbacks
         try {
             const data = await getGroupMembers(group.id);
             setMembers(data);
         } catch (error) {
             console.error("Error fetching members:", error);
-        } finally {
-            setIsLoadingMembers(false);
+        }
+    };
+
+    const handleAddMember = async (profile: Profile) => {
+        try {
+            await addGroupMember(group.id, profile.id, AppRole.MEDICO, ServiceRole.PLANTONISTA);
+            setIsAddMemberModalOpen(false);
+            fetchMembers();
+            alert(`Dr(a). ${profile.full_name} adicionado(a) com sucesso!`);
+        } catch (error: any) {
+            console.error("Error adding member:", error);
+            alert(`Erro ao adicionar membro: ${error.message || 'Erro desconhecido'}`);
         }
     };
 
@@ -63,7 +95,10 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                     <Calendar size={20} />
                     <span className="text-[10px] font-bold">Escala</span>
                 </button>
-                <button onClick={() => setActiveTab('editor')} className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'editor' ? 'text-primary bg-primary/5' : 'text-slate-400'}`}>
+                <button
+                    onClick={() => onOpenEditor ? onOpenEditor(group) : setActiveTab('editor')}
+                    className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'editor' ? 'text-primary bg-primary/5' : 'text-slate-400'}`}
+                >
                     <Grid size={20} />
                     <span className="text-[10px] font-bold text-center">Editor de Escala</span>
                 </button>
@@ -81,39 +116,49 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                         <span className="text-[10px] font-bold">Gerenciar</span>
                     </button>
                 )}
+                <button onClick={() => setActiveTab('history')} className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'history' ? 'text-primary bg-primary/5' : 'text-slate-400'}`}>
+                    <History size={20} />
+                    <span className="text-[10px] font-bold">Log</span>
+                </button>
             </div>
 
             <div className="flex-1 overflow-y-auto relative">
                 {activeTab === 'calendar' && (
-                    <>
-                        <CalendarView
-                            shifts={groupShifts}
-                            assignments={INITIAL_ASSIGNMENTS}
-                            currentUser={currentUser}
-                            currentUserRole={AppRole.GESTOR}
-                            groupColor={group.color}
-                            showAvailableShifts={false}
-                            groupId={group.id}
-                        />
-
-                        {/* Service Chat Section */}
-                        <div className="flex-1 bg-white dark:bg-slate-900 border-t-2 border-slate-100 dark:border-slate-800 rounded-t-3xl -mt-4 relative z-10 px-4 pt-6 pb-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-                            <div className="mb-4 flex items-center gap-2">
-                                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">Chat do Serviço</h3>
-                                <span className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-600 rounded-full font-bold">Online</span>
+                    <div className="flex flex-col h-full">
+                        {isLoadingData ? (
+                            <div className="flex-1 flex flex-col items-center justify-center p-20 text-slate-400">
+                                <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
+                                <p className="font-medium">Carregando escala...</p>
                             </div>
-                            <ServiceChat
-                                group={group}
-                                currentUser={currentUser}
-                                shifts={groupShifts}
-                                assignments={INITIAL_ASSIGNMENTS}
-                            />
-                        </div>
-                    </>
-                )}
+                        ) : (
+                            <>
+                                <CalendarView
+                                    shifts={groupShifts}
+                                    assignments={groupAssignments}
+                                    currentUser={currentUser}
+                                    currentUserRole={AppRole.GESTOR}
+                                    groupColor={group.color}
+                                    showAvailableShifts={false}
+                                    groupId={group.id}
+                                    userServiceRole={group.user_role}
+                                />
 
-                {activeTab === 'editor' && (
-                    <ShiftEditor group={group} currentUser={currentUser} onBack={() => setActiveTab('calendar')} />
+                                {/* Service Chat Section */}
+                                <div className="flex-1 bg-white dark:bg-slate-900 border-t-2 border-slate-100 dark:border-slate-800 rounded-t-3xl -mt-4 relative z-10 px-4 pt-6 pb-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                                    <div className="mb-4 flex items-center gap-2">
+                                        <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">Chat do Serviço</h3>
+                                        <span className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-600 rounded-full font-bold">Online</span>
+                                    </div>
+                                    <ServiceChat
+                                        group={group}
+                                        currentUser={currentUser}
+                                        shifts={groupShifts}
+                                        assignments={groupAssignments}
+                                    />
+                                </div>
+                            </>
+                        )}
+                    </div>
                 )}
 
                 {activeTab === 'notifications' && (
@@ -146,14 +191,10 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
 
                         {/* Modals */}
                         <AddMemberModal
-                            group={group}
                             isOpen={isAddMemberModalOpen}
                             onClose={() => setIsAddMemberModalOpen(false)}
-                            onMemberAdded={() => {
-                                // Refresh members list
-                                fetchMembers();
-                            }}
-                            currentMemberIds={members.map(m => m.profile.id)}
+                            onAddMember={handleAddMember}
+                            existingMemberIds={members.map(m => m.profile.id)}
                         />
 
                         <RemoveMemberModal
@@ -167,7 +208,7 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                             currentUserId={currentUser.id}
                         />
 
-                        {isLoadingMembers ? (
+                        {isLoadingData ? (
                             <div className="flex justify-center py-10">
                                 <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
                             </div>
@@ -328,6 +369,20 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                                 </button>
                             </div>
                         )}
+                    </div>
+                )}
+
+                {activeTab === 'history' && (
+                    <div className="p-6">
+                        <div className="flex items-center gap-2 mb-6">
+                            <ClipboardList className="text-primary" size={24} />
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Log de Atividades</h3>
+                        </div>
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-8 text-center">
+                            <History size={48} className="mx-auto text-slate-200 dark:text-slate-700 mb-4" />
+                            <p className="text-slate-500 dark:text-slate-400 font-medium">Nenhuma atividade recente registrada.</p>
+                            <p className="text-xs text-slate-400 mt-1">Sendo um administrador, você verá aqui todas as trocas e edições feitas na escala.</p>
+                        </div>
                     </div>
                 )}
             </div>

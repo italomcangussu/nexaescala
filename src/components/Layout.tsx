@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Calendar, Users, Search, Bell, Landmark, Settings, LucideProps } from 'lucide-react';
+import { Home, Calendar, Search, Bell, Landmark, Settings, LucideProps } from 'lucide-react';
 import { Profile, Notification } from '../types';
 import { getNotifications, markNotificationAsRead } from '../services/api';
 import Logo from './Logo';
@@ -143,44 +143,39 @@ const Layout: React.FC<LayoutProps> = ({
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto pb-24 no-scrollbar bg-background dark:bg-slate-950 transition-colors duration-300">
+      <main className={`flex-1 overflow-y-auto no-scrollbar bg-background dark:bg-slate-950 transition-colors duration-300 ${activeTab === 'editor' ? 'pb-0' : 'pb-24'}`}>
         {children}
       </main>
 
-      {/* Bottom Navigation - Glassmorphism hint */}
-      <nav className="fixed bottom-0 w-full z-40 bg-surface/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-gray-100 dark:border-slate-800 pb-safe transition-colors duration-300">
-        <div className="flex justify-around items-center h-[72px] px-2">
+      {/* Bottom Navigation - Glassmorphism hint (Hidden in Editor) */}
+      {activeTab !== 'editor' && (
+        <nav className="fixed bottom-0 w-full z-40 bg-surface/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-gray-100 dark:border-slate-800 pb-safe transition-colors duration-300">
+          <div className="flex justify-around items-center h-[72px] px-2">
 
-          <NavButton
-            active={activeTab === 'home'}
-            onClick={() => onTabChange('home')}
-            icon={<Home size={24} />}
-            label="Início"
-          />
+            <NavButton
+              active={activeTab === 'home'}
+              onClick={() => onTabChange('home')}
+              icon={<Home size={24} />}
+              label="Início"
+            />
 
-          <NavButton
-            active={activeTab === 'calendar'}
-            onClick={() => onTabChange('calendar')}
-            icon={<Calendar size={24} />}
-            label="Escalas"
-          />
+            <NavButton
+              active={activeTab === 'calendar'}
+              onClick={() => onTabChange('calendar')}
+              icon={<Calendar size={24} />}
+              label="Escalas"
+            />
 
-          <NavButton
-            active={activeTab === 'finance'}
-            onClick={() => onTabChange('finance')}
-            icon={<Landmark size={24} />}
-            label="Financeiro"
-          />
+            <NavButton
+              active={activeTab === 'finance'}
+              onClick={() => onTabChange('finance')}
+              icon={<Landmark size={24} />}
+              label="Financeiro"
+            />
 
-          <NavButton
-            active={activeTab === 'colleagues'}
-            onClick={() => onTabChange('colleagues')}
-            icon={<Users size={24} />}
-            label="Colegas"
-          />
-
-        </div>
-      </nav>
+          </div>
+        </nav>
+      )}
 
       {/* Settings Overlay */}
       <SettingsMenu

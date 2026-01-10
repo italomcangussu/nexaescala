@@ -52,6 +52,7 @@ export interface FinancialConfig {
 
 export interface FinancialRecord {
   id: string;
+  user_id?: string;
   shift_id: string;
   date: string; // YYYY-MM-DD
   group_name: string;
@@ -135,6 +136,7 @@ export interface ShiftPreset {
   code: string; // ex: "NTN"
   start_time: string;
   end_time: string;
+  quantity_needed?: number;
 }
 
 export interface GroupMember {
@@ -223,6 +225,7 @@ export interface Shift {
   quantity_needed: number;
   is_published: boolean;
   institution_name?: string; // For UI
+  code?: string; // Shift Code (e.g. DT, NT)
 }
 
 export interface ShiftAssignment {

@@ -51,7 +51,7 @@ const ShiftModal: React.FC<ShiftModalProps> = ({
                         placeholder="DT"
                     />
                     <p className="text-xs text-slate-400 mt-2 text-center">
-                        Use siglas curtas como DT, NT, SD, NTN
+                        Use siglas curtas como T, M, MT, SN
                     </p>
                 </div>
 
@@ -83,11 +83,26 @@ const ShiftModal: React.FC<ShiftModalProps> = ({
 
                 {/* Duration Preview */}
                 {shift.start_time && shift.end_time && (
-                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 text-center">
-                        <p className="text-xs text-slate-400 mb-1">Duração aproximada</p>
-                        <p className="text-lg font-bold text-slate-700 dark:text-slate-200">
-                            {calculateDuration(shift.start_time, shift.end_time)}
-                        </p>
+                    <div className="flex gap-4">
+                        <div className="flex-1 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 text-center">
+                            <p className="text-xs text-slate-400 mb-1">Duração</p>
+                            <p className="text-lg font-bold text-slate-700 dark:text-slate-200">
+                                {calculateDuration(shift.start_time, shift.end_time)}
+                            </p>
+                        </div>
+                        <div className="flex-1">
+                            <label className="text-xs font-bold text-slate-500 uppercase block mb-2 text-center">
+                                Plantonistas
+                            </label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="20"
+                                value={shift.quantity_needed || 2}
+                                onChange={e => onUpdate('quantity_needed', e.target.value)}
+                                className="w-full p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-center font-bold text-xl dark:text-white border-2 border-transparent focus:border-primary outline-none transition-colors"
+                            />
+                        </div>
                     </div>
                 )}
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
-import { Shift, ShiftAssignment, AppRole, Profile } from '../types';
+import { Shift, ShiftAssignment, AppRole, Profile, ServiceRole, Group } from '../types';
 import DayDetailSheet from './DayDetailSheet';
 import ShiftCard from './ShiftCard';
 
@@ -12,9 +12,11 @@ interface CalendarViewProps {
   groupColor?: string;
   showAvailableShifts?: boolean;
   groupId?: string; // Optional (e.g. for MainApp aggregated view)
+  userServiceRole?: ServiceRole; // Role in specific group
+  userGroups?: Group[]; // For global view colors
 }
 
-const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, currentUser, currentUserRole, groupColor, showAvailableShifts = true, groupId }) => {
+const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, currentUser, currentUserRole, groupColor, showAvailableShifts = true, groupId, userServiceRole, userGroups }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
@@ -67,51 +69,85 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, curren
       checkDate.setHours(0, 0, 0, 0);
       const isPast = checkDate < today;
 
-      const dayShifts = visibleShifts.filter(s => s.date === dateStr);
+      const dayShifts = shifts.filter(s => s.date === dateStr);
+      const publishedDayShifts = dayShifts.filter(s => s.is_published);
 
-      // Check if user has a shift
-      const myShiftOnThisDay = dayShifts.some(s =>
-        assignments.some(a => a.shift_id === s.id && a.profile_id === currentUser.id)
+      // Check if user has a shift (on any shift of this day)
+      const myAssignment = assignments.find(a =>
+        a.profile_id === currentUser.id && dayShifts.some(s => s.id === a.shift_id)
       );
-
-      const hasAnyShift = dayShifts.length > 0;
+      const myShiftOnThisDay = !!myAssignment;
 
       const isSelected = selectedDate === dateStr;
-
-      // Check if this specific day cell is "Today"
       const isToday =
         day === today.getDate() &&
         currentDate.getMonth() === today.getMonth() &&
         currentDate.getFullYear() === today.getFullYear();
 
-      // Determine Style Classes based on state
-      let dayCircleClasses = "w-9 h-9 flex items-center justify-center text-sm font-bold rounded-full transition-all duration-200";
+      // --- VISUALIZATION LOGIC ---
+      let circleStyle: React.CSSProperties = {};
+      let circleClasses = "w-9 h-9 flex items-center justify-center text-sm font-bold rounded-full transition-all duration-200 relative";
+
+      const isAdminView = !!groupId && (userServiceRole === ServiceRole.ADMIN || userServiceRole === ServiceRole.ADMIN_AUX);
+      const shiftsForCalc = isAdminView ? dayShifts : publishedDayShifts;
+      const hasRelevantShifts = shiftsForCalc.length > 0;
 
       if (isSelected) {
-        dayCircleClasses += " text-white shadow-md scale-110 z-10";
-      } else if (myShiftOnThisDay) {
-        if (isPast) {
-          // Past Shift
-          dayCircleClasses += " border-2 bg-transparent";
+        circleClasses += " shadow-lg scale-110 z-10 text-slate-900 dark:text-white";
+        circleStyle = {
+          borderWidth: '3px',
+          borderColor: groupColor || 'var(--color-primary)',
+          backgroundColor: 'transparent'
+        };
+      } else if (isAdminView) {
+        // ADMIN / AUX LOGIC
+        if (hasRelevantShifts) {
+          const isFull = shiftsForCalc.every(s => {
+            const shiftAssigns = assignments.filter(a => a.shift_id === s.id);
+            return shiftAssigns.length >= (s.quantity_needed || 1);
+          });
+
+          circleClasses += " border-2";
+          if (isFull) {
+            circleClasses += " bg-emerald-100 dark:bg-emerald-900/30 border-emerald-500 text-slate-800 dark:text-slate-100";
+          } else {
+            circleClasses += " border-emerald-500 bg-transparent text-slate-600 dark:text-slate-400";
+          }
+
+          if (isPast) circleClasses += " opacity-40";
         } else {
-          // Future/Present Shift
-          dayCircleClasses += " text-white shadow-sm";
+          circleClasses += " text-slate-600 dark:text-slate-400";
         }
-      } else if (isToday) {
-        dayCircleClasses += " border-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100";
+      } else if (!groupId ? hasRelevantShifts : myShiftOnThisDay) {
+        // GLOBAL VIEW (All published) OR SERVICE VIEW (Only My Shifts)
+        const targetColor = groupId ? groupColor : (userGroups?.find(g => g.id === shiftsForCalc[0].group_id)?.color);
+        const finalColor = targetColor || 'var(--color-primary)';
+
+        circleStyle = {
+          borderWidth: '2px',
+          borderColor: finalColor,
+          backgroundColor: 'transparent'
+        };
+
+        if (isPast) circleClasses += " opacity-40";
+        circleClasses += " text-slate-600 dark:text-slate-400";
       } else {
-        dayCircleClasses += " text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800";
+        // NO SHIFTS OR OTHERS' SHIFTS (In Service View)
+        if (isToday) circleClasses += " border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800";
+        circleClasses += " text-slate-500 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800";
       }
 
-      const dayStyle = isSelected
-        ? { backgroundColor: groupColor || 'var(--color-primary)' }
-        : myShiftOnThisDay
-          ? {
-            borderColor: isPast ? groupColor || 'var(--color-primary)' : 'transparent',
-            backgroundColor: isPast ? 'transparent' : groupColor || 'var(--color-primary)',
-            color: isPast ? groupColor || 'var(--color-primary)' : 'white'
-          }
-          : isToday && groupColor ? { color: groupColor } : {};
+      // Available shifts (vacancies)
+      const hasAvailableVacancies = publishedDayShifts.some(s => {
+        const shiftAssigns = assignments.filter(a => a.shift_id === s.id);
+        return shiftAssigns.length < (s.quantity_needed || 1);
+      });
+
+      // Special detail for participating admin (only on visible shifts)
+      const showAdminPartDetail = isAdminView && myShiftOnThisDay && hasRelevantShifts;
+
+      // Show dot for other's shifts in Plantonista service view
+      const showOtherShiftDot = !!groupId && !isAdminView && !myShiftOnThisDay && hasRelevantShifts;
 
       days.push(
         <div
@@ -120,14 +156,26 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, curren
           className="flex flex-col items-center justify-start h-14 w-full cursor-pointer relative group"
         >
           {/* Day Number Container */}
-          <div className={dayCircleClasses} style={dayStyle}>
+          <div className={circleClasses} style={circleStyle}>
             {day}
+            {showAdminPartDetail && (
+              <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-white dark:bg-slate-900 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm z-20">
+                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+              </div>
+            )}
           </div>
 
-          {/* Secondary Indicators (Dots below number) */}
+          {/* Secondary Indicators (Dot below number) */}
           <div className="flex gap-1 mt-1.5 h-1.5">
-            {!myShiftOnThisDay && hasAnyShift && (
-              <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white/50' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
+            {hasAvailableVacancies && !isSelected && (
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_4px_rgba(59,130,246,0.5)]"></div>
+            )}
+            {showOtherShiftDot && !isSelected && (
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+            )}
+            {myShiftOnThisDay && !isAdminView && !isSelected && (
+              /* Pulse dot for my shift even with circle to give extra weight */
+              <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-pulse"></div>
             )}
           </div>
         </div>

@@ -223,6 +223,17 @@ export const updateFinancialRecordPaidStatus = async (recordId: string, isPaid: 
     if (error) throw error;
 };
 
+export const createFinancialRecord = async (record: Omit<FinancialRecord, 'id'>): Promise<FinancialRecord> => {
+    const { data, error } = await supabase
+        .from('financial_records')
+        .insert(record)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data as FinancialRecord;
+};
+
 // --- FINANCIAL CONFIG ---
 
 export const getFinancialConfig = async (userId: string, groupId: string): Promise<FinancialConfig | null> => {
@@ -231,19 +242,30 @@ export const getFinancialConfig = async (userId: string, groupId: string): Promi
         .select('*')
         .eq('user_id', userId)
         .eq('group_id', groupId)
-        .single();
+        .maybeSingle();
 
     if (error) return null;
     return data as FinancialConfig;
 };
 
-export const saveFinancialConfig = async (config: Partial<FinancialConfig> & { user_id: string; group_id: string }): Promise<void> => {
+export const saveFinancialConfig = async (userId: string, config: FinancialConfig): Promise<void> => {
     const { error } = await supabase
         .from('financial_configs')
-        .upsert(config, { onConflict: 'user_id,group_id' });
+        .upsert({
+            user_id: userId,
+            group_id: config.group_id,
+            contract_type: config.contract_type,
+            payment_model: config.payment_model,
+            fixed_value: config.fixed_value,
+            production_value_unit: config.production_value_unit,
+            tax_percent: config.tax_percent,
+            updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id,group_id' });
 
     if (error) throw error;
 };
+
+
 
 // --- GROUPS MANAGEMENT ---
 
@@ -398,6 +420,20 @@ export const deleteAssignment = async (assignmentId: string): Promise<void> => {
     if (error) throw error;
 };
 
+export const updateAssignment = async (assignmentId: string, updates: Partial<ShiftAssignment>): Promise<ShiftAssignment> => {
+    const { data, error } = await supabase
+        .from('shift_assignments')
+        .update(updates)
+        .eq('id', assignmentId)
+        .select('*, profile:profiles(*)')
+
+    if (error) throw error;
+    if (!data || data.length === 0) throw new Error('Assignment not found');
+
+    // Return first item (safest way to handle potential duplicate returns or weird states)
+    return data[0] as ShiftAssignment;
+};
+
 export const deleteGroup = async (groupId: string): Promise<void> => {
     // 1. Get all shifts for this group to delete their assignments
     const { data: shifts } = await supabase.from('shifts').select('id').eq('group_id', groupId);
@@ -435,7 +471,7 @@ export const deleteGroup = async (groupId: string): Promise<void> => {
     if (error) throw error;
 };
 
-// ... (existing code)
+
 
 export const searchInstitutions = async (query: string): Promise<string[]> => {
     if (!query || query.length < 2) return [];
@@ -724,7 +760,7 @@ const getDaysInMonth = (year: number, month: number): string[] => {
 export const generateShiftsForGroup = async (
     groupId: string,
     months: MonthSelection[],
-    presets: { code: string; start_time: string; end_time: string }[],
+    presets: { code: string; start_time: string; end_time: string; quantity_needed?: number }[],
     quantityPerShift: number
 ): Promise<number> => {
     if (months.length === 0 || presets.length === 0) return 0;
@@ -741,7 +777,7 @@ export const generateShiftsForGroup = async (
                     date: day,
                     start_time: preset.start_time,
                     end_time: preset.end_time,
-                    quantity_needed: quantityPerShift,
+                    quantity_needed: preset.quantity_needed || quantityPerShift,
                     is_published: false // Draft state until user publishes
                 });
             }

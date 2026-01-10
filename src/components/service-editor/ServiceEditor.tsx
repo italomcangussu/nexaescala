@@ -41,10 +41,10 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({
     const WizardProgress = () => (
         <div className="px-6 py-3 bg-slate-50/50 dark:bg-slate-950/50 border-b border-gray-100 dark:border-slate-800">
             <div className="flex items-center justify-between max-w-lg mx-auto">
-                {[1, 2, 3, 4].map(step => {
+                {[1, 2, 3].map(step => {
                     const isActive = state.step === step;
                     const isCompleted = state.step > step;
-                    const stepLabels = ['Info', 'Turnos', 'Equipe', 'Escala'];
+                    const stepLabels = ['Info', 'Turnos', 'Equipe'];
 
                     return (
                         <React.Fragment key={step}>
@@ -68,7 +68,7 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({
                                 </span>
                             </button>
 
-                            {step < 4 && (
+                            {step < 3 && (
                                 <div className={`flex-1 h-0.5 mx-1.5 rounded ${state.step > step ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'
                                     }`} />
                             )}
@@ -116,16 +116,6 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({
                         onUpdateRoles={actions.updateMemberRoles}
                         onRemoveMember={actions.removeMember}
                         onToggleRole={actions.toggleMemberRole}
-                    />
-                );
-            case 4:
-                return (
-                    <StepGenerate
-                        presets={state.shiftPresets}
-                        selectedMonths={state.selectedMonths}
-                        quantityPerShift={state.quantityPerShift}
-                        onToggleMonth={actions.toggleMonth}
-                        onQuantityChange={actions.setQuantityPerShift}
                     />
                 );
             default:
@@ -194,7 +184,7 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({
                                 <div />
                             )}
 
-                            {state.step < 4 ? (
+                            {state.step < 3 ? (
                                 <button
                                     type="button"
                                     onClick={actions.nextStep}

@@ -3,25 +3,23 @@ import Layout from '../components/Layout';
 import CalendarView from '../components/CalendarView';
 import ShiftCard from '../components/ShiftCard';
 import GroupCard from '../components/GroupCard';
-import SocialFeedView from '../components/SocialFeedView';
 import ProfileView from '../components/ProfileView';
 import EditProfileModal from '../components/EditProfileModal';
 import { ServiceEditor } from '../components/service-editor';
 import ServiceDetailView from '../components/ServiceDetailView';
+import ScaleEditorView from '../components/ScaleEditorView';
 import FinanceDashboard from '../components/FinanceDashboard';
 import ShiftCheckoutModal from '../components/ShiftCheckoutModal';
 import FinancialConfigModal from '../components/FinancialConfigModal';
 import NotificationManager from '../components/NotificationManager';
 import Logo from '../components/Logo';
-import {
-  MOCK_POSTS,
-  MOCK_FINANCIAL_CONFIGS
-} from '../services/dataService';
+
 import { useAuth } from '../context/AuthContext';
 import { useDashboardData } from '../hooks/useDashboardData';
 
 import { Profile, Shift, ServiceRole, Group, FinancialConfig } from '../types';
 import { Search, FilePlus, Share2, X, Plus, Calendar, Users } from 'lucide-react';
+import { getFinancialConfig, createFinancialRecord, saveFinancialConfig } from '../services/api';
 
 const Dashboard: React.FC = () => {
   // Navigation State
@@ -56,8 +54,14 @@ const Dashboard: React.FC = () => {
   // Finance States
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [checkoutShift, setCheckoutShift] = useState<Shift | null>(null);
+  const [checkoutConfig, setCheckoutConfig] = useState<FinancialConfig | null>(null);
   const [isFinConfigOpen, setIsFinConfigOpen] = useState(false);
   const [finConfigGroup, setFinConfigGroup] = useState<Group | null>(null);
+  const [finConfig, setFinConfig] = useState<FinancialConfig | null>(null);
+
+  // Navigation State for Editor
+  const [editorTargetGroup, setEditorTargetGroup] = useState<Group | null>(null);
+  const [editorInitialDate, setEditorInitialDate] = useState<Date | undefined>(undefined);
 
   // Guard clause - MUST be after all hooks
   if (!currentUser) return null;
@@ -95,34 +99,82 @@ const Dashboard: React.FC = () => {
   const handleFinishWizard = async (group?: Group, navigate?: boolean) => {
     await refresh();
     if (group && navigate) {
-      setSelectedService(group);
+      // Create date for next month (1st day) as service shifts are generated for next month
+      const now = new Date();
+      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+      setEditorTargetGroup(group);
+      setEditorInitialDate(nextMonth);
+    } else if (group) {
+      setSelectedService(group); // Just open detail
     }
     setIsWizardOpen(false);
   };
 
+  const handleOpenScaleEditor = (group: Group) => {
+    setEditorTargetGroup(group);
+    setEditorInitialDate(undefined); // Default to current date for existing services
+  };
+
   // Finance Handlers
-  const handleSimulateCheckout = () => {
-    // Find last unpaid shift from Mock for Demo
-    // In real app, user selects specific shifts
-    const lastShift = myShifts[0]; // Just picking first for demo
-    if (lastShift) {
-      setCheckoutShift(lastShift);
-      setIsCheckoutOpen(true);
+  const handleSimulateCheckout = async () => {
+    const lastShift = myShifts[0];
+    if (lastShift && currentUser) {
+      try {
+        const config = await getFinancialConfig(currentUser.id, lastShift.group_id);
+        if (config) {
+          setCheckoutConfig(config);
+          setCheckoutShift(lastShift);
+          setIsCheckoutOpen(true);
+        } else {
+          // If no config, open config modal first or show error
+          setFinConfigGroup(userGroups.find(g => g.id === lastShift.group_id) || null);
+          setIsFinConfigOpen(true);
+          alert("Por favor, configure seus honorários para este serviço primeiro.");
+        }
+      } catch (error) {
+        console.error("Error fetching checkout config:", error);
+      }
     } else {
       alert("Nenhum plantão recente encontrado para checkout.");
     }
   };
 
-  const handleSaveFinConfig = (config: FinancialConfig) => {
-    console.log("Saving Config:", config);
-    setIsFinConfigOpen(false);
-    // Ideally Refetch or optimistic update
+  const handleSaveFinConfig = async (config: FinancialConfig) => {
+    if (!currentUser) return;
+    try {
+      await saveFinancialConfig(currentUser.id, config);
+      setIsFinConfigOpen(false);
+      // Success
+    } catch (error) {
+      console.error("Error saving config:", error);
+    }
   };
 
-  const handleConfirmCheckout = (data: any) => {
-    console.log("Checkout Confirmed:", data);
-    setIsCheckoutOpen(false);
-    alert("Checkout realizado com sucesso (Simulação)!");
+  const handleConfirmCheckout = async (data: any) => {
+    if (!checkoutShift || !currentUser) return;
+
+    try {
+      await createFinancialRecord({
+        user_id: currentUser.id,
+        shift_id: checkoutShift.id,
+        date: checkoutShift.date,
+        group_name: checkoutShift.institution_name || 'Hospital',
+        fixed_earnings: data.fixed_earnings || 0,
+        production_quantity: data.productionQty,
+        production_earnings: (data.productionQty * (data.production_value_unit || 0)),
+        extras_value: data.extraValue,
+        extras_description: data.extraDesc,
+        gross_total: data.grossTotal,
+        net_total: data.netTotal,
+        is_paid: false
+      });
+      setIsCheckoutOpen(false);
+      alert("Checkout realizado com sucesso!");
+    } catch (error) {
+      console.error("Error saving checkout:", error);
+      alert("Erro ao salvar checkout.");
+    }
   };
 
   const renderHomeContent = () => {
@@ -221,21 +273,21 @@ const Dashboard: React.FC = () => {
   const renderContent = () => {
     switch (activeBottomTab) {
       case 'home': return renderHomeContent();
-      case 'calendar': return <CalendarView shifts={shifts} assignments={hydratedAssignments} currentUser={currentUser} currentUserRole={userRole} />;
-
+      case 'calendar': return <CalendarView shifts={shifts} assignments={hydratedAssignments} currentUser={currentUser} currentUserRole={userRole} userGroups={userGroups} />;
       case 'finance': return (
         <FinanceDashboard
           currentUser={currentUser}
-          userGroups={userGroups} // Passing fetched groups
+          userGroups={userGroups}
           onSimulateCheckout={handleSimulateCheckout}
-          onConfigureService={(group) => {
+          onConfigureService={async (group) => {
             setFinConfigGroup(group);
+            const config = await getFinancialConfig(currentUser.id, group.id);
+            setFinConfig(config);
             setIsFinConfigOpen(true);
           }}
         />
       );
 
-      case 'colleagues': return <SocialFeedView posts={MOCK_POSTS} profiles={profiles} currentUser={currentUser} onProfileClick={handleProfileClick} />;
       default: return null;
     }
   };
@@ -253,7 +305,7 @@ const Dashboard: React.FC = () => {
       {renderContent()}
 
       {/* FAB (Custom Logo + Plus) */}
-      {activeBottomTab !== 'colleagues' && (
+      {activeBottomTab !== 'editor' && (
         <div className="fixed bottom-24 right-4 z-50">
           <button
             onClick={() => setIsFabOpen(true)}
@@ -324,15 +376,20 @@ const Dashboard: React.FC = () => {
           group={selectedService}
           currentUser={currentUser}
           onClose={() => setSelectedService(null)}
+          onOpenScaleEditor={handleOpenScaleEditor}
         />
       )}
 
       {/* --- FINANCE MODALS --- */}
-      {isCheckoutOpen && checkoutShift && (
+      {isCheckoutOpen && checkoutShift && checkoutConfig && (
         <ShiftCheckoutModal
           shift={checkoutShift}
-          config={MOCK_FINANCIAL_CONFIGS['g1']} // Mocking G1 config for demo
-          onClose={() => setIsCheckoutOpen(false)}
+          config={checkoutConfig}
+          onClose={() => {
+            setIsCheckoutOpen(false);
+            setCheckoutShift(null);
+            setCheckoutConfig(null);
+          }}
           onConfirm={handleConfirmCheckout}
         />
       )}
@@ -340,15 +397,35 @@ const Dashboard: React.FC = () => {
       {isFinConfigOpen && finConfigGroup && (
         <FinancialConfigModal
           group={finConfigGroup}
-          onClose={() => setIsFinConfigOpen(false)}
+          onClose={() => {
+            setIsFinConfigOpen(false);
+            setFinConfig(null);
+          }}
           onSave={handleSaveFinConfig}
-          initialConfig={MOCK_FINANCIAL_CONFIGS[finConfigGroup.id]}
+          initialConfig={finConfig || undefined}
         />
       )}
 
       {/* Other Modals */}
       {viewingProfileId && <ProfileView profile={profiles.find(p => p.id === viewingProfileId) || currentUser} currentUser={currentUser} onBack={() => setViewingProfileId(null)} onEdit={() => setIsEditingProfile(true)} />}
       {isEditingProfile && <EditProfileModal profile={currentUser} onClose={() => setIsEditingProfile(false)} onSave={handleSaveProfile} />}
+
+      {/* Global Scale Editor Page Overlay */}
+      {(editorTargetGroup || activeBottomTab === 'editor') && (
+        <ScaleEditorView
+          shifts={shifts}
+          assignments={hydratedAssignments}
+          currentUser={currentUser}
+          userGroups={userGroups}
+          onBack={() => {
+            setEditorTargetGroup(null);
+            setEditorInitialDate(undefined);
+            if (activeBottomTab === 'editor') setActiveBottomTab('home');
+          }}
+          initialGroup={editorTargetGroup || userGroups[0]}
+          initialDate={editorInitialDate}
+        />
+      )}
     </Layout>
   );
 };

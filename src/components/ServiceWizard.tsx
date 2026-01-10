@@ -145,6 +145,9 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
                               <Clock size={16} className="text-slate-400" />
                               {shift.start_time} - {shift.end_time}
                             </div>
+                            <div className="text-xs text-slate-500 font-medium">
+                              {shift.quantity_needed || 2} Plantonistas
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -410,28 +413,40 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
                     className="w-full mt-1 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-center font-semibold dark:text-white border border-transparent focus:border-primary outline-none"
                   />
                 </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-500 uppercase">Fim</label>
-                  <input
-                    type="time"
-                    value={editingShift?.end_time || ''}
-                    onChange={e => setEditingShift(prev => ({ ...prev, end_time: e.target.value }))}
-                    className="w-full mt-1 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-center font-semibold dark:text-white border border-transparent focus:border-primary outline-none"
-                  />
-                </div>
               </div>
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase">Fim</label>
+                <input
+                  type="time"
+                  value={editingShift?.end_time || ''}
+                  onChange={e => setEditingShift(prev => ({ ...prev, end_time: e.target.value }))}
+                  className="w-full mt-1 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-center font-semibold dark:text-white border border-transparent focus:border-primary outline-none"
+                />
+              </div>
+            </div>
 
-              <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowShiftModal(false)} className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl">Voltar</button>
-                <button
-                  type="button"
-                  onClick={saveShift}
-                  disabled={!editingShift?.code || !editingShift?.start_time || !editingShift?.end_time}
-                  className="flex-1 py-3 bg-primary text-white font-bold rounded-xl disabled:opacity-50"
-                >
-                  {editingShift?.id ? 'Salvar' : 'Adicionar'}
-                </button>
-              </div>
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase">Plantonistas</label>
+              <input
+                type="number"
+                min="1"
+                max="50"
+                value={editingShift?.quantity_needed || 2}
+                onChange={e => setEditingShift(prev => ({ ...prev, quantity_needed: parseInt(e.target.value) || 2 }))}
+                className="w-full mt-1 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl font-bold text-center text-xl tracking-widest border border-transparent focus:border-primary outline-none dark:text-white"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <button type="button" onClick={() => setShowShiftModal(false)} className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl">Voltar</button>
+              <button
+                type="button"
+                onClick={saveShift}
+                disabled={!editingShift?.code || !editingShift?.start_time || !editingShift?.end_time}
+                className="flex-1 py-3 bg-primary text-white font-bold rounded-xl disabled:opacity-50"
+              >
+                {editingShift?.id ? 'Salvar' : 'Adicionar'}
+              </button>
             </div>
           </div>
         )}

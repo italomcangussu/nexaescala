@@ -23,10 +23,10 @@ const StepCompletion: React.FC<StepCompletionProps> = ({
         <div className="w-full flex flex-col items-center justify-center p-8 text-center animate-fade-in-up">
             {/* Success Icon */}
             <div className="relative mb-6">
-                <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-white shadow-2xl shadow-emerald-500/30 animate-bounce-slow">
-                    <CheckCircle size={48} strokeWidth={2} />
+                <div className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-emerald-500/30 animate-bounce-slow z-10 relative">
+                    <CheckCircle size={48} strokeWidth={3} />
                 </div>
-                <div className="absolute inset-0 bg-emerald-400/20 rounded-full animate-ping"></div>
+                <div className="absolute inset-0 bg-emerald-500/30 rounded-full animate-ping"></div>
             </div>
 
             {/* Title */}

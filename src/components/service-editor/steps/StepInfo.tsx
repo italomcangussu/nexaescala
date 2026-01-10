@@ -11,6 +11,21 @@ interface StepInfoProps {
     onOpenInstitutionModal: () => void;
 }
 
+const PRESET_COLORS = [
+    '#EF4444', // Red
+    '#F97316', // Orange
+    '#F59E0B', // Amber
+    '#84CC16', // Lime
+    '#10B981', // Emerald
+    '#06B6D4', // Cyan
+    '#3B82F6', // Blue
+    '#6366F1', // Indigo
+    '#8B5CF6', // Violet
+    '#D946EF', // Fuchsia
+    '#EC4899', // Pink
+    '#64748B', // Slate
+];
+
 const StepInfo: React.FC<StepInfoProps> = ({
     serviceName,
     institution,
@@ -87,32 +102,28 @@ const StepInfo: React.FC<StepInfoProps> = ({
                 )}
             </div>
 
-            {/* Color */}
+            {/* Color Palette */}
             <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">
-                    Cor do Grupo (Visualização pessoal)
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-3">
+                    Cor do Grupo
                 </label>
-                <div className="flex items-center gap-4 p-3 bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700">
-                    <div className="relative">
-                        <input
-                            type="color"
-                            value={color}
-                            onChange={e => onUpdate('color', e.target.value)}
-                            className="w-14 h-14 rounded-xl cursor-pointer border-none shadow-lg"
-                        />
-                        <div
-                            className="absolute inset-0 rounded-xl pointer-events-none"
-                            style={{ boxShadow: `0 4px 20px ${color}40` }}
-                        ></div>
-                    </div>
-                    <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-600 dark:text-slate-300">{color.toUpperCase()}</p>
-                        <p className="text-xs text-slate-400">Clique para alterar</p>
-                    </div>
-                    <div
-                        className="w-20 h-8 rounded-lg"
-                        style={{ backgroundColor: color }}
-                    ></div>
+                <div className="grid grid-cols-6 sm:grid-cols-12 gap-2">
+                    {PRESET_COLORS.map((presetColor) => (
+                        <button
+                            key={presetColor}
+                            type="button"
+                            onClick={() => onUpdate('color', presetColor)}
+                            className={`w-full aspect-square rounded-full transition-all flex items-center justify-center ${color === presetColor
+                                    ? 'ring-2 ring-offset-2 ring-primary scale-110 dark:ring-offset-slate-900'
+                                    : 'hover:scale-110 opacity-70 hover:opacity-100'
+                                }`}
+                            style={{ backgroundColor: presetColor }}
+                        >
+                            {color === presetColor && (
+                                <div className="w-2 h-2 bg-white rounded-full shadow-sm" />
+                            )}
+                        </button>
+                    ))}
                 </div>
             </div>
 

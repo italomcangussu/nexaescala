@@ -13,28 +13,32 @@ const LoadingFallback = () => (
     </div>
 );
 
+import { ToastProvider } from './context/ToastContext';
+
 const App: React.FC = () => {
     console.log("DEBUG: App.tsx - Rendering...");
     return (
-        <BrowserRouter>
-            <Suspense fallback={<LoadingFallback />}>
-                <Routes>
-                    <Route path="/login" element={<LoginPage />} />
+        <ToastProvider>
+            <BrowserRouter>
+                <Suspense fallback={<LoadingFallback />}>
+                    <Routes>
+                        <Route path="/login" element={<LoginPage />} />
 
-                    {/* Protected Routes */}
-                    <Route
-                        path="/*"
-                        element={
-                            <ProtectedRoute>
-                                <ErrorBoundary>
-                                    <Dashboard />
-                                </ErrorBoundary>
-                            </ProtectedRoute>
-                        }
-                    />
-                </Routes>
-            </Suspense>
-        </BrowserRouter>
+                        {/* Protected Routes */}
+                        <Route
+                            path="/*"
+                            element={
+                                <ProtectedRoute>
+                                    <ErrorBoundary>
+                                        <Dashboard />
+                                    </ErrorBoundary>
+                                </ProtectedRoute>
+                            }
+                        />
+                    </Routes>
+                </Suspense>
+            </BrowserRouter>
+        </ToastProvider>
     );
 };
 

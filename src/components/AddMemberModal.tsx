@@ -1,125 +1,123 @@
 import React, { useState, useEffect } from 'react';
-import { X, Search, UserPlus } from 'lucide-react';
-import { Profile, ServiceRole, Group } from '../types';
-import { searchProfiles, addGroupMember } from '../services/api';
+import { X, Search, UserPlus, Check } from 'lucide-react';
+import { Profile } from '../types';
+import { searchProfiles } from '../services/api';
 
 interface AddMemberModalProps {
-    group: Group;
     isOpen: boolean;
     onClose: () => void;
-    onMemberAdded: () => void;
-    currentMemberIds: string[];
+    onAddMember: (profile: Profile) => void;
+    existingMemberIds: string[];
 }
 
-const AddMemberModal: React.FC<AddMemberModalProps> = ({ group, isOpen, onClose, onMemberAdded, currentMemberIds }) => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [searchResults, setSearchResults] = useState<Profile[]>([]);
+const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, onAddMember, existingMemberIds }) => {
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState<Profile[]>([]);
     const [isSearching, setIsSearching] = useState(false);
-    const [addingId, setAddingId] = useState<string | null>(null);
 
     useEffect(() => {
-        const delayDebounceFn = setTimeout(async () => {
-            if (searchTerm.length >= 2) {
+        const timer = setTimeout(async () => {
+            if (query.length >= 2) {
                 setIsSearching(true);
                 try {
-                    const results = await searchProfiles(searchTerm);
-                    // Filter out existing members
-                    setSearchResults(results.filter(p => !currentMemberIds.includes(p.id)));
+                    const data = await searchProfiles(query);
+                    // Filter out users who are already members
+                    const availableData = data.filter(p => !existingMemberIds.includes(p.id));
+                    setResults(availableData);
                 } catch (error) {
-                    console.error("Search error:", error);
+                    console.error("Search failed", error);
                 } finally {
                     setIsSearching(false);
                 }
             } else {
-                setSearchResults([]);
+                setResults([]);
             }
-        }, 500);
+        }, 400);
 
-        return () => clearTimeout(delayDebounceFn);
-    }, [searchTerm, currentMemberIds]);
-
-    const handleAdd = async (profile: Profile) => {
-        setAddingId(profile.id);
-        try {
-            // Default to MEDICO (AppRole) and PLANTONISTA (ServiceRole) when adding via this simplified UI
-            // 'role' column likely corresponds to AppRole enum ('medico', etc)
-            await addGroupMember(group.id, profile.id, 'medico', ServiceRole.PLANTONISTA);
-            onMemberAdded();
-            // Remove from results to prevent double add
-            setSearchResults(prev => prev.filter(p => p.id !== profile.id));
-        } catch (error: any) {
-            console.error("Error adding member:", error);
-            alert(`Erro ao adicionar membro: ${error.message || 'Erro desconhecido'}`);
-        } finally {
-            setAddingId(null);
-        }
-    };
+        return () => clearTimeout(timer);
+    }, [query, existingMemberIds]);
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
-                <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <h3 className="font-bold text-lg">Adicionar Membro</h3>
-                    <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                        <X size={20} />
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl flex flex-col max-h-[80vh] border border-slate-100 dark:border-slate-800">
+
+                {/* Header */}
+                <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Adicionar Membro</h2>
+                        <p className="text-xs text-slate-500 font-medium">Busque usuários para integrar à equipe</p>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+                    >
+                        <X size={20} className="text-slate-400" />
                     </button>
                 </div>
 
-                <div className="p-4">
-                    <div className="relative mb-6">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                {/* Search Input */}
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/50">
+                    <div className="relative">
+                        <Search size={20} className="absolute left-3 top-3.5 text-slate-400" />
                         <input
                             type="text"
-                            placeholder="Buscar por nome, email ou CRM..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-primary/50 text-base"
+                            placeholder="Nome, CRM ou E-mail..."
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            className="w-full bg-white dark:bg-slate-900 border-none rounded-xl py-3 pl-11 pr-4 shadow-sm text-sm focus:ring-2 focus:ring-primary/20 outline-none dark:text-slate-200 placeholder-slate-400"
                             autoFocus
                         />
                     </div>
+                </div>
 
-                    <div className="max-h-[300px] overflow-y-auto min-h-[100px]">
-                        {isSearching ? (
-                            <div className="flex justify-center py-8">
-                                <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-                            </div>
-                        ) : searchResults.length > 0 ? (
-                            <div className="space-y-2">
-                                {searchResults.map(profile => (
-                                    <div key={profile.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
-                                        <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0">
-                                            {profile.avatar_url && <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">{profile.full_name}</p>
-                                            <p className="text-xs text-slate-500 truncate">{profile.crm ? `CRM ${profile.crm}` : profile.email}</p>
-                                        </div>
-                                        <button
-                                            onClick={() => handleAdd(profile)}
-                                            disabled={addingId === profile.id}
-                                            className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            {addingId === profile.id ? (
-                                                <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                                            ) : (
-                                                <UserPlus size={20} />
-                                            )}
-                                        </button>
+                {/* Results List */}
+                <div className="flex-1 overflow-y-auto p-2">
+                    {isSearching ? (
+                        <div className="py-8 text-center text-slate-400 text-sm">Buscando...</div>
+                    ) : results.length > 0 ? (
+                        <div className="space-y-1">
+                            {results.map(profile => (
+                                <button
+                                    key={profile.id}
+                                    onClick={() => onAddMember(profile)}
+                                    className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors text-left group"
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shrink-0">
+                                        {profile.avatar_url ? (
+                                            <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-slate-300 text-slate-500 font-bold">
+                                                {profile.full_name?.[0]}
+                                            </div>
+                                        )}
                                     </div>
-                                ))}
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm truncate">{profile.full_name}</h4>
+                                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                                            {profile.crm && <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-400 font-mono">{profile.crm}</span>}
+                                            {profile.specialty && <span className="truncate">{profile.specialty}</span>}
+                                        </div>
+                                    </div>
+                                    <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <UserPlus size={16} />
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    ) : query.length >= 2 ? (
+                        <div className="py-12 text-center">
+                            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-300">
+                                <Search size={24} />
                             </div>
-                        ) : searchTerm.length >= 2 ? (
-                            <div className="text-center py-8 text-slate-400 text-sm">
-                                Nenhum usuário encontrado.
-                            </div>
-                        ) : (
-                            <div className="text-center py-8 text-slate-400 text-sm">
-                                Digite para buscar novos membros.
-                            </div>
-                        )}
-                    </div>
+                            <p className="text-slate-500 text-sm">Nenhum usuário encontrado</p>
+                        </div>
+                    ) : (
+                        <div className="py-12 text-center">
+                            <p className="text-slate-400 text-sm">Digite para pesquisar novos membros</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
