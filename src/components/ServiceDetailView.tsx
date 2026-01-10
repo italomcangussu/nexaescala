@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Group, ServiceRole, Profile } from '../types';
 // Cleaned imports
-import { X, Settings, LogOut, Users, Calendar } from 'lucide-react';
+import { X, LogOut, Users } from 'lucide-react';
 import AdminServiceView from './service-views/AdminServiceView';
 import PlantonistaServiceView from './service-views/PlantonistaServiceView';
-import { getGroupMembers } from '../services/api';
+import { getGroupMembers, getShifts } from '../services/api';
 
 interface ServiceDetailViewProps {
   group: Group;
@@ -15,21 +15,32 @@ interface ServiceDetailViewProps {
 
 const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUser, onClose, onOpenScaleEditor }) => {
   const isAdmin = group.user_role === ServiceRole.ADMIN || group.user_role === ServiceRole.ADMIN_AUX;
-  const isAux = group.user_role === ServiceRole.ADMIN_AUX;
   const isPlantonista = group.user_role === ServiceRole.PLANTONISTA;
 
   const [memberCount, setMemberCount] = useState<number>(0);
+  const [groupStatus, setGroupStatus] = useState<'Vazia' | 'Em rascunho' | 'Publicada'>('Vazia');
 
   useEffect(() => {
-    const fetchCount = async () => {
+    const fetchData = async () => {
       try {
-        const members = await getGroupMembers(group.id);
+        const [members, shifts] = await Promise.all([
+          getGroupMembers(group.id),
+          getShifts(group.id)
+        ]);
         setMemberCount(members.length);
+
+        if (shifts.length === 0) {
+          setGroupStatus('Vazia');
+        } else if (shifts.some(s => !s.is_published)) {
+          setGroupStatus('Em rascunho');
+        } else {
+          setGroupStatus('Publicada');
+        }
       } catch (error) {
-        console.error("Failed to fetch member count", error);
+        console.error("Failed to fetch service detail data", error);
       }
     };
-    fetchCount();
+    fetchData();
   }, [group.id]);
 
   return (
@@ -50,9 +61,18 @@ const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUse
               <Users size={12} className="text-slate-500 dark:text-slate-400" />
               <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">{memberCount} membros</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">Ativo</span>
+            <div className="flex items-center gap-2">
+              <div className="relative flex">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${groupStatus === 'Publicada' ? 'bg-emerald-500' :
+                    groupStatus === 'Em rascunho' ? 'bg-amber-500' : 'bg-slate-400'
+                  }`}></span>
+                <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${groupStatus === 'Publicada' ? 'bg-emerald-500' :
+                    groupStatus === 'Em rascunho' ? 'bg-amber-500' : 'bg-slate-400'
+                  }`}></span>
+              </div>
+              <span className={`text-[10px] font-bold uppercase tracking-wider ${groupStatus === 'Publicada' ? 'text-emerald-600 dark:text-emerald-400' :
+                  groupStatus === 'Em rascunho' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500'
+                }`}>{groupStatus}</span>
             </div>
           </div>
         </div>
@@ -60,20 +80,6 @@ const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUse
           {isPlantonista && (
             <button className="p-2 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full hover:bg-red-100 transition-colors" title="Sair do Serviço">
               <LogOut size={18} />
-            </button>
-          )}
-          {isAdmin && onOpenScaleEditor && (
-            <button
-              onClick={() => onOpenScaleEditor(group)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-100 transition-colors font-bold text-xs"
-            >
-              <Calendar size={14} />
-              Editor de Escala
-            </button>
-          )}
-          {isAdmin && !isAux && (
-            <button className="p-2 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-300 rounded-full hover:bg-slate-100 transition-colors">
-              <Settings size={18} />
             </button>
           )}
           <button onClick={onClose} className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 rounded-full hover:bg-slate-200 transition-colors">

@@ -4,7 +4,21 @@ import { Shift, Profile, AppRole, Group, ShiftAssignment, ServiceRole, GroupMemb
 import ShiftAssignmentModal from './ShiftAssignmentModal';
 import AddMemberModal from './AddMemberModal';
 import ScaleMonthSelector from './ScaleMonthSelector';
-import { getShifts, getAssignments, createAssignment, deleteAssignment, updateAssignment, getGroupMembers, addGroupMember, createService } from '../services/api';
+import ScalePublicationView from './ScalePublicationView';
+import {
+    getShifts,
+    getAssignments,
+    updateAssignment,
+    publishShifts,
+    sendGroupMessage,
+    deleteAssignment,
+    createAssignment,
+    deleteShift,
+    updateShift,
+    getGroupMembers,
+    addGroupMember,
+    createService
+} from '../services/api';
 import { useToast } from '../context/ToastContext';
 
 interface ScaleEditorViewProps {
@@ -49,6 +63,7 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
     const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
     const [selectionData, setSelectionData] = useState<{ date: Date; shiftLabel: string; startTime: string } | null>(null);
     const [swapSource, setSwapSource] = useState<ShiftAssignment | null>(null); // State for Swap Action
+    const [showPublicationReview, setShowPublicationReview] = useState(false);
 
     // Effect to update selectedGroup if initialGroup changes
     useEffect(() => {
@@ -443,6 +458,52 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
         );
     }
 
+    // Conditional Render: Publication Review
+    if (showPublicationReview && selectedGroup) {
+        const handlePublishScale = async () => {
+            if (!selectedGroup?.id) return;
+
+            setIsLoading(true);
+            try {
+                // Publish all shifts in the current view/group
+                const shiftIds = groupShifts.map(s => s.id);
+                await publishShifts(selectedGroup.id, shiftIds);
+
+                // Add message to feed
+                try {
+                    await sendGroupMessage({
+                        group_id: selectedGroup.id,
+                        sender_id: currentUser.id,
+                        content: `🎉 Nova escala publicada para ${currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}!`,
+                        message_type: 'TEXT'
+                    });
+                } catch (msgError) {
+                    console.error("Failed to post publication message:", msgError);
+                }
+
+                showToast("Escala publicada com sucesso!", "success");
+                setShowPublicationReview(false);
+                if (onBack) onBack(); // Exit scale editor after publishing
+            } catch (error) {
+                console.error("Failed to publish scale:", error);
+                showToast("Erro ao publicar escala.", "error");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        return (
+            <ScalePublicationView
+                group={selectedGroup}
+                currentUser={currentUser}
+                shifts={groupShifts}
+                assignments={localAssignments}
+                onBack={() => setShowPublicationReview(false)}
+                onPublish={handlePublishScale}
+            />
+        );
+    }
+
     return (
         <div className="fixed inset-0 z-[70] flex flex-col h-full bg-slate-100 dark:bg-black transition-colors duration-300 overflow-y-auto pb-10 transition-all animate-in fade-in slide-in-from-bottom-4 duration-500">
             {isLoading && (
@@ -731,7 +792,10 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                         </span>
                     </button>
 
-                    <button className="flex items-center gap-3 bg-emerald-600 text-white px-5 py-2 rounded-xl font-bold shadow-lg shadow-emerald-500/30 hover:bg-emerald-500 hover:scale-[1.02] transition-all text-[10px] md:text-xs lg:text-sm leading-tight border border-white/20">
+                    <button
+                        onClick={() => setShowPublicationReview(true)}
+                        className="flex items-center gap-3 bg-emerald-600 text-white px-5 py-2 rounded-xl font-bold shadow-lg shadow-emerald-500/30 hover:bg-emerald-500 hover:scale-[1.02] transition-all text-[10px] md:text-xs lg:text-sm leading-tight border border-white/20"
+                    >
                         <CheckCircle size={20} />
                         <span className="text-left">
                             Revisar<br />

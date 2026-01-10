@@ -860,12 +860,10 @@ export const getShiftExchanges = async (groupId: string): Promise<ShiftExchange[
             target_profile: profiles!target_profile_id(*),
             offered_shift: shift_assignments!offered_shift_assignment_id(
                 id,
-                date,
                 shift: shifts(*)
             ),
             requested_shift: shift_assignments!requested_shift_assignment_id(
                 id,
-                date,
                 shift: shifts(*)
             )
         `)

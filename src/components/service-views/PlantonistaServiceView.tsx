@@ -4,7 +4,7 @@ import { Group, Profile, AppRole, GroupMember, ServiceRole, Shift, ShiftAssignme
 import { getGroupMembers, getShifts, getAssignments } from '../../services/api';
 import CalendarView from '../CalendarView';
 import ShiftInbox from '../ShiftInbox';
-import ServiceChat from '../ServiceChat';
+import ServiceFeedView from '../ServiceFeedView';
 
 interface PlantonistaServiceViewProps {
     group: Group;
@@ -87,13 +87,9 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                             userServiceRole={group.user_role}
                         />
 
-                        {/* Service Chat Section */}
-                        <div className="flex-1 bg-white dark:bg-slate-900 border-t-2 border-slate-100 dark:border-slate-800 rounded-t-3xl -mt-4 relative z-10 px-4 pt-6 pb-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-                            <div className="mb-4 flex items-center gap-2">
-                                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">Chat do Serviço</h3>
-                                <span className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-600 rounded-full font-bold">Online</span>
-                            </div>
-                            <ServiceChat
+                        {/* Service Feed Section */}
+                        <div className="flex-1 bg-white dark:bg-slate-900 border-t-2 border-slate-100 dark:border-slate-800 rounded-t-[3rem] -mt-8 relative z-10 pt-4 pb-20 shadow-[0_-8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col min-h-[500px]">
+                            <ServiceFeedView
                                 group={group}
                                 currentUser={currentUser}
                                 shifts={shifts}

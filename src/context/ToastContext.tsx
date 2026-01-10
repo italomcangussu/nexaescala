@@ -17,17 +17,19 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [toasts, setToasts] = useState<ToastData[]>([]);
 
-    const showToast = (message: string, type: ToastType = 'info', duration: number = 3000) => {
+    const showToast = React.useCallback((message: string, type: ToastType = 'info', duration: number = 3000) => {
         const id = Math.random().toString(36).substring(2, 9);
         setToasts(prev => [...prev, { id, message, type, duration }]);
-    };
+    }, []);
 
-    const removeToast = (id: string) => {
+    const removeToast = React.useCallback((id: string) => {
         setToasts(prev => prev.filter(t => t.id !== id));
-    };
+    }, []);
+
+    const contextValue = React.useMemo(() => ({ showToast }), [showToast]);
 
     return (
-        <ToastContext.Provider value={{ showToast }}>
+        <ToastContext.Provider value={contextValue}>
             {children}
             {/* Toast Container - Top Center */}
             <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 pointer-events-none">
