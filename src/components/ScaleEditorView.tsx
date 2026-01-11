@@ -649,139 +649,106 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
 
                             {/* Shifts Rows Container */}
                             <div className="flex flex-col gap-3 w-full">
-                                {Array.from({ length: rowsPerDay }).map((_, rowIndex) => (
-                                    /* Single Row of Shifts */
-                                    <div key={rowIndex} className="flex flex-row gap-1.5 md:gap-4 w-full">
-                                        {shiftSlots.map((slot) => {
-                                            // Get assignment from local state by filtering all assignments for this shift and picking by row index
-                                            const assignmentsForShift = localAssignments.filter(a => a.shift_id === slot.id);
-                                            const assignment = assignmentsForShift[rowIndex];
-                                            const isAssigned = !!assignment;
+                                {shiftSlots.map((slot) => {
+                                    // Render a card for each quantity needed for this specific shift
+                                    const quantity = slot.quantity_needed || 1;
 
-                                            // Unique key for React
-                                            const key = `${slot.id}-${rowIndex}`;
+                                    return (
+                                        <div key={slot.id} className="flex flex-row gap-1.5 md:gap-4 w-full">
+                                            {Array.from({ length: quantity }).map((_, i) => {
+                                                // Get assignment for this specific slot index
+                                                const assignmentsForShift = localAssignments.filter(a => a.shift_id === slot.id);
+                                                const assignment = assignmentsForShift[i]; // Pick by index
+                                                const isAssigned = !!assignment;
 
-                                            // Ensure we have profile data
-                                            const assignedProfile = assignment?.profile;
+                                                // Unique key
+                                                const key = `${slot.id}-${i}`;
 
-                                            // Clean name for avatar AND display (remove Dr., Dra., etc)
-                                            const cleanName = assignedProfile?.full_name?.replace(/^(Dr\.|Dra\.|Prof\.|Enf\.|Sr\.|Sra\.)\s+/i, '').trim() || 'User';
-                                            const nameParts = cleanName.split(' ');
-                                            const displayName = nameParts.length > 1
-                                                ? `${nameParts[0]} ${nameParts[nameParts.length - 1]}`
-                                                : nameParts[0];
+                                                // Ensure we have profile data
+                                                const assignedProfile = assignment?.profile;
 
-                                            const mockAvatar = assignedProfile?.avatar_url || `https://ui-avatars.com/api/?name=${cleanName}&background=random`;
-                                            const Icon = slot.icon;
+                                                // Clean name
+                                                const cleanName = assignedProfile?.full_name?.replace(/^(Dr\.|Dra\.|Prof\.|Enf\.|Sr\.|Sra\.)\s+/i, '').trim() || 'User';
+                                                const nameParts = cleanName.split(' ');
+                                                const displayName = nameParts.length > 1
+                                                    ? `${nameParts[0]} ${nameParts[nameParts.length - 1]}`
+                                                    : nameParts[0];
 
-                                            return (
-                                                <div key={key} className="flex-1 min-w-0 flex flex-col gap-2">
+                                                const mockAvatar = assignedProfile?.avatar_url || `https://ui-avatars.com/api/?name=${cleanName}&background=random`;
+                                                const Icon = slot.icon;
 
-                                                    {/* Slot Card */}
-                                                    <div className={`
-                                                        relative flex flex-col items-center justify-between p-1.5 md:p-4 rounded-xl md:rounded-2xl h-28 md:h-40 transition-all
-                                                        ${isAssigned
-                                                            ? 'bg-emerald-600 border border-emerald-500 shadow-md shadow-emerald-200/50 dark:shadow-none'
-                                                            : 'bg-slate-50 dark:bg-slate-800/50 border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-slate-300'}
-                                                    `}>
-
-                                                        {/* Shift Label - Modernized */}
+                                                return (
+                                                    <div key={key} className="flex-1 min-w-0 flex flex-col gap-2">
+                                                        {/* Slot Card */}
                                                         <div className={`
-                                                            flex items-center gap-1.5 px-2.5 py-1 rounded-full border shadow-sm
+                                                            relative flex flex-col items-center justify-between p-1.5 md:p-4 rounded-xl md:rounded-2xl h-28 md:h-40 transition-all
                                                             ${isAssigned
-                                                                ? 'bg-white/20 border-white/10 text-white'
-                                                                : `bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 ${slot.color.split(' ')[0]}` // Extract text color
-                                                            }
+                                                                ? 'bg-emerald-600 border border-emerald-500 shadow-md shadow-emerald-200/50 dark:shadow-none'
+                                                                : 'bg-slate-50 dark:bg-slate-800/50 border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-slate-300'}
                                                         `}>
-                                                            <Icon size={10} strokeWidth={3} />
-                                                            <span className="text-[9px] md:text-xs font-black tracking-wide leading-none">
-                                                                {slot.label}
-                                                            </span>
-                                                            <div className={`w-0.5 h-2.5 rounded-full ${isAssigned ? 'bg-white/40' : 'bg-slate-200 dark:bg-slate-600'}`} />
-                                                            <span className={`text-[8px] md:text-[10px] font-bold leading-none ${isAssigned ? 'text-white/90' : 'text-slate-400'}`}>
-                                                                {slot.hours}
-                                                            </span>
-                                                        </div>
+                                                            {/* Shift Label */}
+                                                            <div className={`
+                                                                flex items-center gap-1.5 px-2.5 py-1 rounded-full border shadow-sm
+                                                                ${isAssigned
+                                                                    ? 'bg-white/20 border-white/10 text-white'
+                                                                    : `bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 ${slot.color.split(' ')[0]}`
+                                                                }
+                                                            `}>
+                                                                <Icon size={10} strokeWidth={3} />
+                                                                <span className="text-[9px] md:text-xs font-black tracking-wide leading-none">
+                                                                    {slot.label}
+                                                                </span>
+                                                                <div className={`w-0.5 h-2.5 rounded-full ${isAssigned ? 'bg-white/40' : 'bg-slate-200 dark:bg-slate-600'}`} />
+                                                                <span className={`text-[8px] md:text-[10px] font-bold leading-none ${isAssigned ? 'text-white/90' : 'text-slate-400'}`}>
+                                                                    {slot.hours}
+                                                                </span>
+                                                            </div>
 
-                                                        {/* Body: Content */}
-                                                        <div className="flex-1 flex flex-col items-center justify-center w-full gap-1.5 mt-1">
-                                                            {isAssigned ? (
-                                                                <>
-                                                                    <div className="relative group cursor-pointer w-full h-full flex flex-col items-center justify-center p-1" onClick={() => handleSlotClick(date, key, slot.label, slot.start_time)}>
+                                                            {/* Body */}
+                                                            <div className="flex-1 flex flex-col items-center justify-center w-full gap-1.5 mt-1">
+                                                                {isAssigned ? (
+                                                                    <>
+                                                                        <div className="relative group cursor-pointer w-full h-full flex flex-col items-center justify-center p-1" onClick={() => handleSlotClick(date, key, slot.label, slot.start_time)}>
+                                                                            {/* Actions */}
+                                                                            <div className="absolute right-1 top-1 flex flex-col gap-1 z-20 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                                                                <button onClick={(e) => { e.stopPropagation(); handleSwapInitiate(assignment); }} className="w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm bg-white/90 text-slate-500 hover:text-blue-500">
+                                                                                    <ArrowRightLeft size={10} />
+                                                                                </button>
+                                                                                <button onClick={(e) => { e.stopPropagation(); handleDeleteAssignment(assignment.id); }} className="w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm bg-white/90 text-slate-500 hover:text-red-500">
+                                                                                    <Trash2 size={10} />
+                                                                                </button>
+                                                                            </div>
 
-                                                                        {/* ACTION ICONS (Top Right of Card) */}
-                                                                        <div className="absolute right-1 top-1 flex flex-col gap-1 z-20 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                                                                            {/* 1. Swap Button */}
-                                                                            <button
-                                                                                onClick={(e) => {
-                                                                                    e.stopPropagation();
-                                                                                    handleSwapInitiate(assignment);
-                                                                                }}
-                                                                                className={`
-                                                                                    w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center shadow-sm backdrop-blur-sm transition-all active:scale-95 md:hover:scale-110
-                                                                                    ${swapSource?.id === assignment.id
-                                                                                        ? 'bg-orange-100 text-orange-600 ring-1 ring-orange-200'
-                                                                                        : 'bg-white/90 dark:bg-slate-800/90 text-slate-500 hover:text-blue-500'}
-                                                                                `}
-                                                                                title="Trocar"
-                                                                            >
-                                                                                <ArrowRightLeft size={10} strokeWidth={2.5} className="md:w-3 md:h-3" />
-                                                                            </button>
-
-                                                                            {/* 2. Delete Button */}
-                                                                            <button
-                                                                                onClick={(e) => {
-                                                                                    e.stopPropagation();
-                                                                                    handleDeleteAssignment(assignment.id);
-                                                                                }}
-                                                                                className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-white/90 dark:bg-slate-800/90 text-slate-500 hover:text-red-500 flex items-center justify-center shadow-sm backdrop-blur-sm transition-all active:scale-95 md:hover:scale-110"
-                                                                                title="Remover"
-                                                                            >
-                                                                                <Trash2 size={10} strokeWidth={2.5} className="md:w-3 md:h-3" />
-                                                                            </button>
+                                                                            <div className="w-8 h-8 md:w-12 md:h-12 rounded-full p-0.5 shadow-sm bg-white/30">
+                                                                                <img src={mockAvatar} alt="Avatar" className="w-full h-full rounded-full object-cover border-2 border-emerald-600" />
+                                                                            </div>
+                                                                            <span className="text-[9px] md:text-xs font-bold text-white text-center leading-tight truncate w-full px-1 mt-1">
+                                                                                {displayName}
+                                                                            </span>
                                                                         </div>
-
-                                                                        {/* Avatar Container */}
-                                                                        <div className={`
-                                                                            w-8 h-8 md:w-12 md:h-12 rounded-full p-0.5 shadow-sm transition-all duration-300 relative
-                                                                            ${swapSource?.id === assignment.id ? 'ring-4 ring-orange-400 scale-110 bg-orange-100' : 'bg-white/30'}
-                                                                        `}>
-                                                                            <img
-                                                                                src={mockAvatar}
-                                                                                alt="Avatar"
-                                                                                className="w-full h-full rounded-full object-cover border-2 border-emerald-600"
-                                                                            />
-                                                                        </div>
-
-                                                                        <span className="text-[9px] md:text-xs font-bold text-white text-center leading-tight truncate w-full px-1 mt-1">
-                                                                            {displayName}
-                                                                        </span>
-                                                                    </div>
-                                                                </>
-                                                            ) : (
-                                                                <div
-                                                                    className={`w-full h-full flex flex-col items-center justify-center cursor-pointer rounded-xl group hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors ${swapSource ? 'ring-2 ring-orange-400 bg-orange-50/50' : ''}`}
-                                                                    onClick={() => handleSlotClick(date, key, slot.label, slot.start_time)}
-                                                                >
-                                                                    {swapSource ? (
-                                                                        <div className="flex flex-col items-center animate-pulse">
-                                                                            <ArrowRightLeft size={20} className="text-orange-500 mb-1" />
-                                                                            <span className="text-[8px] font-bold text-orange-600 uppercase">Trocar aqui</span>
-                                                                        </div>
-                                                                    ) : (
+                                                                    </>
+                                                                ) : (
+                                                                    <div className="w-full h-full flex flex-col items-center justify-center cursor-pointer rounded-xl group hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors" onClick={() => handleSlotClick(date, key, slot.label, slot.start_time)}>
                                                                         <PlusCircle size={24} className="text-slate-300 group-hover:text-emerald-500 transition-colors" />
-                                                                    )}
-                                                                </div>
-                                                            )}
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </div>
-
                                                     </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                ))}
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                })}
                             </div>
+
+                            {/* Old Code Removed:
+                            <div className="flex flex-col gap-3 w-full">
+                                {Array.from({ length: rowsPerDay }).map((_, rowIndex) => (
+                                    ...
+                                ))}
+                            </div> 
+                            */}
                         </div>
                     );
                 })}
