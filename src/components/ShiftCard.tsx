@@ -26,7 +26,7 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
   const startHour = parseInt(shift.start_time.split(':')[0], 10);
   const isNightShift = startHour >= 18 || startHour <= 5;
 
-  const isFlex = shift.institution_name?.toLowerCase().includes('flex');
+
 
   // Icon Selection
   const Icon = isNightShift ? Moon : Sun;
@@ -66,7 +66,9 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
   return (
     <div className="group relative w-full mb-4 animate-fade-in-up">
       {/* Card Container */}
-      <div className={`relative overflow-hidden rounded-3xl border transition-all duration-500 hover:shadow-card-hover hover:-translate-y-1 ${cardStyles.container}`}>
+      <div
+        className={`relative overflow-hidden rounded-3xl border transition-all duration-500 hover:shadow-card-hover hover:-translate-y-1 ${cardStyles.container}`}
+      >
 
         {/* Animated Decorative Background Orb */}
         <div className={`absolute -right-12 -top-12 w-48 h-48 bg-gradient-to-br rounded-full blur-3xl transition-all duration-700 group-hover:scale-125 ${cardStyles.orb1}`}></div>

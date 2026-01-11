@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Clock, Users, ArrowRightLeft, Trash2, Edit2, Sun, Moon, CloudSun, User, Sparkles, Megaphone } from 'lucide-react';
-import { Shift, ShiftAssignment, AppRole, Profile, Group, ServiceRole } from '../types';
+import { X, Clock, Users, ArrowRightLeft, Trash2, Sun, Moon, CloudSun, Sparkles, Megaphone } from 'lucide-react';
+import { Shift, ShiftAssignment, AppRole, Profile, Group } from '../types';
 import ShiftExchangeModal from './ShiftExchangeModal';
 import RepasseModal from './RepasseModal'; // Import RepasseModal
 import { getRelatedShiftsForDay } from '../services/api';

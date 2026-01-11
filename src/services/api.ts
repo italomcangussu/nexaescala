@@ -60,15 +60,19 @@ export const getUserGroups = async (userId: string): Promise<Group[]> => {
 
     if (error) throw error;
 
-    const groups = data.map((item: any) => ({
-        ...item.group,
-        user_role: item.service_role,
-        // Use personal_color if set, otherwise default to emerald green
-        color: item.personal_color || '#10b981',
-        has_seen_color_banner: item.has_seen_color_banner || false,
-        member_count: 0, // Default, will update below
-        unread_messages: 0 // Placeholder
-    })) as Group[];
+    const groups = data.map((item: any) => {
+        const computedColor = item.personal_color || item.group.color || '#10b981';
+        console.log(`[API] Group ${item.group.name} - Personal: ${item.personal_color}, Global: ${item.group.color} -> Computed: ${computedColor}`);
+        return {
+            ...item.group,
+            user_role: item.service_role,
+            // Use personal_color if set, then group color, otherwise default to emerald green
+            color: computedColor,
+            has_seen_color_banner: item.has_seen_color_banner || false,
+            member_count: 0, // Default, will update below
+            unread_messages: 0 // Placeholder
+        }
+    }) as Group[];
 
     // Fetch member counts for these groups
     const groupIds = groups.map(g => g.id);
@@ -448,6 +452,7 @@ export const leaveGroup = async (groupId: string, userId: string): Promise<void>
 // --- PERSONAL COLOR PREFERENCES ---
 
 export const updateMemberPersonalColor = async (groupId: string, userId: string, color: string): Promise<void> => {
+    console.log('[API] updateMemberPersonalColor', { groupId, userId, color });
     const { error } = await supabase
         .from('group_members')
         .update({
@@ -456,7 +461,11 @@ export const updateMemberPersonalColor = async (groupId: string, userId: string,
         })
         .match({ group_id: groupId, profile_id: userId });
 
-    if (error) throw error;
+    if (error) {
+        console.error('[API] updateMemberPersonalColor ERROR', error);
+        throw error;
+    }
+    console.log('[API] updateMemberPersonalColor SUCCESS');
 };
 
 export const markColorBannerSeen = async (groupId: string, userId: string): Promise<void> => {

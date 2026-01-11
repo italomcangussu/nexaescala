@@ -5,6 +5,20 @@ import CalendarView from '../CalendarView';
 import { canUserLeaveGroup, leaveGroup, updateMemberPersonalColor, getGroupMembers } from '../../services/api';
 import ColorPalette from '../ColorPalette';
 import ShiftInbox from '../ShiftInbox';
+import { useToast } from '../../context/ToastContext';
+
+const hexToRgba = (hex: string, alpha: number) => {
+    let c: any;
+    if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+        c = hex.substring(1).split('');
+        if (c.length == 3) {
+            c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+        }
+        c = '0x' + c.join('');
+        return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + ',' + alpha + ')';
+    }
+    return hex;
+}
 
 interface PlantonistaServiceViewProps {
     group: Group;
@@ -17,8 +31,10 @@ interface PlantonistaServiceViewProps {
 
 const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, shifts, assignments, currentUser, onBack, onGroupUpdate }) => {
     const [activeTab, setActiveTab] = useState<'calendar' | 'members' | 'history' | 'settings' | 'notifications'>('calendar');
+    const displayColor = group.color || '#10b981';
     const [canLeave, setCanLeave] = useState(true);
     const [leaveCheckMessage, setLeaveCheckMessage] = useState('');
+    const { showToast } = useToast();
     const [isLeavingGroup, setIsLeavingGroup] = useState(false);
 
     // Members State
@@ -46,6 +62,11 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
     const [selectedColor, setSelectedColor] = useState(group.color || '#10b981');
     const [isSavingColor, setIsSavingColor] = useState(false);
 
+    // Sync state with prop (for external updates)
+    useEffect(() => {
+        setSelectedColor(group.color || '#10b981');
+    }, [group.color]);
+
     // Check if user can leave when settings tab is active
     useEffect(() => {
         const checkLeaveEligibility = async () => {
@@ -67,7 +88,7 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
 
     const handleLeaveGroup = async () => {
         if (!canLeave) {
-            alert(leaveCheckMessage);
+            showToast(leaveCheckMessage, 'error');
             return;
         }
 
@@ -77,11 +98,11 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
         setIsLeavingGroup(true);
         try {
             await leaveGroup(group.id, currentUser.id);
-            alert('Você saiu do serviço com sucesso.');
+            showToast('Você saiu do serviço com sucesso.', 'success');
             onBack(); // Return to main view
         } catch (error: any) {
             console.error('Error leaving group:', error);
-            alert(error.message || 'Erro ao sair do serviço. Tente novamente.');
+            showToast(error.message || 'Erro ao sair do serviço. Tente novamente.', 'error');
         } finally {
             setIsLeavingGroup(false);
         }
@@ -92,12 +113,13 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
         setIsSavingColor(true);
         try {
             await updateMemberPersonalColor(group.id, currentUser.id, color);
+            showToast('Cor pessoal atualizada!', 'success');
             if (onGroupUpdate) {
                 onGroupUpdate(); // Refresh group data
             }
         } catch (error) {
             console.error('Error updating color:', error);
-            alert('Erro ao salvar cor. Tente novamente.');
+            showToast('Erro ao salvar cor. Tente novamente.', 'error');
             setSelectedColor(group.color || '#10b981'); // Revert
         } finally {
             setIsSavingColor(false);
@@ -109,10 +131,10 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
     const renderContent = () => {
         switch (activeTab) {
             case 'notifications':
-                return <ShiftInbox groupId={group.id} currentUser={currentUser} />;
+                return <ShiftInbox groupId={group.id} currentUser={currentUser} groupColor={group.color} />;
             case 'calendar':
                 return (
-                    <div className="flex flex-col h-full">
+                    <div className="flex flex-col">
                         <CalendarView
                             shifts={shifts}
                             assignments={assignments}
@@ -242,36 +264,56 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
     };
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950">
+        <div className="flex flex-col bg-slate-50 dark:bg-slate-950 min-h-full">
             {/* Toolbar */}
-            <div className="px-6 py-3 bg-white dark:bg-slate-900 border-b border-gray-50 dark:border-slate-800 flex items-center gap-4 overflow-x-auto no-scrollbar shrink-0 shadow-sm">
-                <button onClick={() => setActiveTab('calendar')} className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'calendar' ? 'text-primary bg-primary/5' : 'text-slate-400'}`}>
+            <div className="px-6 py-3 bg-white dark:bg-slate-900 border-b border-gray-50 dark:border-slate-800 flex items-center gap-4 overflow-x-auto no-scrollbar shrink-0 shadow-sm sticky top-0 z-30">
+                <button
+                    onClick={() => setActiveTab('calendar')}
+                    style={activeTab === 'calendar' ? { color: displayColor, backgroundColor: hexToRgba(displayColor, 0.05) } : undefined}
+                    className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'calendar' ? '' : 'text-slate-400'}`}
+                >
                     <Calendar size={20} />
                     <span className="text-[10px] font-bold">Calendário</span>
                 </button>
-                <button onClick={() => setActiveTab('notifications')} className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'notifications' ? 'text-primary bg-primary/5' : 'text-slate-400'}`}>
+                <button
+                    onClick={() => setActiveTab('notifications')}
+                    style={activeTab === 'notifications' ? { color: displayColor, backgroundColor: hexToRgba(displayColor, 0.05) } : undefined}
+                    className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'notifications' ? '' : 'text-slate-400'}`}
+                >
                     <Bell size={20} />
                     <span className="text-[10px] font-bold">Avisos</span>
                 </button>
-                <button onClick={() => setActiveTab('members')} className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'members' ? 'text-primary bg-primary/5' : 'text-slate-400'}`}>
+                <button
+                    onClick={() => setActiveTab('members')}
+                    style={activeTab === 'members' ? { color: displayColor, backgroundColor: hexToRgba(displayColor, 0.05) } : undefined}
+                    className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'members' ? '' : 'text-slate-400'}`}
+                >
                     <Users size={20} />
                     <span className="text-[10px] font-bold">Equipe</span>
                 </button>
 
-                <button onClick={() => setActiveTab('history')} className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'history' ? 'text-primary bg-primary/5' : 'text-slate-400'}`}>
+                <button
+                    onClick={() => setActiveTab('history')}
+                    style={activeTab === 'history' ? { color: displayColor, backgroundColor: hexToRgba(displayColor, 0.05) } : undefined}
+                    className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'history' ? '' : 'text-slate-400'}`}
+                >
                     <Clock size={20} />
                     <span className="text-[10px] font-bold">Histórico</span>
                 </button>
-                <button onClick={() => setActiveTab('settings')} className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'settings' ? 'text-primary bg-primary/5' : 'text-slate-400'}`}>
+                <button
+                    onClick={() => setActiveTab('settings')}
+                    style={activeTab === 'settings' ? { color: displayColor, backgroundColor: hexToRgba(displayColor, 0.05) } : undefined}
+                    className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'settings' ? '' : 'text-slate-400'}`}
+                >
                     <Settings size={20} />
                     <span className="text-[10px] font-bold">Ajustes</span>
                 </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto relative">
+            <div className="flex-1 relative">
                 <div
                     key={activeTab}
-                    className="h-full animate-in fade-in slide-in-from-bottom-4 duration-300"
+                    className="animate-in fade-in slide-in-from-bottom-4 duration-300"
                 >
                     {renderContent()}
                 </div>

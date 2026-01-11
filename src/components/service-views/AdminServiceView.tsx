@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Users, Settings, Grid, Bell, Shield, UserPlus, UserMinus, Save, Palette, History, ClipboardList } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 import { Group, Profile, GroupMember, ServiceRole, AppRole } from '../../types';
 import CalendarView from '../CalendarView';
 import { getGroupMembers, deleteGroup, updateGroup, getShifts, getAssignments, addGroupMember } from '../../services/api';
@@ -10,15 +11,30 @@ import RemoveMemberModal from '../RemoveMemberModal';
 import ServiceFeedView from '../ServiceFeedView';
 import RelatedServicesSection from './RelatedServicesSection';
 
+const hexToRgba = (hex: string, alpha: number) => {
+    let c: any;
+    if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+        c = hex.substring(1).split('');
+        if (c.length == 3) {
+            c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+        }
+        c = '0x' + c.join('');
+        return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + ',' + alpha + ')';
+    }
+    return hex;
+}
+
 interface AdminServiceViewProps {
     group: Group;
     currentUser: Profile;
     isAux?: boolean; // If true, disable some features
     onOpenEditor?: (group: Group) => void;
+    onGroupUpdate?: () => void;
 }
 
-const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser, isAux = false, onOpenEditor }) => {
+const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser, isAux = false, onOpenEditor, onGroupUpdate }) => {
     const [activeTab, setActiveTab] = useState<'calendar' | 'editor' | 'members' | 'settings' | 'notifications' | 'history'>('calendar');
+    const displayColor = group.color || '#10b981';
 
     // Data State
     const [members, setMembers] = useState<GroupMember[]>([]);
@@ -35,6 +51,7 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
     const [editInstitution, setEditInstitution] = useState(group.institution);
     const [editColor, setEditColor] = useState(group.color || '#3b82f6');
     const [isSavingSettings, setIsSavingSettings] = useState(false);
+    const { showToast } = useToast();
 
     useEffect(() => {
         loadData();
@@ -89,32 +106,53 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
         <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 relative">
             {/* Toolbar */}
             <div className="px-6 py-3 bg-white dark:bg-slate-900 border-b border-gray-50 dark:border-slate-800 flex items-center gap-4 overflow-x-auto no-scrollbar shrink-0 shadow-sm">
-                <button onClick={() => setActiveTab('calendar')} className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'calendar' ? 'text-primary bg-primary/5' : 'text-slate-400'}`}>
+                <button
+                    onClick={() => setActiveTab('calendar')}
+                    style={activeTab === 'calendar' ? { color: displayColor, backgroundColor: hexToRgba(displayColor, 0.05) } : undefined}
+                    className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'calendar' ? '' : 'text-slate-400'}`}
+                >
                     <Calendar size={20} />
                     <span className="text-[10px] font-bold">Escala</span>
                 </button>
                 <button
                     onClick={() => onOpenEditor ? onOpenEditor(group) : setActiveTab('editor')}
-                    className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'editor' ? 'text-primary bg-primary/5' : 'text-slate-400'}`}
+                    style={activeTab === 'editor' ? { color: displayColor, backgroundColor: hexToRgba(displayColor, 0.05) } : undefined}
+                    className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'editor' ? '' : 'text-slate-400'}`}
                 >
                     <Grid size={20} />
                     <span className="text-[10px] font-bold text-center">Editor de Escala</span>
                 </button>
-                <button onClick={() => setActiveTab('notifications')} className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'notifications' ? 'text-primary bg-primary/5' : 'text-slate-400'}`}>
+                <button
+                    onClick={() => setActiveTab('notifications')}
+                    style={activeTab === 'notifications' ? { color: displayColor, backgroundColor: hexToRgba(displayColor, 0.05) } : undefined}
+                    className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'notifications' ? '' : 'text-slate-400'}`}
+                >
                     <Bell size={20} />
                     <span className="text-[10px] font-bold">Solicitações</span>
                 </button>
-                <button onClick={() => setActiveTab('members')} className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'members' ? 'text-primary bg-primary/5' : 'text-slate-400'}`}>
+                <button
+                    onClick={() => setActiveTab('members')}
+                    style={activeTab === 'members' ? { color: displayColor, backgroundColor: hexToRgba(displayColor, 0.05) } : undefined}
+                    className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'members' ? '' : 'text-slate-400'}`}
+                >
                     <Users size={20} />
                     <span className="text-[10px] font-bold">Membros</span>
                 </button>
                 {!isAux && (
-                    <button onClick={() => setActiveTab('settings')} className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'settings' ? 'text-primary bg-primary/5' : 'text-slate-400'}`}>
+                    <button
+                        onClick={() => setActiveTab('settings')}
+                        style={activeTab === 'settings' ? { color: displayColor, backgroundColor: hexToRgba(displayColor, 0.05) } : undefined}
+                        className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'settings' ? '' : 'text-slate-400'}`}
+                    >
                         <Settings size={20} />
                         <span className="text-[10px] font-bold">Gerenciar</span>
                     </button>
                 )}
-                <button onClick={() => setActiveTab('history')} className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'history' ? 'text-primary bg-primary/5' : 'text-slate-400'}`}>
+                <button
+                    onClick={() => setActiveTab('history')}
+                    style={activeTab === 'history' ? { color: displayColor, backgroundColor: hexToRgba(displayColor, 0.05) } : undefined}
+                    className={`flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-all ${activeTab === 'history' ? '' : 'text-slate-400'}`}
+                >
                     <History size={20} />
                     <span className="text-[10px] font-bold">Log</span>
                 </button>
@@ -143,7 +181,7 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                                     />
 
                                     {/* Service Feed Section */}
-                                    <div className="flex-1 bg-white dark:bg-slate-900 border-t-2 border-slate-100 dark:border-slate-800 rounded-t-[3rem] -mt-8 relative z-10 pt-4 pb-20 shadow-[0_-8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col min-h-[500px]">
+                                    <div className="bg-white dark:bg-slate-900 border-t-2 border-slate-100 dark:border-slate-800 rounded-t-[3rem] -mt-8 relative z-10 pt-4 pb-20 shadow-[0_-8px_30px_rgb(0,0,0,0.04)] flex flex-col min-h-[500px]">
                                         <ServiceFeedView
                                             group={group}
                                             currentUser={currentUser}
@@ -313,12 +351,13 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                                                 institution: editInstitution,
                                                 color: editColor
                                             });
-                                            alert('Configurações salvas com sucesso!');
-                                            // Reload to update global state
-                                            window.location.reload();
+                                            showToast('Configurações salvas com sucesso!', 'success');
+                                            if (onGroupUpdate) {
+                                                onGroupUpdate();
+                                            }
                                         } catch (error: any) {
                                             console.error("Error saving settings:", error);
-                                            alert(`Erro ao salvar: ${error.message || 'Erro desconhecido'}`);
+                                            showToast(`Erro ao salvar: ${error.message || 'Erro desconhecido'}`, 'error');
                                         } finally {
                                             setIsSavingSettings(false);
                                         }

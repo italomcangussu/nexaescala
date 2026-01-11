@@ -153,13 +153,14 @@ const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUse
       </div>
 
       {/* Content based on Role */}
-      <div className="flex-1 overflow-hidden relative bg-slate-50 dark:bg-slate-950">
+      <div className="flex-1 overflow-y-auto relative bg-slate-50 dark:bg-slate-950">
         {(group.user_role === ServiceRole.ADMIN || group.user_role === ServiceRole.ADMIN_AUX) ? (
           <AdminServiceView
             group={group}
             currentUser={currentUser}
             isAux={group.user_role === ServiceRole.ADMIN_AUX}
             onOpenEditor={onOpenScaleEditor}
+            onGroupUpdate={onGroupUpdate}
           />
         ) : (
           <PlantonistaServiceView group={group} currentUser={currentUser} shifts={shifts} assignments={assignments} onBack={onClose} onGroupUpdate={onGroupUpdate} />

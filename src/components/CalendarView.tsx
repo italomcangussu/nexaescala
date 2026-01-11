@@ -1,8 +1,21 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, MoreHorizontal, Calendar as CalendarIcon } from 'lucide-react';
-import { Shift, ShiftAssignment, AppRole, Profile, ServiceRole } from '../types';
+import { Shift, ShiftAssignment, AppRole, Profile, ServiceRole, Group } from '../types';
 import DayDetailSheet from './DayDetailSheet';
 import ShiftCard from './ShiftCard';
+
+const hexToRgba = (hex: string, alpha: number) => {
+  let c: any;
+  if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+    c = hex.substring(1).split('');
+    if (c.length == 3) {
+      c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+    }
+    c = '0x' + c.join('');
+    return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + ',' + alpha + ')';
+  }
+  return hex; // Trigger fallback if not hex
+}
 
 interface CalendarViewProps {
   shifts: Shift[];
@@ -13,9 +26,20 @@ interface CalendarViewProps {
   showAvailableShifts?: boolean;
   groupId?: string; // Optional (e.g. for MainApp aggregated view)
   userServiceRole?: ServiceRole; // Role in specific group
+  userGroups?: Group[]; // For unified view color lookup
 }
 
-const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, currentUser, currentUserRole, groupColor, showAvailableShifts = true, groupId, userServiceRole }) => {
+const CalendarView: React.FC<CalendarViewProps> = ({
+  shifts,
+  assignments,
+  currentUser,
+  currentUserRole,
+  groupColor,
+  showAvailableShifts = true,
+  groupId,
+  userServiceRole,
+  userGroups
+}) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
@@ -72,10 +96,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, curren
       const publishedDayShifts = dayShifts.filter(s => s.is_published);
 
       // Check if user has a shift (on any shift of this day)
-      const myAssignment = assignments.find(a =>
+      const myAssignmentsOnDay = assignments.filter(a =>
         a.profile_id === currentUser.id && dayShifts.some(s => s.id === a.shift_id)
       );
-      const myShiftOnThisDay = !!myAssignment;
+      const myShiftOnThisDay = myAssignmentsOnDay.length > 0;
 
       const isSelected = selectedDate === dateStr;
       const isToday =
@@ -88,9 +112,26 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, curren
       const shiftsForCalc = isAdminView ? dayShifts : publishedDayShifts;
       const hasRelevantShifts = shiftsForCalc.length > 0;
 
+      const displayColor = groupColor || '#10b981';
+
+      // Resolve Color for My Active Shift
+      let activeShiftColor = displayColor;
+      if (myShiftOnThisDay && !groupColor && userGroups) {
+        // Unified View: Find color for the specific shift(s)
+        // If multiple shifts, take the first one's color for now
+        const shiftId = myAssignmentsOnDay[0].shift_id;
+        const shift = dayShifts.find(s => s.id === shiftId);
+        if (shift) {
+          const group = userGroups.find(g => g.id === shift.group_id);
+          if (group && group.color) {
+            activeShiftColor = group.color;
+          }
+        }
+      }
+
       // Determine dot status
-      let hasIssue = false; // Red dot
-      let hasVacancy = false; // Blue dot
+      let hasIssue = false; // Issue needs attention
+      let hasVacancy = false; // Vacancy needs attention
 
       if (isAdminView && hasRelevantShifts) {
         // Admin sees issues if shifts aren't full
@@ -107,40 +148,61 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, curren
         });
       }
 
-      // Check external conflict (placeholder logic)
-      // const hasConflict = ...
+      // Dynamic Styles
+      const dayStyle: React.CSSProperties = {};
+
+      if (isSelected) {
+        dayStyle.backgroundColor = activeShiftColor; // Use active color if it's my shift day? Or just selected/display? Use active if relevant.
+        // Actually, for selection, let's keep consistent. But if I have a shift, maybe I want THAT color to be the "theme" of the selection?
+        // Let's stick to displayColor (context color) for selection, UNLESS unified view.
+        if (!groupColor && myShiftOnThisDay) {
+          dayStyle.backgroundColor = activeShiftColor;
+          dayStyle.borderColor = activeShiftColor;
+        } else {
+          dayStyle.backgroundColor = displayColor;
+          dayStyle.borderColor = displayColor;
+        }
+        dayStyle.color = 'white';
+      } else if (myShiftOnThisDay) {
+        // Highlight Active Shift Day - SOLID COLOR
+        dayStyle.backgroundColor = activeShiftColor;
+        dayStyle.borderColor = activeShiftColor;
+        dayStyle.color = 'white';
+        dayStyle.fontWeight = 'bold';
+      } else if (hasRelevantShifts) {
+        if (isAdminView) {
+          dayStyle.backgroundColor = hexToRgba(displayColor, 0.1); // Light background
+          dayStyle.borderColor = hexToRgba(displayColor, 0.3);
+          dayStyle.color = displayColor; // Strong text
+        }
+      }
+
+      const shouldPulse = !isSelected && ((hasVacancy && !myShiftOnThisDay) || hasIssue);
+      if (shouldPulse) {
+        // Add box shadow ring manually to use dynamic color
+        dayStyle.boxShadow = `0 0 0 2px ${hexToRgba(displayColor, 0.6)}`;
+      }
 
       days.push(
         <div
           key={day}
           onClick={() => setSelectedDate(dateStr)}
+          style={dayStyle}
           className={`
-            aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all group
-            ${isSelected ? 'bg-slate-800 text-white shadow-lg scale-105 z-10' :
+            aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all group border
+            ${isSelected ? 'shadow-lg scale-105 z-10' :
               hasRelevantShifts
-                ? 'bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer'
-                : 'text-slate-300 dark:text-slate-700 cursor-default opacity-50'}
-            ${isToday && !isSelected ? 'ring-1 ring-primary/30 bg-primary/5' : ''}
+                ? (isAdminView
+                  ? 'cursor-pointer' // Styles handling bg/color
+                  : 'bg-slate-50 dark:bg-slate-800 border-transparent hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer')
+                : 'border-transparent text-slate-300 dark:text-slate-700 cursor-default opacity-50'}
+            ${isToday && !isSelected ? 'ring-2 ring-gray-200 dark:ring-slate-700' : ''}
+            ${shouldPulse ? 'animate-pulse' : ''}
           `}
         >
-          <span className={`text-sm font-bold ${isSelected ? 'text-white' : ''} ${isPast && !isSelected ? 'opacity-50' : ''}`}>{day}</span>
+          <span className={`text-sm font-bold ${isPast && !isSelected ? 'opacity-50' : ''}`}>{day}</span>
 
-          {/* Status Dots */}
-          <div className="flex gap-0.5 mt-1 h-1.5">
-            {myShiftOnThisDay && !isAdminView && (
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
-            )}
-            {hasIssue && (
-              <div className="w-1.5 h-1.5 rounded-full bg-red-400"></div>
-            )}
-            {hasVacancy && !myShiftOnThisDay && (
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
-            )}
-            {/* General indicator for shifts if no specific status */}
-            {hasRelevantShifts && !myShiftOnThisDay && !hasIssue && !hasVacancy && (
-              <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
-            )}
-          </div>
+
         </div>
       );
     }
@@ -148,7 +210,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, curren
   };
 
   return (
-    <div className="flex flex-col h-full bg-surface dark:bg-slate-950 transition-colors duration-300">
+    <div className="flex flex-col bg-surface dark:bg-slate-950 transition-colors duration-300">
 
       {/* Modern Calendar Header */}
       <div className="bg-surface dark:bg-slate-900 pt-6 pb-2 px-6 transition-colors">
@@ -181,7 +243,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, curren
       </div>
 
       {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-2 px-6 pb-6">
+      <div className="grid grid-cols-7 gap-2 px-6 pb-16">
         {generateCalendarDays()}
       </div>
 
@@ -190,7 +252,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, curren
 
       {/* Available Shifts List - Conditionally Rendered */}
       {showAvailableShifts && (
-        <div className="flex-1 bg-background dark:bg-slate-950 px-6 py-6 pb-20">
+        <div className="bg-background dark:bg-slate-950 px-6 py-6 pb-20">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-bold text-textPrimary dark:text-slate-200">Plantões disponíveis</h3>
             <button className="p-1 text-textSecondary dark:text-slate-500 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-full transition-colors">

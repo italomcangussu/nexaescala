@@ -16,6 +16,19 @@ import { fetchGroupMessages, sendGroupMessage, getShiftExchanges, executeExchang
 import OfferShiftModal from './chat/OfferShiftModal';
 import { useToast } from '../context/ToastContext';
 
+const hexToRgba = (hex: string, alpha: number) => {
+    let c: any;
+    if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+        c = hex.substring(1).split('');
+        if (c.length == 3) {
+            c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+        }
+        c = '0x' + c.join('');
+        return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + ',' + alpha + ')';
+    }
+    return hex;
+}
+
 interface ServiceFeedViewProps {
     group: Group;
     currentUser: Profile;
@@ -38,6 +51,8 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
     const [inputText, setInputText] = useState('');
     const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
     const { showToast } = useToast();
+
+    const displayColor = group.color || '#10b981';
 
     const loadFeed = useCallback(async () => {
         try {
@@ -122,18 +137,27 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                                 <span className="font-bold text-sm text-slate-800 dark:text-slate-100">{msg.sender?.full_name}</span>
                                 <span className="text-[10px] text-slate-400 dark:text-slate-500">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
-                            <div className={`p-4 rounded-2xl shadow-sm border ${isSystem ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/30' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}>
+                            <div
+                                style={isSystem ? {
+                                    backgroundColor: hexToRgba(displayColor, 0.05),
+                                    borderColor: hexToRgba(displayColor, 0.2)
+                                } : undefined}
+                                className={`p-4 rounded-2xl shadow-sm border ${isSystem ? '' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}
+                            >
                                 <p className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap">{msg.content}</p>
 
                                 {msg.metadata?.shift_id && (
-                                    <div className="mt-3 pt-3 border-t border-emerald-100 dark:border-emerald-900/30 flex items-center justify-between">
+                                    <div
+                                        style={{ borderTopColor: hexToRgba(displayColor, 0.2) }}
+                                        className="mt-3 pt-3 border-t flex items-center justify-between"
+                                    >
                                         <div className="flex items-center gap-2">
-                                            <Calendar size={14} className="text-emerald-500" />
-                                            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                                            <Calendar size={14} style={{ color: displayColor }} />
+                                            <span style={{ color: displayColor }} className="text-xs font-bold opacity-80">
                                                 {new Date(msg.metadata.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
                                             </span>
                                         </div>
-                                        <span className="text-[10px] font-black uppercase text-emerald-500 tracking-tighter">
+                                        <span style={{ color: displayColor }} className="text-[10px] font-black uppercase tracking-tighter">
                                             OFERTA DISPONÍVEL
                                         </span>
                                     </div>
@@ -146,12 +170,22 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
         } else {
             const exch = item.data;
             const isCompleted = exch.status === TradeStatus.ACCEPTED;
+            // Determine icon color based on type unless completed
+            const iconBg = isCompleted ? hexToRgba(displayColor, 0.1) : (exch.type === TradeType.GIVEAWAY ? hexToRgba(displayColor, 0.1) : 'bg-blue-100');
+            const iconColor = isCompleted ? displayColor : (exch.type === TradeType.GIVEAWAY ? displayColor : 'text-blue-600');
+            // If direct swap (not giveaway), keep blue for distinction? User said "prioritize strong color". 
+            // Let's make giveaways use service color, swaps use Blue? Or simpler: Use service color for "Service Related" things. 
+            // Giveaways are "donations" (aligned with service). Swaps are peer-to-peer. 
+            // I'll stick to: Completed = Service Color. Giveaway = Service Color. Swap = Blue (to distinguish).
 
             return (
                 <div key={exch.id} className="mb-6 animate-fade-in-up">
                     <div className="flex gap-4">
                         <div className="shrink-0 flex flex-col items-center gap-2">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isCompleted ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}>
+                            <div
+                                className={`w-10 h-10 rounded-full flex items-center justify-center`}
+                                style={isCompleted || exch.type === TradeType.GIVEAWAY ? { backgroundColor: hexToRgba(displayColor, 0.1), color: displayColor } : { backgroundColor: '#dbeafe', color: '#2563eb' }}
+                            >
                                 {exch.type === TradeType.GIVEAWAY ? <Repeat size={20} /> : <ArrowRightLeft size={20} />}
                             </div>
                             <div className="w-0.5 grow bg-slate-100 dark:bg-slate-800 rounded-full"></div>
@@ -166,7 +200,10 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                                 </span>
                             </div>
 
-                            <div className={`p-5 rounded-3xl border transition-all ${isCompleted ? 'bg-emerald-50/50 dark:bg-emerald-900/5 border-emerald-100 dark:border-emerald-900/20' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 shadow-sm'}`}>
+                            <div
+                                style={isCompleted ? { backgroundColor: hexToRgba(displayColor, 0.05), borderColor: hexToRgba(displayColor, 0.2) } : undefined}
+                                className={`p-5 rounded-3xl border transition-all ${isCompleted ? '' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 shadow-sm'}`}
+                            >
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="w-8 h-8 rounded-full border-2 border-white dark:border-slate-800 overflow-hidden">
                                         <img src={exch.requesting_profile?.avatar_url} alt="" className="w-full h-full object-cover" />
@@ -196,14 +233,18 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                                     {!isCompleted && exch.requesting_profile_id !== currentUser.id && (
                                         <button
                                             onClick={() => handleAcceptExchange(exch)}
-                                            className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-black shadow-lg shadow-emerald-200 hover:bg-emerald-500 transition-all"
+                                            style={{ backgroundColor: displayColor, boxShadow: `0 10px 15px -3px ${hexToRgba(displayColor, 0.3)}` }}
+                                            className="px-4 py-2 text-white rounded-xl text-xs font-black shadow-lg hover:scale-105 transition-all"
                                         >
                                             ACEITAR
                                         </button>
                                     )}
 
                                     {isCompleted && (
-                                        <div className="flex items-center gap-1.5 text-emerald-600 px-3 py-1 bg-emerald-100 rounded-lg">
+                                        <div
+                                            style={{ backgroundColor: hexToRgba(displayColor, 0.1), color: displayColor }}
+                                            className="flex items-center gap-1.5 px-3 py-1 rounded-lg"
+                                        >
                                             <CheckCircle2 size={14} />
                                             <span className="text-[10px] font-black uppercase">CONCLUÍDO</span>
                                         </div>
@@ -211,8 +252,11 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                                 </div>
 
                                 {isCompleted && exch.target_profile && (
-                                    <div className="mt-4 flex items-center gap-2 pl-4 border-l-2 border-emerald-200">
-                                        <ArrowRightLeft size={12} className="text-emerald-400" />
+                                    <div
+                                        style={{ borderLeftColor: hexToRgba(displayColor, 0.4) }}
+                                        className="mt-4 flex items-center gap-2 pl-4 border-l-2"
+                                    >
+                                        <ArrowRightLeft size={12} style={{ color: displayColor }} />
                                         <p className="text-[11px] font-medium text-slate-500">
                                             Assumido por <span className="font-bold text-slate-800 dark:text-slate-200">{exch.target_profile.full_name}</span>
                                         </p>
@@ -227,7 +271,7 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
     };
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 dark:bg-black">
+        <div className="flex flex-col bg-slate-50 dark:bg-black w-full">
 
             {/* Action Bar */}
             <div className="px-6 py-4 flex items-center justify-between shrink-0">
@@ -237,7 +281,8 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                 </div>
                 <button
                     onClick={() => setIsOfferModalOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-[10px] font-black text-slate-600 dark:text-slate-400 shadow-sm hover:shadow-md transition-all uppercase tracking-widest"
+                    style={{ borderColor: displayColor, color: displayColor }}
+                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border rounded-xl text-[10px] font-black shadow-sm hover:shadow-md transition-all uppercase tracking-widest"
                 >
                     <Plus size={14} />
                     Oferecer Plantão
@@ -245,7 +290,7 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
             </div>
 
             {/* Feed Scroll Area */}
-            <div className="flex-1 overflow-y-auto px-6 pt-2 pb-10 custom-scrollbar">
+            <div className="flex-1 px-6 pt-2 pb-4">
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center h-48 py-10">
                         <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
@@ -262,12 +307,15 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                 ) : (
                     <>
                         {/* System Header Update Placeholder */}
-                        <div className="mb-8 p-4 bg-emerald-600 rounded-[2rem] shadow-xl shadow-emerald-500/20 flex items-center gap-4 animate-scale-in">
+                        <div
+                            style={{ backgroundColor: displayColor, boxShadow: `0 20px 25px -5px ${hexToRgba(displayColor, 0.3)}` }}
+                            className="mb-8 p-4 rounded-[2rem] shadow-xl flex items-center gap-4 animate-scale-in"
+                        >
                             <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-white backdrop-blur-md">
                                 <Rocket size={24} />
                             </div>
                             <div>
-                                <p className="text-[10px] font-black text-emerald-100 uppercase tracking-widest leading-none mb-1">Escala Atualizada</p>
+                                <p className="text-[10px] font-black text-white/80 uppercase tracking-widest leading-none mb-1">Escala Atualizada</p>
                                 <p className="text-sm font-bold text-white leading-tight">Nova escala de Outubro já disponível para revisão e troca.</p>
                             </div>
                         </div>
@@ -278,7 +326,7 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
             </div>
 
             {/* Input Footer */}
-            <div className="p-4 px-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 shrink-0">
+            <div className="p-4 px-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 shrink-0 sticky bottom-0 z-20 pb-safe">
                 <div className="relative group">
                     <input
                         type="text"
@@ -291,7 +339,8 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                     <button
                         onClick={handleSendMessage}
                         disabled={!inputText.trim()}
-                        className="absolute right-2 top-2 w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30 disabled:opacity-50 disabled:shadow-none hover:scale-105 active:scale-95 transition-all"
+                        style={{ backgroundColor: displayColor, boxShadow: `0 10px 15px -3px ${hexToRgba(displayColor, 0.3)}` }}
+                        className="absolute right-2 top-2 w-10 h-10 text-white rounded-xl flex items-center justify-center shadow-lg disabled:opacity-50 disabled:shadow-none hover:scale-105 active:scale-95 transition-all"
                     >
                         <Send size={18} />
                     </button>

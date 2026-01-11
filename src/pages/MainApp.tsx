@@ -64,6 +64,17 @@ const Dashboard: React.FC = () => {
   const [editorInitialDate, setEditorInitialDate] = useState<Date | undefined>(undefined);
   const [editorInitialPresets, setEditorInitialPresets] = useState<ShiftPreset[]>([]);
 
+  // Keep selectedService in sync with userGroups updates (e.g. after color change)
+  React.useEffect(() => {
+    if (selectedService) {
+      const updated = userGroups.find(g => g.id === selectedService.id);
+      // Only update if the object reference changed but ID is same, implies data refresh
+      if (updated && updated !== selectedService) {
+        setSelectedService(updated);
+      }
+    }
+  }, [userGroups, selectedService]);
+
   // Guard clause - MUST be after all hooks
   if (!currentUser) return null;
 
@@ -276,7 +287,7 @@ const Dashboard: React.FC = () => {
   const renderContent = () => {
     switch (activeBottomTab) {
       case 'home': return renderHomeContent();
-      case 'calendar': return <CalendarView shifts={shifts} assignments={hydratedAssignments} currentUser={currentUser} currentUserRole={userRole} />;
+      case 'calendar': return <CalendarView shifts={shifts} assignments={hydratedAssignments} currentUser={currentUser} currentUserRole={userRole} userGroups={userGroups} />;
       case 'finance': return (
         <FinanceDashboard
           currentUser={currentUser}

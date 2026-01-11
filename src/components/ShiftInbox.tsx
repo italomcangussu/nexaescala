@@ -3,12 +3,27 @@ import { Bell, Check, X, ArrowRightLeft, Gift, Clock } from 'lucide-react';
 import { ShiftExchange, Profile, TradeStatus, TradeType } from '../types';
 import { getShiftExchanges, updateShiftExchangeStatus, executeExchangeTransaction } from '../services/api';
 
+const hexToRgba = (hex: string, alpha: number) => {
+    let c: any;
+    if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+        c = hex.substring(1).split('');
+        if (c.length == 3) {
+            c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+        }
+        c = '0x' + c.join('');
+        return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + ',' + alpha + ')';
+    }
+    return hex;
+}
+
 interface ShiftInboxProps {
     groupId: string;
     currentUser: Profile;
+    groupColor?: string;
 }
 
-const ShiftInbox: React.FC<ShiftInboxProps> = ({ groupId, currentUser }) => {
+const ShiftInbox: React.FC<ShiftInboxProps> = ({ groupId, currentUser, groupColor }) => {
+    const displayColor = groupColor || '#10b981';
     const [exchanges, setExchanges] = useState<ShiftExchange[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -67,7 +82,7 @@ const ShiftInbox: React.FC<ShiftInboxProps> = ({ groupId, currentUser }) => {
     };
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950">
+        <div className="flex flex-col bg-slate-50 dark:bg-slate-950">
             <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 sticky top-0 z-10">
                 <div className="flex items-center gap-2">
                     <Bell className="text-primary" size={20} />
@@ -75,7 +90,7 @@ const ShiftInbox: React.FC<ShiftInboxProps> = ({ groupId, currentUser }) => {
                 </div>
             </div>
 
-            <div className="p-4 space-y-3 flex-1 overflow-y-auto">
+            <div className="p-4 space-y-3">
                 {loading ? (
                     <div className="text-center py-10 text-slate-400">Carregando...</div>
                 ) : exchanges.length === 0 ? (
@@ -87,11 +102,17 @@ const ShiftInbox: React.FC<ShiftInboxProps> = ({ groupId, currentUser }) => {
                     exchanges.map(ex => (
                         <div key={ex.id} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
                             {/* Type Indicator Strip */}
-                            <div className={`absolute left-0 top-0 bottom-0 w-1 ${ex.type === TradeType.DIRECT_SWAP ? 'bg-blue-500' : 'bg-purple-500'}`} />
+                            <div
+                                className={`absolute left-0 top-0 bottom-0 w-1 ${ex.type === TradeType.DIRECT_SWAP ? 'bg-blue-500' : ''}`}
+                                style={{ backgroundColor: ex.type !== TradeType.DIRECT_SWAP ? displayColor : undefined }}
+                            />
 
                             <div className="flex justify-between items-start mb-3">
                                 <div className="flex items-center gap-2">
-                                    <div className={`p-2 rounded-full ${ex.type === TradeType.DIRECT_SWAP ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
+                                    <div
+                                        className={`p-2 rounded-full ${ex.type === TradeType.DIRECT_SWAP ? 'bg-blue-50 text-blue-600' : ''}`}
+                                        style={ex.type !== TradeType.DIRECT_SWAP ? { backgroundColor: hexToRgba(displayColor, 0.1), color: displayColor } : undefined}
+                                    >
                                         {ex.type === TradeType.DIRECT_SWAP ? <ArrowRightLeft size={16} /> : <Gift size={16} />}
                                     </div>
                                     <div>
@@ -135,7 +156,8 @@ const ShiftInbox: React.FC<ShiftInboxProps> = ({ groupId, currentUser }) => {
                                 </button>
                                 <button
                                     onClick={() => handleAccept(ex)}
-                                    className="flex-1 py-2 bg-primary text-white font-bold text-xs rounded-lg shadow-sm hover:bg-primaryDark transition-all flex items-center justify-center gap-1"
+                                    style={{ backgroundColor: displayColor }}
+                                    className="flex-1 py-2 text-white font-bold text-xs rounded-lg shadow-sm hover:scale-105 transition-all flex items-center justify-center gap-1"
                                 >
                                     <Check size={14} /> Aceitar
                                 </button>
