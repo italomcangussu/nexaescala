@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { ArrowRightLeft, Edit, Sun, Moon, MapPin, Sparkles, Megaphone } from 'lucide-react';
 import { Shift, ShiftAssignment, AppRole } from '../types';
 import RepasseModal from './RepasseModal';
+import ShiftExchangeRequestModal from './ShiftExchangeRequestModal';
+
 
 interface ShiftCardProps {
   shift: Shift;
@@ -11,10 +13,12 @@ interface ShiftCardProps {
   hideProfile?: boolean;
   accentColor?: string;
   currentUserId?: string;
+  onRefresh?: () => void;
 }
 
-const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRole, onEdit, hideProfile = false, accentColor, currentUserId }) => {
+const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRole, onEdit, hideProfile = false, accentColor, currentUserId, onRefresh }) => {
   const [isRepasseModalOpen, setIsRepasseModalOpen] = useState(false);
+  const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
 
   // Date Formatting
   const dateObj = new Date(shift.date + 'T12:00:00');
@@ -189,14 +193,20 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
                 </button>
               )}
 
-              {/* Premium Button with Shimmer Effect - Adjusted for Night */}
-              <button
-                className={`relative overflow-hidden group/btn flex items-center justify-center w-full px-5 py-2 rounded-xl text-white shadow-lg active:scale-95 transition-all duration-300 ${cardStyles.buttonBg}`}
-              >
-                <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer delay-75"></div>
-                <ArrowRightLeft size={14} className="mr-2 group-hover/btn:rotate-180 transition-transform duration-500" />
-                <span className="text-xs font-bold uppercase tracking-wide">Trocar</span>
-              </button>
+              {/* Trocar Button - Only for future shifts assigned to current user */}
+              {assignment?.profile_id === currentUserId && new Date(shift.date) > new Date() && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsExchangeModalOpen(true);
+                  }}
+                  className={`relative overflow-hidden group/btn flex items-center justify-center w-full px-5 py-2 rounded-xl text-white shadow-lg active:scale-95 transition-all duration-300 ${cardStyles.buttonBg}`}
+                >
+                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer delay-75"></div>
+                  <ArrowRightLeft size={14} className="mr-2 group-hover/btn:rotate-180 transition-transform duration-500" />
+                  <span className="text-xs font-bold uppercase tracking-wide">Trocar</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -207,6 +217,19 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
             currentUserProfileId={currentUserId || ''}
             currentUserRole={currentUserRole || ''}
           />
+
+          {/* Exchange Request Modal */}
+          {isExchangeModalOpen && assignment && shift.group_id && (
+            <ShiftExchangeRequestModal
+              myShiftAssignment={{ ...assignment, shift }}
+              groupId={shift.group_id}
+              onClose={() => setIsExchangeModalOpen(false)}
+              onSuccess={() => {
+                setIsExchangeModalOpen(false);
+                onRefresh?.();
+              }}
+            />
+          )}
         </div>
       </div>
     </div>

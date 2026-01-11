@@ -314,3 +314,24 @@ export interface GroupRelationship {
   display_label: string | null;
   related_group?: Group; // Hydrated
 }
+
+// Peer-to-Peer Shift Exchange Requests
+export interface ShiftExchangeRequest {
+  id: string;
+  group_id: string;
+  requesting_user_id: string;
+  target_user_id: string;
+  offered_shift_id: string;
+  requested_shift_options: string[]; // Array of shift IDs (max 3)
+  accepted_shift_id?: string | null;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED';
+  created_at: string;
+  updated_at: string;
+
+  // Hydrated fields for UI
+  requesting_user?: Profile;
+  target_user?: Profile;
+  offered_shift?: Shift;
+  requested_shifts?: Shift[];
+  accepted_shift?: Shift;
+}

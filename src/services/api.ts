@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
-import { Profile, Group, Shift, ShiftAssignment, FinancialRecord, FinancialConfig, ServiceRole, ShiftExchange, TradeStatus, GroupMember, ChatMessage, ShiftPreset, TeamMember, AppRole, GroupRelationship, Notification } from '../types';
+import { Profile, Group, Shift, ShiftAssignment, FinancialRecord, FinancialConfig, ServiceRole, ShiftExchange, TradeStatus, GroupMember, ChatMessage, ShiftPreset, TeamMember, AppRole, GroupRelationship, Notification, ShiftExchangeRequest } from '../types';
+
 
 // --- PROFILES ---
 
@@ -1465,4 +1466,315 @@ export const createShiftOffer = async (
     }
 };
 
+
+// --- PEER-TO-PEER SHIFT EXCHANGE REQUESTS ---
+
+/**
+ * Create a new shift exchange request
+ * Allows a plantonista to request a shift swap with another member
+ */
+export const createShiftExchangeRequest = async (
+    groupId: string,
+    requestingUserId: string,
+    targetUserId: string,
+    offeredShiftId: string,
+    requestedShiftOptions: string[] // Array of 1-3 shift IDs
+): Promise<ShiftExchangeRequest> => {
+    // Validate shift options count
+    if (requestedShiftOptions.length < 1 || requestedShiftOptions.length > 3) {
+        throw new Error('Você deve selecionar entre 1 e 3 opções de plantão.');
+    }
+
+    // Create the exchange request
+    const { data, error } = await supabase
+        .from('shift_exchange_requests')
+        .insert({
+            group_id: groupId,
+            requesting_user_id: requestingUserId,
+            target_user_id: targetUserId,
+            offered_shift_id: offeredShiftId,
+            requested_shift_options: requestedShiftOptions,
+            status: 'PENDING'
+        })
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    // Create notification for target user
+    await createNotificationsBulk([{
+        user_id: targetUserId,
+        title: 'Nova Solicitação de Troca',
+        message: 'Você recebeu uma solicitação de troca de plantão.',
+        type: 'SHIFT_SWAP',
+        is_read: false,
+        metadata: { exchange_request_id: data.id }
+    }]);
+
+    return data as ShiftExchangeRequest;
+};
+
+/**
+ * Get all pending exchange requests for the current user
+ * Returns both sent and received requests
+ */
+export const getMyPendingExchangeRequests = async (userId: string): Promise<ShiftExchangeRequest[]> => {
+    const { data, error } = await supabase
+        .from('shift_exchange_requests')
+        .select(`
+            *,
+            requesting_user:profiles!requesting_user_id(*),
+            target_user:profiles!target_user_id(*),
+            offered_shift:shifts!offered_shift_id(*)
+        `)
+        .or(`requesting_user_id.eq.${userId},target_user_id.eq.${userId}`)
+        .eq('status', 'PENDING')
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    // Fetch requested shifts for each request
+    const enrichedData = await Promise.all(
+        (data || []).map(async (request: any) => {
+            const shiftIds = request.requested_shift_options as string[];
+
+            if (shiftIds && shiftIds.length > 0) {
+                const { data: shifts, error: shiftsError } = await supabase
+                    .from('shifts')
+                    .select('*')
+                    .in('id', shiftIds);
+
+                if (!shiftsError && shifts) {
+                    request.requested_shifts = shifts;
+                }
+            }
+
+            return request;
+        })
+    );
+
+    return enrichedData as ShiftExchangeRequest[];
+};
+
+/**
+ * Get available shifts for exchange (target user's future shifts)
+ * Optionally filters out shifts that conflict with requester's schedule
+ */
+export const getAvailableShiftsForExchange = async (
+    groupId: string,
+    targetUserId: string,
+    requestingUserId: string,
+    excludeConflicts: boolean = true
+): Promise<Shift[]> => {
+    const today = new Date().toISOString().split('T')[0];
+
+    // Get target user's future shift assignments
+    const { data: assignments, error: assignError } = await supabase
+        .from('shift_assignments')
+        .select(`
+            id,
+            shift:shifts!inner(
+                *,
+                group:groups(name, institution)
+            )
+        `)
+        .eq('profile_id', targetUserId)
+        .gte('shift.date', today)
+        .eq('shift.group_id', groupId)
+        .eq('shift.is_published', true);
+
+    if (assignError) throw assignError;
+
+    let shifts = (assignments || []).map((a: any) => ({
+        ...a.shift,
+        group_name: a.shift.group?.name,
+        institution_name: a.shift.group?.institution
+    })) as Shift[];
+
+    // Filter out conflicts if requested
+    if (excludeConflicts) {
+        // Get requester's all shift assignments (across all groups)
+        const { data: requesterAssignments, error: reqError } = await supabase
+            .from('shift_assignments')
+            .select(`
+                shift:shifts!inner(
+                    id,
+                    date,
+                    start_time,
+                    end_time
+                )
+            `)
+            .eq('profile_id', requestingUserId)
+            .gte('shift.date', today);
+
+        if (reqError) throw reqError;
+
+        const requesterShifts = (requesterAssignments || []).map((a: any) => a.shift);
+
+        // Filter out shifts that conflict
+        shifts = shifts.filter(shift => {
+            return !requesterShifts.some(reqShift => {
+                // Check if dates match and times overlap
+                if (shift.date !== reqShift.date) return false;
+
+                // Simple time overlap check
+                const shiftStart = shift.start_time;
+                const shiftEnd = shift.end_time;
+                const reqStart = reqShift.start_time;
+                const reqEnd = reqShift.end_time;
+
+                // Check for overlap
+                return !(shiftEnd <= reqStart || shiftStart >= reqEnd);
+            });
+        });
+    }
+
+    return shifts;
+};
+
+/**
+ * Respond to an exchange request (accept or reject)
+ */
+export const respondToExchangeRequest = async (
+    requestId: string,
+    action: 'ACCEPT' | 'REJECT',
+    selectedShiftId?: string
+): Promise<void> => {
+    // Fetch the request
+    const { data: request, error: fetchError } = await supabase
+        .from('shift_exchange_requests')
+        .select('*')
+        .eq('id', requestId)
+        .single();
+
+    if (fetchError) throw fetchError;
+    if (!request) throw new Error('Solicitação não encontrada.');
+
+    if (action === 'ACCEPT') {
+        if (!selectedShiftId) {
+            throw new Error('Você deve selecionar um plantão para trocar.');
+        }
+
+        // Validate selected shift is in options
+        const options = request.requested_shift_options as string[];
+        if (!options.includes(selectedShiftId)) {
+            throw new Error('Plantão selecionado não está nas opções.');
+        }
+
+        // Execute the swap atomically
+        await executeShiftSwap(
+            request.offered_shift_id,
+            selectedShiftId,
+            request.requesting_user_id,
+            request.target_user_id
+        );
+
+        // Update request status
+        const { error: updateError } = await supabase
+            .from('shift_exchange_requests')
+            .update({
+                status: 'ACCEPTED',
+                accepted_shift_id: selectedShiftId
+            })
+            .eq('id', requestId);
+
+        if (updateError) throw updateError;
+
+        // Create notifications for both users
+        await createNotificationsBulk([
+            {
+                user_id: request.requesting_user_id,
+                title: 'Troca Aceita!',
+                message: 'Sua solicitação de troca foi aceita.',
+                type: 'SHIFT_SWAP',
+                is_read: false
+            },
+            {
+                user_id: request.target_user_id,
+                title: 'Troca Confirmada',
+                message: 'A troca de plantão foi confirmada.',
+                type: 'SHIFT_SWAP',
+                is_read: false
+            }
+        ]);
+    } else {
+        // Reject
+        const { error: updateError } = await supabase
+            .from('shift_exchange_requests')
+            .update({ status: 'REJECTED' })
+            .eq('id', requestId);
+
+        if (updateError) throw updateError;
+
+        // Notify requester
+        await createNotificationsBulk([{
+            user_id: request.requesting_user_id,
+            title: 'Troca Recusada',
+            message: 'Sua solicitação de troca foi recusada.',
+            type: 'SHIFT_SWAP',
+            is_read: false
+        }]);
+    }
+};
+
+/**
+ * Execute atomic shift swap between two users
+ */
+const executeShiftSwap = async (
+    offeredShiftId: string,
+    requestedShiftId: string,
+    requestingUserId: string,
+    targetUserId: string
+): Promise<void> => {
+    // Get both assignments
+    const { data: offeredAssignment, error: e1 } = await supabase
+        .from('shift_assignments')
+        .select('id')
+        .eq('shift_id', offeredShiftId)
+        .eq('profile_id', requestingUserId)
+        .single();
+
+    const { data: requestedAssignment, error: e2 } = await supabase
+        .from('shift_assignments')
+        .select('id')
+        .eq('shift_id', requestedShiftId)
+        .eq('profile_id', targetUserId)
+        .single();
+
+    if (e1 || e2 || !offeredAssignment || !requestedAssignment) {
+        throw new Error('Erro ao localizar as atribuições de plantão.');
+    }
+
+    // Swap the assignments
+    // Update offered shift to target user
+    const { error: swap1Error } = await supabase
+        .from('shift_assignments')
+        .update({ profile_id: targetUserId })
+        .eq('id', offeredAssignment.id);
+
+    if (swap1Error) throw swap1Error;
+
+    // Update requested shift to requesting user
+    const { error: swap2Error } = await supabase
+        .from('shift_assignments')
+        .update({ profile_id: requestingUserId })
+        .eq('id', requestedAssignment.id);
+
+    if (swap2Error) throw swap2Error;
+};
+
+/**
+ * Cancel a pending exchange request
+ * Only the requester can cancel
+ */
+export const cancelExchangeRequest = async (requestId: string, userId: string): Promise<void> => {
+    const { error } = await supabase
+        .from('shift_exchange_requests')
+        .update({ status: 'CANCELLED' })
+        .eq('id', requestId)
+        .eq('requesting_user_id', userId)
+        .eq('status', 'PENDING');
+
+    if (error) throw error;
+};
 

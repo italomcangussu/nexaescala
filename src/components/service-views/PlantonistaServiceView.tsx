@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Users, Settings, Clock, Bell, LogOut } from 'lucide-react';
-import { Group, Profile, Shift, ShiftAssignment, AppRole, GroupMember, ServiceRole } from '../../types';
+import { Group, Profile, Shift, ShiftAssignment, AppRole, GroupMember, ServiceRole, ShiftExchangeRequest } from '../../types';
 import CalendarView from '../CalendarView';
-import { canUserLeaveGroup, leaveGroup, updateMemberPersonalColor, getGroupMembers } from '../../services/api';
+import { canUserLeaveGroup, leaveGroup, updateMemberPersonalColor, getGroupMembers, getMyPendingExchangeRequests } from '../../services/api';
 import ColorPalette from '../ColorPalette';
 import ShiftInbox from '../ShiftInbox';
-import { useToast } from '../../context/ToastContext';
+import { useToast } from '../../contexts/ToastContext';
+import ExchangeRequestBanner from '../ExchangeRequestBanner';
+import ExchangeResponseModal from '../ExchangeResponseModal';
 
 const hexToRgba = (hex: string, alpha: number) => {
     let c: any;
@@ -41,6 +43,11 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
     const [members, setMembers] = useState<GroupMember[]>([]);
     const [loadingMembers, setLoadingMembers] = useState(false);
 
+    // Exchange Requests State
+    const [pendingRequests, setPendingRequests] = useState<ShiftExchangeRequest[]>([]);
+    const [selectedRequest, setSelectedRequest] = useState<ShiftExchangeRequest | null>(null);
+    const [showResponseModal, setShowResponseModal] = useState(false);
+
     useEffect(() => {
         if (activeTab === 'members' && members.length === 0) {
             const fetchMembers = async () => {
@@ -57,6 +64,24 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
             fetchMembers();
         }
     }, [activeTab, group.id, members.length]);
+
+    // Load pending exchange requests
+    useEffect(() => {
+        loadPendingRequests();
+    }, [currentUser.id]);
+
+    const loadPendingRequests = async () => {
+        try {
+            const requests = await getMyPendingExchangeRequests(currentUser.id);
+            // Filter requests for this group where current user is the target
+            const relevantRequests = requests.filter(
+                req => req.group_id === group.id && req.target_user_id === currentUser.id
+            );
+            setPendingRequests(relevantRequests);
+        } catch (error) {
+            console.error('Error loading exchange requests:', error);
+        }
+    };
 
     // Personal color state
     const [selectedColor, setSelectedColor] = useState(group.color || '#10b981');
@@ -135,6 +160,25 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
             case 'calendar':
                 return (
                     <div className="flex flex-col">
+                        {/* Exchange Request Banners */}
+                        {pendingRequests.length > 0 && (
+                            <div className="p-4">
+                                {pendingRequests.map(request => (
+                                    <ExchangeRequestBanner
+                                        key={request.id}
+                                        request={request}
+                                        onOpenResponse={() => {
+                                            setSelectedRequest(request);
+                                            setShowResponseModal(true);
+                                        }}
+                                        onDismiss={() => {
+                                            setPendingRequests(prev => prev.filter(r => r.id !== request.id));
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
                         <CalendarView
                             shifts={shifts}
                             assignments={assignments}
@@ -319,7 +363,41 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                 </div>
             </div>
         </div>
+
+            {/* Exchange Response Modal */}
+            {showResponseModal && selectedRequest && (
+                <ExchangeResponseModal
+                    request={selectedRequest}
+                    onClose={() => {
+                        setShowResponseModal(false);
+                        setSelectedRequest(null);
+                    }}
+                    onSuccess={() => {
+                        loadPendingRequests();
+                        if (onGroupUpdate) {
+                            onGroupUpdate(); // Refresh shifts
+                        }
+                    }}
+                />
+            )}
     );
 };
 
 export default PlantonistaServiceView;
+
+            {/* Exchange Response Modal */}
+            {showResponseModal && selectedRequest && (
+                <ExchangeResponseModal
+                    request={selectedRequest}
+                    onClose={() => {
+                        setShowResponseModal(false);
+                        setSelectedRequest(null);
+                    }}
+                    onSuccess={() => {
+                        loadPendingRequests();
+                        if (onGroupUpdate) {
+                            onGroupUpdate(); // Refresh shifts
+                        }
+                    }}
+                />
+            )}
