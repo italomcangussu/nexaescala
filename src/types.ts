@@ -138,6 +138,7 @@ export interface ShiftPreset {
   start_time: string;
   end_time: string;
   quantity_needed?: number;
+  days_of_week?: number[]; // 0=Sun, 6=Sat
 }
 
 export interface GroupMember {

@@ -681,17 +681,30 @@ export const regenerateShiftsForMonth = async (
 
     // 4. Delete shifts that don't have assignments AND are not individual
     if (existingShifts && existingShifts.length > 0) {
-        for (const shift of existingShifts) {
-            if (shift.is_individual) continue;
+        // Filter out individual scale days immediately
+        const generalShiftIds = existingShifts
+            .filter((s: any) => !s.is_individual)
+            .map((s: any) => s.id);
 
+        if (generalShiftIds.length > 0) {
+            // Check usage in assignments (Batch check)
             const { data: assignments } = await supabase
                 .from('shift_assignments')
-                .select('id')
-                .eq('shift_id', shift.id)
-                .limit(1);
+                .select('shift_id')
+                .in('shift_id', generalShiftIds);
 
-            if (!assignments || assignments.length === 0) {
-                await deleteShift(shift.id);
+            const usedShiftIds = new Set(assignments?.map((a: any) => a.shift_id));
+
+            // Find shifts to delete (unused)
+            const shiftsToDelete = generalShiftIds.filter(id => !usedShiftIds.has(id));
+
+            if (shiftsToDelete.length > 0) {
+                const { error: deleteError } = await supabase
+                    .from('shifts')
+                    .delete()
+                    .in('id', shiftsToDelete);
+
+                if (deleteError) throw deleteError;
             }
         }
     }
@@ -738,6 +751,7 @@ export const createServiceComplete = async (payload: CreateServicePayload): Prom
             start_time: p.start_time,
             end_time: p.end_time,
             quantity_needed: p.quantity_needed || 1,
+            days_of_week: p.days_of_week, // Save selected days
             group_id: groupId
         }));
 
@@ -824,6 +838,7 @@ export const updateServiceComplete = async (
                 start_time: p.start_time,
                 end_time: p.end_time,
                 quantity_needed: p.quantity_needed || 1,
+                days_of_week: p.days_of_week, // Save selected days
                 group_id: groupId
             }));
 
@@ -919,7 +934,7 @@ const getDaysInMonth = (year: number, month: number): string[] => {
 export const generateShiftsForGroup = async (
     groupId: string,
     months: MonthSelection[],
-    presets: { code: string; start_time: string; end_time: string; quantity_needed?: number }[],
+    presets: { code: string; start_time: string; end_time: string; quantity_needed?: number; days_of_week?: number[] }[],
     quantityPerShift: number
 ): Promise<number> => {
     if (months.length === 0 || presets.length === 0) return 0;
@@ -929,11 +944,23 @@ export const generateShiftsForGroup = async (
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];
 
-    // Fetch existing shift dates to avoid duplicates/overwriting individual days
+    // Calculate date range for optimization
+    const sortedDetails = months.map(m => {
+        const first = new Date(m.year, m.month, 1);
+        const last = new Date(m.year, m.month + 1, 0);
+        return { first, last };
+    }).sort((a, b) => a.first.getTime() - b.first.getTime());
+
+    const minDate = sortedDetails[0].first.toISOString().split('T')[0];
+    const maxDate = sortedDetails[sortedDetails.length - 1].last.toISOString().split('T')[0];
+
+    // Fetch existing shift dates to avoid duplicates/overwriting individual days (Scoped to range)
     const { data: existing } = await supabase
         .from('shifts')
         .select('date')
-        .eq('group_id', groupId);
+        .eq('group_id', groupId)
+        .gte('date', minDate)
+        .lte('date', maxDate);
 
     const existingDates = new Set(existing?.map(s => s.date) || []);
 
@@ -945,6 +972,15 @@ export const generateShiftsForGroup = async (
             if (day < todayStr || existingDates.has(day)) continue;
 
             for (const preset of presets) {
+                // Check if this day of week is allowed for this preset
+                if (preset.days_of_week && preset.days_of_week.length > 0) {
+                    const dateObj = new Date(day + 'T12:00:00'); // Use noon to avoid timezone shift
+                    const dayOfWeek = dateObj.getDay(); // 0-6 (Sun-Sat)
+                    if (!preset.days_of_week.includes(dayOfWeek)) {
+                        continue;
+                    }
+                }
+
                 shiftsToInsert.push({
                     group_id: groupId,
                     date: day,

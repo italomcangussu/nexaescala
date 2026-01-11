@@ -64,7 +64,24 @@ const StepShifts: React.FC<StepShiftsProps> = ({
                                     <span className="text-slate-300 dark:text-slate-600">→</span>
                                     <span>{shift.end_time}</span>
                                 </div>
-                                <p className="text-xs text-slate-400 mt-0.5">
+                                <div className="flex gap-1 mt-1.5">
+                                    {[0, 1, 2, 3, 4, 5, 6].map(day => {
+                                        const labels = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+                                        const isSelected = (shift.days_of_week || [0, 1, 2, 3, 4, 5, 6]).includes(day);
+                                        return (
+                                            <div
+                                                key={day}
+                                                className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold ${isSelected
+                                                    ? 'bg-primary/20 text-primary'
+                                                    : 'bg-slate-100 dark:bg-slate-700/50 text-slate-300 dark:text-slate-600'
+                                                    }`}
+                                            >
+                                                {labels[day]}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <p className="text-xs text-slate-400 mt-1">
                                     Nº de Plantonistas: {shift.quantity_needed || 1}
                                 </p>
                             </div>

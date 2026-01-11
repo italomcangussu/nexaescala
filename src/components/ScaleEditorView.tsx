@@ -119,7 +119,32 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                 setGroupMembers(membersData);
 
                 // 4. Fetch Shift Presets
-                const presetsData = await getShiftPresets(selectedGroup.id);
+                let presetsData = await getShiftPresets(selectedGroup.id);
+
+                // Fallback: If no presets exist but we have shifts, infer them
+                if (presetsData.length === 0 && shiftsData.length > 0) {
+                    const uniquePresets = new Map<string, ShiftPreset>();
+
+                    shiftsData.forEach(shift => {
+                        // Create a unique key for the preset configuration
+                        const key = `${shift.code || 'UNK'}-${shift.start_time}-${shift.end_time}`;
+
+                        if (!uniquePresets.has(key)) {
+                            uniquePresets.set(key, {
+                                id: `inferred-${key}`, // Temporary ID
+                                group_id: shift.group_id,
+                                code: shift.code || 'PLT',
+                                start_time: shift.start_time,
+                                end_time: shift.end_time,
+                                quantity_needed: shift.quantity_needed,
+                                days_of_week: [0, 1, 2, 3, 4, 5, 6] // Default to all days since we can't easily infer recurrence yet
+                            });
+                        }
+                    });
+
+                    presetsData = Array.from(uniquePresets.values());
+                }
+
                 if (presetsData.length > 0) {
                     setShiftPresets(presetsData);
                 } else if (initialPresets && initialPresets.length > 0) {
@@ -419,7 +444,10 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                     (old.start_time !== p.start_time ||
                         old.end_time !== p.end_time ||
                         old.code !== p.code ||
-                        old.quantity_needed !== p.quantity_needed)
+                        old.quantity_needed !== p.quantity_needed ||
+                        // Check if days of week changed (simple stringify comparison for array content)
+                        JSON.stringify(old.days_of_week?.sort()) !== JSON.stringify(p.days_of_week?.sort())
+                    )
                 )
             );
             const toDelete = shiftPresets.filter(old =>
@@ -433,7 +461,8 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                     code: preset.code,
                     start_time: preset.start_time,
                     end_time: preset.end_time,
-                    quantity_needed: preset.quantity_needed
+                    quantity_needed: preset.quantity_needed,
+                    days_of_week: preset.days_of_week
                 });
             }
 
@@ -442,7 +471,8 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                     code: preset.code,
                     start_time: preset.start_time,
                     end_time: preset.end_time,
-                    quantity_needed: preset.quantity_needed
+                    quantity_needed: preset.quantity_needed,
+                    days_of_week: preset.days_of_week
                 });
             }
 
@@ -685,6 +715,7 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                 currentUser={currentUser}
                 shifts={groupShifts}
                 assignments={localAssignments}
+                currentDate={currentDate}
                 onBack={() => setShowPublicationReview(false)}
                 onPublish={handlePublishScale}
             />
@@ -787,20 +818,23 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                     // Filter shifts for this specific date
                     const dailyShifts = groupShifts.filter(s => s.date === dateStr);
 
-                    // If no shifts exist (e.g. future months not generated), fallback to empty or defaults
-                    // For now, if empty, we might show nothing or default slots.
-                    // But to respect the user's creation, we should rely on dailyShifts.
+                    // If no shifts exist (e.g. weekends excluded by days_of_week), hide the card entireley
+                    if (dailyShifts.length === 0) {
+                        return null;
+                    }
 
-                    const shiftSlots = dailyShifts.length > 0 ? dailyShifts.map(s => {
+                    const shiftSlots = dailyShifts.map(s => {
                         const isNight = s.start_time >= '18:00' || s.start_time < '06:00';
                         const hoursDiff = (Number(s.end_time.substring(0, 2)) - Number(s.start_time.substring(0, 2)) + 24) % 24;
                         const duration = hoursDiff === 0 ? 24 : hoursDiff;
+                        const timeRange = `${s.start_time.substring(0, 5)} - ${s.end_time.substring(0, 5)}`;
 
                         return {
                             id: s.id, // Use real ID
                             code: s.code || 'N/A', // Use code or fallback
                             label: s.code || 'N/A',
                             hours: `${duration}h`, // Dynamic hours
+                            timeRange, // Start - End
                             icon: isNight ? Moon : Sun,
                             color: isNight
                                 ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/20'
@@ -808,11 +842,7 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                             start_time: s.start_time,
                             quantity_needed: s.quantity_needed // Include quantity for rendering
                         };
-                    }).sort((a, b) => a.start_time.localeCompare(b.start_time)) : [];
-
-                    // If no shifts found, maybe show a "No Shifts" message or keeping existing behaviour?
-                    // Existing behavior was hardcoded. 
-                    // If we return empty, the day will be empty.
+                    }).sort((a, b) => a.start_time.localeCompare(b.start_time));
 
 
 
@@ -912,7 +942,7 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                                                                 </span>
                                                                 <div className={`w-0.5 h-2.5 rounded-full ${isAssigned ? 'bg-white/40' : 'bg-slate-200 dark:bg-slate-600'}`} />
                                                                 <span className={`text-[8px] md:text-[10px] font-bold leading-none ${isAssigned ? 'text-white/90' : 'text-slate-400'}`}>
-                                                                    {slot.hours}
+                                                                    {slot.timeRange}
                                                                 </span>
                                                             </div>
 

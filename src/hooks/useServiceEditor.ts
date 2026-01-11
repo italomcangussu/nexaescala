@@ -73,8 +73,8 @@ const createInitialState = (currentUser: Profile): ServiceEditorState => ({
 
     // Step 2: Shifts - Default presets
     shiftPresets: [
-        { id: 'default-1', code: 'MT', start_time: '07:00', end_time: '19:00', quantity_needed: 1 },
-        { id: 'default-2', code: 'SN', start_time: '19:00', end_time: '07:00', quantity_needed: 1 },
+        { id: 'default-1', code: 'MT', start_time: '07:00', end_time: '19:00', quantity_needed: 1, days_of_week: [0, 1, 2, 3, 4, 5, 6] },
+        { id: 'default-2', code: 'SN', start_time: '19:00', end_time: '07:00', quantity_needed: 1, days_of_week: [0, 1, 2, 3, 4, 5, 6] },
     ],
 
     // Step 3: Team - Owner always included
@@ -483,7 +483,7 @@ export const useServiceEditor = (
         openShiftModal: (shift?: ShiftPreset) => {
             dispatch({
                 type: 'SET_EDITING_SHIFT',
-                shift: shift || { code: '', start_time: '', end_time: '' }
+                shift: shift || { code: '', start_time: '', end_time: '', days_of_week: [0, 1, 2, 3, 4, 5, 6] }
             });
             dispatch({ type: 'TOGGLE_SHIFT_MODAL', show: true });
         },
@@ -491,7 +491,7 @@ export const useServiceEditor = (
             dispatch({ type: 'TOGGLE_SHIFT_MODAL', show: false });
             dispatch({ type: 'SET_EDITING_SHIFT', shift: null });
         },
-        updateEditingShift: (field: string, value: string) => {
+        updateEditingShift: (field: string, value: any) => {
             if (state.editingShift) {
                 dispatch({
                     type: 'SET_EDITING_SHIFT',

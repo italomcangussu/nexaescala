@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShiftPreset } from '../types';
 import { X, Plus, Edit2, Trash2, Save, Moon, Sun } from 'lucide-react';
+import WeekDaySelector from './WeekDaySelector';
 
 interface ShiftPresetsManagerProps {
     isOpen: boolean;
@@ -30,7 +31,8 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
         code: '',
         start_time: '',
         end_time: '',
-        quantity_needed: 1
+        quantity_needed: 1,
+        days_of_week: [0, 1, 2, 3, 4, 5, 6]
     });
 
     // Reset and sync with props
@@ -47,7 +49,8 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
             code: '',
             start_time: '',
             end_time: '',
-            quantity_needed: 1
+            quantity_needed: 1,
+            days_of_week: [0, 1, 2, 3, 4, 5, 6]
         });
         setEditingPreset(null);
         setIsAdding(false);
@@ -59,7 +62,8 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
             code: preset.code,
             start_time: preset.start_time.slice(0, 5), // HH:MM
             end_time: preset.end_time.slice(0, 5),
-            quantity_needed: preset.quantity_needed || 1
+            quantity_needed: preset.quantity_needed || 1,
+            days_of_week: preset.days_of_week || [0, 1, 2, 3, 4, 5, 6]
         });
         setIsAdding(false);
     };
@@ -112,7 +116,8 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
                         code: formData.code.toUpperCase(),
                         start_time: formData.start_time + ':00',
                         end_time: formData.end_time + ':00',
-                        quantity_needed: formData.quantity_needed
+                        quantity_needed: formData.quantity_needed,
+                        days_of_week: formData.days_of_week
                     }
                     : p
             ));
@@ -124,7 +129,8 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
                 code: formData.code.toUpperCase(),
                 start_time: formData.start_time + ':00',
                 end_time: formData.end_time + ':00',
-                quantity_needed: formData.quantity_needed
+                quantity_needed: formData.quantity_needed,
+                days_of_week: formData.days_of_week
             };
             setPresets(prev => [...prev, newPreset]);
         }
@@ -214,8 +220,14 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
                                                             {preset.start_time.slice(0, 5)} - {preset.end_time.slice(0, 5)}
                                                         </span>
                                                     </div>
-                                                    <span className="text-xs opacity-60">
-                                                        {preset.quantity_needed || 1} vaga{(preset.quantity_needed || 1) > 1 ? 's' : ''}
+                                                    <span className="text-xs opacity-60 flex gap-2">
+                                                        <span>{preset.quantity_needed || 1} vaga{(preset.quantity_needed || 1) > 1 ? 's' : ''}</span>
+                                                        <span>•</span>
+                                                        <span>
+                                                            {(preset.days_of_week?.length === 7) ? 'Todos os dias' :
+                                                                (preset.days_of_week?.length === 0) ? 'Nenhum dia' :
+                                                                    preset.days_of_week?.map(d => ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'][d]).join(', ')}
+                                                        </span>
                                                     </span>
                                                 </div>
                                             </div>
@@ -302,6 +314,13 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
                                             required
                                         />
                                     </div>
+                                </div>
+
+                                <div>
+                                    <WeekDaySelector
+                                        selectedDays={formData.days_of_week}
+                                        onChange={(days) => setFormData({ ...formData, days_of_week: days })}
+                                    />
                                 </div>
 
                                 <div className="flex gap-2">

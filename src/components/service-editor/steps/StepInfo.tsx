@@ -54,6 +54,8 @@ const StepInfo: React.FC<StepInfoProps> = ({
                             ? 'border-red-400 dark:border-red-500 focus:ring-red-200 dark:focus:ring-red-500/20'
                             : 'border-gray-200 dark:border-slate-700 focus:ring-primary/20'
                         }`}
+                    id="service-name"
+                    name="service-name"
                 />
                 {hasNameError && (
                     <p className="mt-2 text-xs text-red-500 dark:text-red-400 flex items-center gap-1">
@@ -114,8 +116,8 @@ const StepInfo: React.FC<StepInfoProps> = ({
                             type="button"
                             onClick={() => onUpdate('color', presetColor)}
                             className={`w-full aspect-square rounded-full transition-all flex items-center justify-center ${color === presetColor
-                                    ? 'ring-2 ring-offset-2 ring-primary scale-110 dark:ring-offset-slate-900'
-                                    : 'hover:scale-110 opacity-70 hover:opacity-100'
+                                ? 'ring-2 ring-offset-2 ring-primary scale-110 dark:ring-offset-slate-900'
+                                : 'hover:scale-110 opacity-70 hover:opacity-100'
                                 }`}
                             style={{ backgroundColor: presetColor }}
                         >

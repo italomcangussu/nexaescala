@@ -1,12 +1,13 @@
 import React from 'react';
 import { Clock } from 'lucide-react';
 import { ShiftPreset } from '../../../types';
+import WeekDaySelector from '../../WeekDaySelector';
 
 interface ShiftModalProps {
     isOpen: boolean;
     shift: Partial<ShiftPreset> | null;
     onClose: () => void;
-    onUpdate: (field: string, value: string) => void;
+    onUpdate: (field: string, value: any) => void;
     onSave: () => void;
 }
 
@@ -20,7 +21,7 @@ const ShiftModal: React.FC<ShiftModalProps> = ({
     if (!isOpen || !shift) return null;
 
     const isEditing = shift.id && !shift.id.startsWith('new-') && !shift.id.startsWith('default-');
-    const canSave = shift.code && shift.start_time && shift.end_time;
+    const canSave = shift.code && shift.start_time && shift.end_time && (shift.days_of_week?.length ?? 0) > 0;
 
     return (
         <div className="absolute inset-0 bg-white dark:bg-slate-900 z-50 flex flex-col items-center justify-center animate-fade-in-up p-6">
@@ -49,11 +50,19 @@ const ShiftModal: React.FC<ShiftModalProps> = ({
                         className="w-full p-4 bg-slate-50 dark:bg-slate-800 rounded-xl font-bold text-center text-2xl tracking-[0.3em] uppercase border-2 border-transparent focus:border-primary outline-none dark:text-white transition-colors"
                         maxLength={4}
                         placeholder="DT"
+                        id="shift-code"
+                        name="shift-code"
                     />
                     <p className="text-xs text-slate-400 mt-2 text-center">
                         Use siglas curtas como T, M, MT, SN
                     </p>
                 </div>
+
+                {/* Week Day Selector */}
+                <WeekDaySelector
+                    selectedDays={shift.days_of_week || [0, 1, 2, 3, 4, 5, 6]}
+                    onChange={(days) => onUpdate('days_of_week', days)}
+                />
 
                 {/* Time Inputs */}
                 <div className="grid grid-cols-2 gap-4">
@@ -66,6 +75,8 @@ const ShiftModal: React.FC<ShiftModalProps> = ({
                             value={shift.start_time || ''}
                             onChange={e => onUpdate('start_time', e.target.value)}
                             className="w-full p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-center font-semibold dark:text-white border-2 border-transparent focus:border-primary outline-none transition-colors text-lg"
+                            id="shift-start"
+                            name="shift-start"
                         />
                     </div>
                     <div>
@@ -77,6 +88,8 @@ const ShiftModal: React.FC<ShiftModalProps> = ({
                             value={shift.end_time || ''}
                             onChange={e => onUpdate('end_time', e.target.value)}
                             className="w-full p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-center font-semibold dark:text-white border-2 border-transparent focus:border-primary outline-none transition-colors text-lg"
+                            id="shift-end"
+                            name="shift-end"
                         />
                     </div>
                 </div>
@@ -101,6 +114,8 @@ const ShiftModal: React.FC<ShiftModalProps> = ({
                                 value={shift.quantity_needed || 2}
                                 onChange={e => onUpdate('quantity_needed', e.target.value)}
                                 className="w-full p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-center font-bold text-xl dark:text-white border-2 border-transparent focus:border-primary outline-none transition-colors"
+                                id="shift-quantity"
+                                name="shift-quantity"
                             />
                         </div>
                     </div>

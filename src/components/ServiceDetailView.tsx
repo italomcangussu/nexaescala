@@ -42,6 +42,12 @@ const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUse
         }
         setMemberCount(members.length);
 
+        // Verify if current user has dismissed the banner from fresh data
+        const currentMember = members.find(m => m.profile.id === currentUser.id);
+        if (currentMember?.has_seen_color_banner) {
+          setShowColorBanner(false);
+        }
+
         if (shiftsData.length === 0) {
           setGroupStatus('Vazia');
         } else if (shiftsData.some(s => !s.is_published)) {
