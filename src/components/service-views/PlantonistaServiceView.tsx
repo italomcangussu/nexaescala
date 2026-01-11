@@ -362,46 +362,24 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                     {renderContent()}
                 </div>
             </div>
+            {/* Exchange Response Modal */}
+            {showResponseModal && selectedRequest && (
+                <ExchangeResponseModal
+                    request={selectedRequest}
+                    onClose={() => {
+                        setShowResponseModal(false);
+                        setSelectedRequest(null);
+                    }}
+                    onSuccess={() => {
+                        loadPendingRequests();
+                        if (onGroupUpdate) {
+                            onGroupUpdate(); // Refresh shifts
+                        }
+                    }}
+                />
+            )}
         </div>
-
-            {/* Exchange Response Modal */ }
-    {
-        showResponseModal && selectedRequest && (
-            <ExchangeResponseModal
-                request={selectedRequest}
-                onClose={() => {
-                    setShowResponseModal(false);
-                    setSelectedRequest(null);
-                }}
-                onSuccess={() => {
-                    loadPendingRequests();
-                    if (onGroupUpdate) {
-                        onGroupUpdate(); // Refresh shifts
-                    }
-                }}
-            />
-        )
-    }
     );
 };
 
 export default PlantonistaServiceView;
-
-{/* Exchange Response Modal */ }
-{
-    showResponseModal && selectedRequest && (
-        <ExchangeResponseModal
-            request={selectedRequest}
-            onClose={() => {
-                setShowResponseModal(false);
-                setSelectedRequest(null);
-            }}
-            onSuccess={() => {
-                loadPendingRequests();
-                if (onGroupUpdate) {
-                    onGroupUpdate(); // Refresh shifts
-                }
-            }}
-        />
-    )
-}
