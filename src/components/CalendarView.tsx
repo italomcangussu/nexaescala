@@ -213,6 +213,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, curren
                     onEdit={handleEditShift}
                     hideProfile={true}
                     accentColor={groupColor}
+                    currentUserId={currentUser.id}
                   />
                 );
               })}

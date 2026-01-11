@@ -98,12 +98,12 @@ const StepTeam: React.FC<StepTeamProps> = ({
                                         <button
                                             key={role}
                                             type="button"
-                                            onClick={() => !isOwnerAdminRole && onToggleRole(member.profile.id, role)}
-                                            disabled={isOwnerAdminRole}
+                                            onClick={() => !member.isOwner && onToggleRole(member.profile.id, role)}
+                                            disabled={member.isOwner}
                                             className={`px-2.5 py-1 text-[10px] font-bold rounded-lg transition-all ${isActive
                                                 ? 'bg-primary text-white shadow-sm'
                                                 : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'
-                                                } ${isOwnerAdminRole ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                                } ${member.isOwner ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                                         >
                                             {role === ServiceRole.ADMIN ? 'ADM' :
                                                 role === ServiceRole.ADMIN_AUX ? 'ADM AUX' :

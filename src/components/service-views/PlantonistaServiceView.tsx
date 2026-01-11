@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Users, Settings, Clock, Bell, LogOut } from 'lucide-react';
-import { Group, Profile, Shift, ShiftAssignment, AppRole } from '../../types';
+import { Group, Profile, Shift, ShiftAssignment, AppRole, GroupMember, ServiceRole } from '../../types';
 import CalendarView from '../CalendarView';
-import { canUserLeaveGroup, leaveGroup, updateMemberPersonalColor } from '../../services/api';
+import { canUserLeaveGroup, leaveGroup, updateMemberPersonalColor, getGroupMembers } from '../../services/api';
 import ColorPalette from '../ColorPalette';
 import ShiftInbox from '../ShiftInbox';
 
@@ -20,6 +20,27 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
     const [canLeave, setCanLeave] = useState(true);
     const [leaveCheckMessage, setLeaveCheckMessage] = useState('');
     const [isLeavingGroup, setIsLeavingGroup] = useState(false);
+
+    // Members State
+    const [members, setMembers] = useState<GroupMember[]>([]);
+    const [loadingMembers, setLoadingMembers] = useState(false);
+
+    useEffect(() => {
+        if (activeTab === 'members' && members.length === 0) {
+            const fetchMembers = async () => {
+                setLoadingMembers(true);
+                try {
+                    const data = await getGroupMembers(group.id);
+                    setMembers(data);
+                } catch (error) {
+                    console.error("Error fetching members:", error);
+                } finally {
+                    setLoadingMembers(false);
+                }
+            };
+            fetchMembers();
+        }
+    }, [activeTab, group.id, members.length]);
 
     // Personal color state
     const [selectedColor, setSelectedColor] = useState(group.color || '#10b981');
@@ -107,9 +128,47 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                 );
             case 'members':
                 return (
-                    <div className="p-6 space-y-4">
-                        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">Membros da Equipe</h2>
-                        <p className="text-slate-600 dark:text-slate-400">Lista de membros em desenvolvimento.</p>
+                    <div className="p-4">
+                        <div className="flex items-center justify-between mb-4 px-2">
+                            <h3 className="text-lg font-bold">Membros do Serviço ({members.length})</h3>
+                        </div>
+
+                        {loadingMembers ? (
+                            <div className="flex justify-center py-10">
+                                <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                            </div>
+                        ) : members.length === 0 ? (
+                            <div className="text-center py-10 text-slate-400">
+                                Nenhum membro encontrado.
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {members.map(member => (
+                                    <div key={member.id} className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center gap-4">
+                                        {/* Avatar */}
+                                        <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0">
+                                            <img src={member.profile.avatar_url} alt={member.profile.full_name} className="w-full h-full object-cover" />
+                                        </div>
+
+                                        {/* Info */}
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="font-bold text-slate-800 dark:text-slate-100 truncate">{member.profile.full_name}</h4>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase flex items-center gap-1 ${member.service_role === ServiceRole.ADMIN ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-300' :
+                                                    member.service_role === ServiceRole.ADMIN_AUX ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300' :
+                                                        'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-300'
+                                                    }`}>
+                                                    {member.service_role === ServiceRole.ADMIN ? 'ADM' : member.service_role === ServiceRole.ADMIN_AUX ? 'AUX' : 'Plantonista'}
+                                                </span>
+                                                {member.profile.crm && (
+                                                    <span className="text-xs text-slate-400 font-medium">CRM {member.profile.crm}</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 );
             case 'history':
@@ -161,8 +220,8 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                                 onClick={handleLeaveGroup}
                                 disabled={!canLeave || isLeavingGroup}
                                 className={`w-full flex items-center justify-center gap-3 p-4 rounded-2xl border font-bold transition-all ${canLeave && !isLeavingGroup
-                                        ? 'bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/20 text-red-600 hover:bg-red-100'
-                                        : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 cursor-not-allowed'
+                                    ? 'bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/20 text-red-600 hover:bg-red-100'
+                                    : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 cursor-not-allowed'
                                     }`}
                             >
                                 <LogOut size={20} />

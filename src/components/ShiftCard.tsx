@@ -1,6 +1,7 @@
-import React from 'react';
-import { ArrowRightLeft, Edit, Sun, Moon, MapPin, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRightLeft, Edit, Sun, Moon, MapPin, Sparkles, Megaphone } from 'lucide-react';
 import { Shift, ShiftAssignment, AppRole } from '../types';
+import RepasseModal from './RepasseModal';
 
 interface ShiftCardProps {
   shift: Shift;
@@ -9,9 +10,12 @@ interface ShiftCardProps {
   onEdit?: (shift: Shift) => void;
   hideProfile?: boolean;
   accentColor?: string;
+  currentUserId?: string;
 }
 
-const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRole, onEdit, hideProfile = false, accentColor }) => {
+const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRole, onEdit, hideProfile = false, accentColor, currentUserId }) => {
+  const [isRepasseModalOpen, setIsRepasseModalOpen] = useState(false);
+
   // Date Formatting
   const dateObj = new Date(shift.date + 'T12:00:00');
   const day = dateObj.getDate();
@@ -74,11 +78,11 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
           <div className="flex justify-between items-start mb-6">
             <div className="flex flex-col">
               <h3 className={`font-bold text-lg leading-tight transition-colors ${cardStyles.textPrimary}`}>
-                {shift.institution_name || 'Instituição'}
+                {shift.group_name || 'Serviço'}
               </h3>
               <div className={`flex items-center text-xs font-medium mt-1 ${cardStyles.textSecondary}`}>
                 <MapPin size={12} className={`mr-1 ${isNightShift ? 'text-indigo-400' : 'text-primary'}`} />
-                <span className="opacity-80 tracking-wide">{isFlex ? 'Unidade Flex' : 'Bloco Central'}</span>
+                <span className="opacity-80 tracking-wide">{shift.institution_name || 'Instituição'}</span>
               </div>
             </div>
 
@@ -155,30 +159,52 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
               )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col items-end gap-2">
               {currentUserRole === AppRole.GESTOR && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     onEdit?.(shift);
                   }}
-                  className={`p-2 rounded-xl transition-all active:scale-95 text-slate-400 ${cardStyles.editBtnHover}`}
+                  className={`p-2 rounded-xl transition-all active:scale-95 text-slate-400 absolute top-4 right-4 ${cardStyles.editBtnHover}`}
                 >
                   <Edit size={18} strokeWidth={2} />
                 </button>
               )}
 
+              {/* Repasse Button */}
+              {assignment?.profile_id === currentUserId && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsRepasseModalOpen(true);
+                  }}
+                  className={`relative overflow-hidden group/btn flex items-center justify-center w-full px-5 py-2 rounded-xl text-white shadow-lg active:scale-95 transition-all duration-300 ${isNightShift ? 'bg-sky-600 hover:bg-sky-700 shadow-sky-900/40' : 'bg-blue-500 hover:bg-blue-600 shadow-blue-200 hover:shadow-blue-300 dark:shadow-none'}`}
+                >
+                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer"></div>
+                  <Megaphone size={14} className="mr-2 group-hover/btn:rotate-12 transition-transform duration-500" />
+                  <span className="text-xs font-bold uppercase tracking-wide">Repassar</span>
+                </button>
+              )}
+
               {/* Premium Button with Shimmer Effect - Adjusted for Night */}
               <button
-                className={`relative overflow-hidden group/btn flex items-center px-5 py-2.5 rounded-xl text-white shadow-lg active:scale-95 transition-all duration-300 ${cardStyles.buttonBg}`}
+                className={`relative overflow-hidden group/btn flex items-center justify-center w-full px-5 py-2 rounded-xl text-white shadow-lg active:scale-95 transition-all duration-300 ${cardStyles.buttonBg}`}
               >
-                <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer"></div>
+                <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer delay-75"></div>
                 <ArrowRightLeft size={14} className="mr-2 group-hover/btn:rotate-180 transition-transform duration-500" />
                 <span className="text-xs font-bold uppercase tracking-wide">Trocar</span>
               </button>
             </div>
           </div>
 
+          <RepasseModal
+            isOpen={isRepasseModalOpen}
+            onClose={() => setIsRepasseModalOpen(false)}
+            shift={shift}
+            currentUserProfileId={currentUserId || ''}
+            currentUserRole={currentUserRole || ''}
+          />
         </div>
       </div>
     </div>

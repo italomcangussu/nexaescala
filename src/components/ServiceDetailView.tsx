@@ -21,7 +21,12 @@ const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUse
 
   const [memberCount, setMemberCount] = useState<number>(0);
   const [groupStatus, setGroupStatus] = useState<'Vazia' | 'Em rascunho' | 'Publicada'>('Vazia');
-  const [showColorBanner, setShowColorBanner] = useState(!group.has_seen_color_banner);
+  const [showColorBanner, setShowColorBanner] = useState(() => {
+    // Check local storage first
+    const localSeen = localStorage.getItem(`nexaescala_color_banner_${group.id}`);
+    if (localSeen === 'true') return false;
+    return !group.has_seen_color_banner;
+  });
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [assignments, setAssignments] = useState<ShiftAssignment[]>([]);
 
@@ -44,8 +49,13 @@ const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUse
 
         // Verify if current user has dismissed the banner from fresh data
         const currentMember = members.find(m => m.profile.id === currentUser.id);
+
         if (currentMember?.has_seen_color_banner) {
           setShowColorBanner(false);
+          localStorage.setItem(`nexaescala_color_banner_${group.id}`, 'true');
+        } else {
+          const localSeen = localStorage.getItem(`nexaescala_color_banner_${group.id}`);
+          if (localSeen === 'true') setShowColorBanner(false);
         }
 
         if (shiftsData.length === 0) {
@@ -64,8 +74,12 @@ const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUse
 
   const handleColorSelect = async (color: string) => {
     try {
-      await updateMemberPersonalColor(group.id, currentUser.id, color);
+      // Optimistic update
       setShowColorBanner(false);
+      localStorage.setItem(`nexaescala_color_banner_${group.id}`, 'true');
+
+      await updateMemberPersonalColor(group.id, currentUser.id, color);
+
       // Trigger parent to refresh group data
       if (onGroupUpdate) {
         onGroupUpdate();
@@ -78,8 +92,10 @@ const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUse
 
   const handleDismissBanner = async () => {
     try {
-      await markColorBannerSeen(group.id, currentUser.id);
       setShowColorBanner(false);
+      localStorage.setItem(`nexaescala_color_banner_${group.id}`, 'true');
+
+      await markColorBannerSeen(group.id, currentUser.id);
     } catch (error) {
       console.error('Error dismissing banner:', error);
       // Still hide the banner even if API call fails

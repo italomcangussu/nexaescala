@@ -67,6 +67,8 @@ const Dashboard: React.FC = () => {
   // Guard clause - MUST be after all hooks
   if (!currentUser) return null;
 
+
+
   // Hydrate data
   const hydratedAssignments = assignments.map(a => ({
     ...a,
@@ -217,6 +219,7 @@ const Dashboard: React.FC = () => {
                       assignment={assignment}
                       currentUserRole={userRole}
                       onEdit={handleEditShift}
+                      currentUserId={currentUser.id}
                     />
                   );
                 })
@@ -273,7 +276,7 @@ const Dashboard: React.FC = () => {
   const renderContent = () => {
     switch (activeBottomTab) {
       case 'home': return renderHomeContent();
-      case 'calendar': return <CalendarView shifts={shifts} assignments={hydratedAssignments} currentUser={currentUser} currentUserRole={userRole} userGroups={userGroups} />;
+      case 'calendar': return <CalendarView shifts={shifts} assignments={hydratedAssignments} currentUser={currentUser} currentUserRole={userRole} />;
       case 'finance': return (
         <FinanceDashboard
           currentUser={currentUser}

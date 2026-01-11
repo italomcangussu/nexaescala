@@ -107,7 +107,13 @@ export const getMyShifts = async (userId: string): Promise<{ shifts: Shift[], as
       shift_id,
       profile_id,
       is_confirmed,
-      shift:shifts (*)
+      shift:shifts (
+        *,
+        group:groups (
+            name,
+            institution
+        )
+      )
     `)
         .eq('profile_id', userId);
 
@@ -118,7 +124,12 @@ export const getMyShifts = async (userId: string): Promise<{ shifts: Shift[], as
 
     assignmentsData.forEach((a: any) => {
         if (a.shift) {
-            shifts.push(a.shift);
+            const shiftWithGroup = {
+                ...a.shift,
+                group_name: a.shift.group?.name,
+                institution_name: a.shift.group?.institution
+            };
+            shifts.push(shiftWithGroup);
             assignments.push({
                 id: a.id,
                 shift_id: a.shift_id,
@@ -163,11 +174,25 @@ export const getMemberAssignmentsForPeriod = async (memberIds: string[], startDa
 export const getShifts = async (groupId: string): Promise<Shift[]> => {
     const { data, error } = await supabase
         .from('shifts')
-        .select('*')
+        .select(`
+            *,
+            group:groups (
+                name,
+                institution
+            )
+        `)
         .eq('group_id', groupId);
 
     if (error) throw error;
-    return data as Shift[];
+
+    // Map group details to shift object
+    const shifts = (data as any[]).map(shift => ({
+        ...shift,
+        group_name: shift.group?.name,
+        institution_name: shift.group?.institution
+    }));
+
+    return shifts as Shift[];
 };
 
 export const getAssignments = async (shiftIds: string[]): Promise<ShiftAssignment[]> => {
@@ -1375,3 +1400,60 @@ export const revertDailyScaleToGeneral = async (groupId: string, date: string) =
         if (insertError) throw insertError;
     }
 };
+// --- SHIFT EXCHANGES ---
+
+export const createShiftOffer = async (
+    shiftId: string,
+    requestingProfileId: string,
+    note?: string
+): Promise<void> => {
+    // 1. Get shift details to find the group
+    const { data: shift, error: shiftError } = await supabase
+        .from('shifts')
+        .select(`
+            *,
+            group:groups(id, name, owner_id)
+        `)
+        .eq('id', shiftId)
+        .single();
+
+    if (shiftError) throw shiftError;
+
+    // 2. Create the Exchange Request
+    const { error: insertError } = await supabase
+        .from('shift_exchanges')
+        .insert({
+            shift_id: shiftId,
+            requesting_profile_id: requestingProfileId,
+            status: 'PENDING', // Assuming 'PENDING' is a valid status in TradeStatus enum or string
+            note: note
+        });
+
+    if (insertError) throw insertError;
+
+    // 3. Notify Admins
+    // Fetch admins of this group
+    const { data: admins, error: adminError } = await supabase
+        .from('group_members')
+        .select('profile_id')
+        .eq('group_id', shift.group_id)
+        .in('service_role', ['ADMIN', 'ADMIN_AUX']);
+
+    if (!adminError && admins && admins.length > 0) {
+        const adminIds = admins.map(a => a.profile_id);
+
+        // Prepare notifications
+        const notifications: Partial<Notification>[] = adminIds.map(adminId => ({
+            user_id: adminId,
+            title: 'Nova Oferta de Plantão',
+            message: `Um membro ofertou um plantão no serviço ${shift.group.name}.`,
+            type: 'SHIFT_OFFER', // Ensure this type exists or use Generic
+            link: `/services/${shift.group.id}?tab=notifications`,
+            is_read: false
+        }));
+
+        await createNotificationsBulk(notifications);
+    }
+};
+
+

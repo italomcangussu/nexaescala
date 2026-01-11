@@ -231,6 +231,7 @@ export interface Shift {
   institution_name?: string; // For UI
   code?: string; // Shift Code (e.g. DT, NT)
   is_individual?: boolean; // Flag for individual day scale
+  group_name?: string; // Service Name (for UI Cards)
 }
 
 export interface ShiftAssignment {
@@ -297,7 +298,7 @@ export interface Notification {
   user_id: string;
   title: string;
   message: string;
-  type: 'SHIFT_PUBLISHED' | 'SHIFT_SWAP' | 'SYSTEM';
+  type: 'SHIFT_PUBLISHED' | 'SHIFT_SWAP' | 'SYSTEM' | 'SHIFT_OFFER';
   is_read: boolean;
   created_at: string;
   metadata?: any;
