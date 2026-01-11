@@ -5,7 +5,7 @@ import CalendarView from '../CalendarView';
 import { canUserLeaveGroup, leaveGroup, updateMemberPersonalColor, getGroupMembers, getMyPendingExchangeRequests } from '../../services/api';
 import ColorPalette from '../ColorPalette';
 import ShiftInbox from '../ShiftInbox';
-import { useToast } from '../../contexts/ToastContext';
+import { useToast } from '../../context/ToastContext';
 import ExchangeRequestBanner from '../ExchangeRequestBanner';
 import ExchangeResponseModal from '../ExchangeResponseModal';
 
@@ -364,40 +364,44 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
             </div>
         </div>
 
-            {/* Exchange Response Modal */}
-            {showResponseModal && selectedRequest && (
-                <ExchangeResponseModal
-                    request={selectedRequest}
-                    onClose={() => {
-                        setShowResponseModal(false);
-                        setSelectedRequest(null);
-                    }}
-                    onSuccess={() => {
-                        loadPendingRequests();
-                        if (onGroupUpdate) {
-                            onGroupUpdate(); // Refresh shifts
-                        }
-                    }}
-                />
-            )}
+            {/* Exchange Response Modal */ }
+    {
+        showResponseModal && selectedRequest && (
+            <ExchangeResponseModal
+                request={selectedRequest}
+                onClose={() => {
+                    setShowResponseModal(false);
+                    setSelectedRequest(null);
+                }}
+                onSuccess={() => {
+                    loadPendingRequests();
+                    if (onGroupUpdate) {
+                        onGroupUpdate(); // Refresh shifts
+                    }
+                }}
+            />
+        )
+    }
     );
 };
 
 export default PlantonistaServiceView;
 
-            {/* Exchange Response Modal */}
-            {showResponseModal && selectedRequest && (
-                <ExchangeResponseModal
-                    request={selectedRequest}
-                    onClose={() => {
-                        setShowResponseModal(false);
-                        setSelectedRequest(null);
-                    }}
-                    onSuccess={() => {
-                        loadPendingRequests();
-                        if (onGroupUpdate) {
-                            onGroupUpdate(); // Refresh shifts
-                        }
-                    }}
-                />
-            )}
+{/* Exchange Response Modal */ }
+{
+    showResponseModal && selectedRequest && (
+        <ExchangeResponseModal
+            request={selectedRequest}
+            onClose={() => {
+                setShowResponseModal(false);
+                setSelectedRequest(null);
+            }}
+            onSuccess={() => {
+                loadPendingRequests();
+                if (onGroupUpdate) {
+                    onGroupUpdate(); // Refresh shifts
+                }
+            }}
+        />
+    )
+}

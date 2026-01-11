@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, ArrowRightLeft, Calendar, Clock } from 'lucide-react';
 import { ShiftExchangeRequest } from '../types';
 import { respondToExchangeRequest } from '../services/api';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../context/ToastContext';
 
 interface ExchangeResponseModalProps {
     request: ShiftExchangeRequest;
@@ -142,8 +142,8 @@ const ExchangeResponseModal: React.FC<ExchangeResponseModalProps> = ({
                                         key={shift.id}
                                         onClick={() => setSelectedShiftId(shift.id)}
                                         className={`w-full p-4 rounded-lg border-2 transition-all text-left ${selectedShiftId === shift.id
-                                                ? 'border-primary bg-primary/5'
-                                                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                            ? 'border-primary bg-primary/5'
+                                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                                             }`}
                                     >
                                         <div className="flex items-center justify-between">
