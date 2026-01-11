@@ -652,14 +652,18 @@ export const createShiftPresetsBulk = async (groupId: string, presets: Omit<Shif
 // Regenerate shifts for a specific month based on current presets
 export const regenerateShiftsForMonth = async (
     groupId: string,
-    date: Date
+    date: Date,
+    presets?: ShiftPreset[] // Optimization: Allow passing presets if already fetched
 ): Promise<void> => {
     const year = date.getFullYear();
     const month = date.getMonth();
 
-    // 1. Get current presets
-    const presets = await getShiftPresets(groupId);
-    if (presets.length === 0) {
+    // 1. Get current presets (if not provided)
+    const currentPresets = presets || await getShiftPresets(groupId);
+
+    if (currentPresets.length === 0) {
+        // If no presets, we might need to clear shifts that are purely generated?
+        // But for safety, let's just return.
         console.warn('No presets found for group', groupId);
         return;
     }
@@ -669,48 +673,71 @@ export const regenerateShiftsForMonth = async (
     const lastDay = new Date(year, month + 1, 0).getDate();
     const endDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 
-    // 3. Get existing shifts for this month
+    // 3. Get existing shifts for this month efficienty (including check for assignments)
+    // We only need to delete shifts that:
+    // a) Are NOT individual scales
+    // b) Have NO assignments
+    // c) (Implicitly) Assuming we want to rebuild the schedule.
+
     const { data: existingShifts, error: fetchError } = await supabase
         .from('shifts')
-        .select('id, code, date, start_time, is_individual')
+        .select(`
+            id, 
+            date, 
+            is_individual,
+            shift_assignments(id) 
+        `)
         .eq('group_id', groupId)
         .gte('date', startDate)
         .lte('date', endDate);
 
     if (fetchError) throw fetchError;
 
-    // 4. Delete shifts that don't have assignments AND are not individual
-    if (existingShifts && existingShifts.length > 0) {
-        // Filter out individual scale days immediately
-        const generalShiftIds = existingShifts
-            .filter((s: any) => !s.is_individual)
-            .map((s: any) => s.id);
+    const existingDates = new Set<string>();
+    const shiftsToDelete: string[] = [];
 
-        if (generalShiftIds.length > 0) {
-            // Check usage in assignments (Batch check)
-            const { data: assignments } = await supabase
-                .from('shift_assignments')
-                .select('shift_id')
-                .in('shift_id', generalShiftIds);
+    if (existingShifts) {
+        existingShifts.forEach((s: any) => {
+            existingDates.add(s.date);
 
-            const usedShiftIds = new Set(assignments?.map((a: any) => a.shift_id));
-
-            // Find shifts to delete (unused)
-            const shiftsToDelete = generalShiftIds.filter(id => !usedShiftIds.has(id));
-
-            if (shiftsToDelete.length > 0) {
-                const { error: deleteError } = await supabase
-                    .from('shifts')
-                    .delete()
-                    .in('id', shiftsToDelete);
-
-                if (deleteError) throw deleteError;
+            // Criteria to delete: Not individual AND No Assignments
+            if (!s.is_individual && (!s.shift_assignments || s.shift_assignments.length === 0)) {
+                shiftsToDelete.push(s.id);
+            } else {
+                // If we keep it, we shouldn't overwrite it later
+                // The generate function checks existing dates. 
+                // However, we just marked this date as having an existing shift.
+                // If we delete it, we should REMOVE it from existingDates set so it can be regenerated?
+                // YES.
             }
-        }
+        });
+
+        // Remove deleted shifts from the "existingDates" set so they get regenerated
+        // Wait, existingDates logic in generateShiftsForGroup skips generation if date exists.
+        // So if we delete a shift on date X, we must ensure X is NOT in existingDates passed to generate.
+
+        // Let's refine existingDates: it should contain dates of shifts that will REMAIN.
+        existingDates.clear();
+        existingShifts.forEach((s: any) => {
+            const willDelete = !s.is_individual && (!s.shift_assignments || s.shift_assignments.length === 0);
+            if (!willDelete) {
+                existingDates.add(s.date);
+            }
+        });
     }
 
+    // 4. Delete unused shifts in parallel with generation preparations
+    const deletePromise = shiftsToDelete.length > 0
+        ? supabase.from('shifts').delete().in('id', shiftsToDelete)
+        : Promise.resolve({ error: null });
+
     // 5. Generate new shifts for the month
-    await generateShiftsForGroup(groupId, [{ year, month }], presets, 1);
+    // We pass existingDates to avoid re-fetching them
+    const generatePromise = generateShiftsForGroup(groupId, [{ year, month }], currentPresets, 1, existingDates);
+
+    const [{ error: deleteError }] = await Promise.all([deletePromise, generatePromise]);
+
+    if (deleteError) throw deleteError;
 };
 
 // --- SERVICE CREATION (Enhanced) ---
@@ -935,7 +962,8 @@ export const generateShiftsForGroup = async (
     groupId: string,
     months: MonthSelection[],
     presets: { code: string; start_time: string; end_time: string; quantity_needed?: number; days_of_week?: number[] }[],
-    quantityPerShift: number
+    quantityPerShift: number,
+    existingDatesSet?: Set<string> // Optimization: Pass existing dates to avoid query
 ): Promise<number> => {
     if (months.length === 0 || presets.length === 0) return 0;
 
@@ -944,31 +972,41 @@ export const generateShiftsForGroup = async (
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];
 
-    // Calculate date range for optimization
-    const sortedDetails = months.map(m => {
-        const first = new Date(m.year, m.month, 1);
-        const last = new Date(m.year, m.month + 1, 0);
-        return { first, last };
-    }).sort((a, b) => a.first.getTime() - b.first.getTime());
+    // If existingDatesSet provided, use it. Otherwise fetch.
+    let existingDates = existingDatesSet;
 
-    const minDate = sortedDetails[0].first.toISOString().split('T')[0];
-    const maxDate = sortedDetails[sortedDetails.length - 1].last.toISOString().split('T')[0];
+    if (!existingDates) {
+        // Calculate date range for optimization
+        const sortedDetails = months.map(m => {
+            const first = new Date(m.year, m.month, 1);
+            const last = new Date(m.year, m.month + 1, 0);
+            return { first, last };
+        }).sort((a, b) => a.first.getTime() - b.first.getTime());
 
-    // Fetch existing shift dates to avoid duplicates/overwriting individual days (Scoped to range)
-    const { data: existing } = await supabase
-        .from('shifts')
-        .select('date')
-        .eq('group_id', groupId)
-        .gte('date', minDate)
-        .lte('date', maxDate);
+        const minDate = sortedDetails[0].first.toISOString().split('T')[0];
+        const maxDate = sortedDetails[sortedDetails.length - 1].last.toISOString().split('T')[0];
 
-    const existingDates = new Set(existing?.map(s => s.date) || []);
+        // Fetch existing shift dates to avoid duplicates/overwriting individual days (Scoped to range)
+        const { data: existing } = await supabase
+            .from('shifts')
+            .select('date')
+            .eq('group_id', groupId)
+            .gte('date', minDate)
+            .lte('date', maxDate);
+
+        existingDates = new Set(existing?.map(s => s.date) || []);
+    }
 
     for (const { year, month } of months) {
         const days = getDaysInMonth(year, month);
 
         for (const day of days) {
             // Skip past days or days that already have shifts (like individual scales)
+            // Note: Since we are in "Regenerate" context, we might be allowed to touch past days if we want?
+            // But usually we preserve history. Let's keep the logic: `day < todayStr` skip.
+            // Wait, if I am editing a future schedule, I definitely want to generate.
+
+            // existingDates.has(day) check ensures we don't double-book a day that has shifts (individual or otherwise)
             if (day < todayStr || existingDates.has(day)) continue;
 
             for (const preset of presets) {

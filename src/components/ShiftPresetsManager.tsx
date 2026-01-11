@@ -252,93 +252,112 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
                         </div>
                     </div>
 
-                    {/* Form */}
+                    {/* Form Modal */}
                     {(isAdding || editingPreset) && (
-                        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
-                            <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">
-                                {editingPreset ? 'Editar Turno' : 'Novo Turno'}
-                            </h4>
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
-                                            Código *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={formData.code}
-                                            onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                                            placeholder="Ex: DT, NT, MT"
-                                            className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-                                            maxLength={4}
-                                            required
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
-                                            Vagas *
-                                        </label>
-                                        <input
-                                            type="number"
-                                            value={formData.quantity_needed}
-                                            onChange={(e) => setFormData({ ...formData, quantity_needed: parseInt(e.target.value) || 1 })}
-                                            min="1"
-                                            className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
-                                            Horário Início *
-                                        </label>
-                                        <input
-                                            type="time"
-                                            value={formData.start_time}
-                                            onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                                            className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-                                            required
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
-                                            Horário Fim *
-                                        </label>
-                                        <input
-                                            type="time"
-                                            value={formData.end_time}
-                                            onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                                            className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <WeekDaySelector
-                                        selectedDays={formData.days_of_week}
-                                        onChange={(days) => setFormData({ ...formData, days_of_week: days })}
-                                    />
-                                </div>
-
-                                <div className="flex gap-2">
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in p-4">
+                            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col animate-scale-in">
+                                <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
+                                    <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100">
+                                        {editingPreset ? 'Editar Turno' : 'Novo Turno'}
+                                    </h4>
                                     <button
-                                        type="submit"
-                                        className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary/90 transition-colors"
-                                    >
-                                        {editingPreset ? 'Atualizar' : 'Adicionar'}
-                                    </button>
-                                    <button
-                                        type="button"
                                         onClick={resetForm}
-                                        className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-bold text-sm hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                                        className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                                     >
-                                        Cancelar
+                                        <X size={18} className="text-slate-600 dark:text-slate-300" />
                                     </button>
                                 </div>
-                            </form>
+
+                                <form onSubmit={handleSubmit} className="p-4 space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                                Código *
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={formData.code}
+                                                onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                                                placeholder="Ex: DT, NT, MT"
+                                                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                                maxLength={4}
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                                Vagas *
+                                            </label>
+                                            <input
+                                                type="number"
+                                                value={formData.quantity_needed}
+                                                onChange={(e) => setFormData({ ...formData, quantity_needed: parseInt(e.target.value) || 1 })}
+                                                min="1"
+                                                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                                Horário Início *
+                                            </label>
+                                            <input
+                                                type="time"
+                                                value={formData.start_time}
+                                                onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                                                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                                Horário Fim *
+                                            </label>
+                                            <input
+                                                type="time"
+                                                value={formData.end_time}
+                                                onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                                                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div className="mb-2">
+                                            <label className="block text-xs font-bold text-slate-600 dark:text-slate-400">
+                                                Dias da Semana
+                                            </label>
+                                            <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                                                Selecione os dias em que este turno ocorre
+                                            </p>
+                                        </div>
+                                        <WeekDaySelector
+                                            selectedDays={formData.days_of_week}
+                                            onChange={(days) => setFormData({ ...formData, days_of_week: days })}
+                                        />
+                                    </div>
+
+                                    <div className="flex gap-2 pt-2">
+                                        <button
+                                            type="submit"
+                                            className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary/90 transition-colors"
+                                        >
+                                            {editingPreset ? 'Atualizar' : 'Adicionar'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={resetForm}
+                                            className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-bold text-sm hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                                        >
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     )}
                 </div>

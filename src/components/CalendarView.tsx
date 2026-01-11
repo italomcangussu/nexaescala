@@ -174,8 +174,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ shifts, assignments, curren
 
         {/* Weekday Headers */}
         <div className="grid grid-cols-7 text-center mb-2">
-          {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(d => (
-            <span key={d} className="text-xs font-black text-textSecondary dark:text-slate-600 opacity-60">{d}</span>
+          {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, index) => (
+            <span key={`${d}-${index}`} className="text-xs font-black text-textSecondary dark:text-slate-600 opacity-60">{d}</span>
           ))}
         </div>
       </div>

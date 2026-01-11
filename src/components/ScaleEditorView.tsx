@@ -454,48 +454,81 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                 !newPresets.find(p => p.id === old.id)
             );
 
-            // 2. Apply changes to presets
-            for (const preset of toAdd) {
-                await createShiftPreset({
+            // 2. Apply changes concurrently
+            const promises: Promise<any>[] = [];
+
+            // Add new presets in bulk if function exists, otherwise concurrent individual ops (or use create if bulk not imported)
+            // But we already have createShiftPresetsBulk in api.ts, need to import it.
+            // Since we can't easily change imports in this block, let's use parallel create for now or assume import exists (I will update imports next)
+            // Actually, for now let's use parallel individual creates if bulk isn't imported, but I should update imports first.
+            // Wait, I can't update imports IN THE SAME BLOCK comfortably. 
+            // I will use concurrent individual creations here for safety if bulk isn't imported, 
+            // BUT wait, toAdd is local only.
+
+            // To ensure safety, I will stick to what's available or use what I know I can fix. 
+            // Let's assume I will fix imports in a separate step or just use parallel loops for now.
+            // The file preview showed createShiftPreset IS imported. createShiftPresetsBulk might not be.
+            // Let's strictly use Promise.all with existing functions to be safe, which is already a huge specific improvement.
+
+            if (toAdd.length > 0) {
+                promises.push(...toAdd.map(preset => createShiftPreset({
                     group_id: selectedGroup.id,
                     code: preset.code,
                     start_time: preset.start_time,
                     end_time: preset.end_time,
                     quantity_needed: preset.quantity_needed,
                     days_of_week: preset.days_of_week
-                });
+                })));
             }
 
-            for (const preset of toUpdate) {
-                await updateShiftPreset(preset.id, {
+            if (toUpdate.length > 0) {
+                promises.push(...toUpdate.map(preset => updateShiftPreset(preset.id, {
                     code: preset.code,
                     start_time: preset.start_time,
                     end_time: preset.end_time,
                     quantity_needed: preset.quantity_needed,
                     days_of_week: preset.days_of_week
-                });
+                })));
             }
 
-            for (const preset of toDelete) {
-                await deleteShiftPreset(preset.id);
+            if (toDelete.length > 0) {
+                promises.push(...toDelete.map(preset => deleteShiftPreset(preset.id)));
             }
+
+            // Await all DB mutations
+            await Promise.all(promises);
 
             // 3. Regenerate shifts for current month
-            await regenerateShiftsForMonth(selectedGroup.id, currentDate);
+            // This is also slow, but likely necessary.
+            // OPTIMIZATION: Pass the updated presets so we don't fetch them again!
+            // We need to pass the FULL list of presets (new + existing - deleted + updated)
+            // But actually, we just updated the DB. If we construct the full list in memory, we save a fetch.
+            // Constructing the memory list:
+            // This is tricky because `newPresets` passed to this function IS the full new state from UI!
+            // `ShiftPresetsManager` calls `onSave(presets)` with the full final array.
+            // So `newPresets` IS valid to pass directly.
 
-            // 4. Reload data
-            const updatedShifts = await getShifts(selectedGroup.id);
+            await regenerateShiftsForMonth(selectedGroup.id, currentDate, newPresets);
+
+            // 4. Reload data concurrently
+            const [updatedShifts, updatedPresets] = await Promise.all([
+                getShifts(selectedGroup.id),
+                getShiftPresets(selectedGroup.id)
+            ]);
+
             setGroupShifts(updatedShifts);
-
-            const updatedPresets = await getShiftPresets(selectedGroup.id);
             setShiftPresets(updatedPresets);
 
-            // Reload assignments
+            // Reload assignments if shifts exist
             if (updatedShifts.length > 0) {
                 const shiftIds = updatedShifts.map(s => s.id);
                 const assignmentsData = await getAssignments(shiftIds);
                 setLocalAssignments(assignmentsData);
                 setOriginalAssignments(assignmentsData);
+            } else {
+                // If no shifts, assignments should be empty
+                setLocalAssignments([]);
+                setOriginalAssignments([]);
             }
 
             setIsPresetsManagerOpen(false);
@@ -1071,6 +1104,18 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                 onRevert={handleRevertToGeneral}
             />
 
+            {/* BLOCKING LOADING OVERLAY */}
+            {isLoading && (
+                <div className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-2xl flex flex-col items-center gap-4 text-center mx-4">
+                        <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                        <div>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Processando...</h3>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Por favor, aguarde enquanto salvamos suas alterações.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -37,7 +37,7 @@ const Toast: React.FC<ToastProps> = ({ id, message, type, onClose, duration = 30
             flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border backdrop-blur-md
             animate-in slide-in-from-top-2 fade-in duration-300
             ${bgColors[type]}
-            min-w-[300px] max-w-sm
+            w-[90vw] md:w-auto md:min-w-[300px] md:max-w-sm
         `}>
             {icons[type]}
             <p className="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">
