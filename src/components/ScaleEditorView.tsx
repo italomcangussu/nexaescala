@@ -13,8 +13,6 @@ import {
     sendGroupMessage,
     deleteAssignment,
     createAssignment,
-    deleteShift,
-    updateShift,
     getGroupMembers,
     addGroupMember,
     createService
