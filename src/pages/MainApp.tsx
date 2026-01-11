@@ -17,7 +17,7 @@ import Logo from '../components/Logo';
 import { useAuth } from '../context/AuthContext';
 import { useDashboardData } from '../hooks/useDashboardData';
 
-import { Profile, Shift, ServiceRole, Group, FinancialConfig } from '../types';
+import { Profile, Shift, ServiceRole, Group, FinancialConfig, ShiftPreset } from '../types';
 import { Search, FilePlus, Share2, X, Plus, Calendar, Users } from 'lucide-react';
 import { getFinancialConfig, createFinancialRecord, saveFinancialConfig } from '../services/api';
 
@@ -62,6 +62,7 @@ const Dashboard: React.FC = () => {
   // Navigation State for Editor
   const [editorTargetGroup, setEditorTargetGroup] = useState<Group | null>(null);
   const [editorInitialDate, setEditorInitialDate] = useState<Date | undefined>(undefined);
+  const [editorInitialPresets, setEditorInitialPresets] = useState<ShiftPreset[]>([]);
 
   // Guard clause - MUST be after all hooks
   if (!currentUser) return null;
@@ -96,12 +97,13 @@ const Dashboard: React.FC = () => {
     setIsEditingProfile(false);
   };
 
-  const handleFinishWizard = async (group?: Group, navigate?: boolean) => {
+  const handleFinishWizard = async (group?: Group, navigate?: boolean, presets?: ShiftPreset[]) => {
     await refresh();
     if (group && navigate) {
       // Updated: Open the editor in 'selector' mode (months overview)
       setEditorTargetGroup(group);
       setEditorInitialDate(undefined);
+      setEditorInitialPresets(presets || []);
     } else if (group) {
       setSelectedService(group); // Just open detail
     }
@@ -111,6 +113,7 @@ const Dashboard: React.FC = () => {
   const handleOpenScaleEditor = (group: Group) => {
     setEditorTargetGroup(group);
     setEditorInitialDate(undefined); // Default to current date for existing services
+    setEditorInitialPresets([]); // Clear local presets so it fetches
   };
 
   // Finance Handlers
@@ -418,10 +421,12 @@ const Dashboard: React.FC = () => {
           onBack={() => {
             setEditorTargetGroup(null);
             setEditorInitialDate(undefined);
+            setEditorInitialPresets([]);
             if (activeBottomTab === 'editor') setActiveBottomTab('home');
           }}
           initialGroup={editorTargetGroup || userGroups[0]}
           initialDate={editorInitialDate}
+          initialPresets={editorInitialPresets}
         />
       )}
     </Layout>

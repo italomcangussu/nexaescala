@@ -229,6 +229,7 @@ export interface Shift {
   is_published: boolean;
   institution_name?: string; // For UI
   code?: string; // Shift Code (e.g. DT, NT)
+  is_individual?: boolean; // Flag for individual day scale
 }
 
 export interface ShiftAssignment {

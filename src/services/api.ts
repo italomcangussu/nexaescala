@@ -672,24 +672,24 @@ export const regenerateShiftsForMonth = async (
     // 3. Get existing shifts for this month
     const { data: existingShifts, error: fetchError } = await supabase
         .from('shifts')
-        .select('id, code, date, start_time')
+        .select('id, code, date, start_time, is_individual')
         .eq('group_id', groupId)
         .gte('date', startDate)
         .lte('date', endDate);
 
     if (fetchError) throw fetchError;
 
-    // 4. Delete shifts that don't have assignments (safe to regenerate)
+    // 4. Delete shifts that don't have assignments AND are not individual
     if (existingShifts && existingShifts.length > 0) {
         for (const shift of existingShifts) {
-            // Check if shift has assignments
+            if (shift.is_individual) continue;
+
             const { data: assignments } = await supabase
                 .from('shift_assignments')
                 .select('id')
                 .eq('shift_id', shift.id)
                 .limit(1);
 
-            // Only delete if no assignments
             if (!assignments || assignments.length === 0) {
                 await deleteShift(shift.id);
             }
@@ -929,12 +929,20 @@ export const generateShiftsForGroup = async (
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];
 
+    // Fetch existing shift dates to avoid duplicates/overwriting individual days
+    const { data: existing } = await supabase
+        .from('shifts')
+        .select('date')
+        .eq('group_id', groupId);
+
+    const existingDates = new Set(existing?.map(s => s.date) || []);
+
     for (const { year, month } of months) {
         const days = getDaysInMonth(year, month);
 
         for (const day of days) {
-            // Skip past days if dealing with current month
-            if (day < todayStr) continue;
+            // Skip past days or days that already have shifts (like individual scales)
+            if (day < todayStr || existingDates.has(day)) continue;
 
             for (const preset of presets) {
                 shiftsToInsert.push({
@@ -1215,4 +1223,81 @@ export const getRelatedShiftsForDay = async (groupId: string, date: string): Pro
         label: string | null;
         assignments: ShiftAssignment[];
     }[];
+};
+// --- INDIVIDUAL (DAILY) SCALE MANAGEMENT ---
+
+/**
+ * Saves a specific scale for a single day, marking it as individual.
+ * This replaces all shifts for that day for the given group.
+ */
+export const saveDailyScale = async (
+    groupId: string,
+    date: string,
+    presets: { code: string; start_time: string; end_time: string; quantity_needed: number }[]
+) => {
+    // 1. Delete existing shifts for this date
+    const { error: deleteError } = await supabase
+        .from('shifts')
+        .delete()
+        .eq('group_id', groupId)
+        .eq('date', date);
+
+    if (deleteError) throw deleteError;
+
+    // 2. Insert new individual shifts
+    if (presets.length > 0) {
+        const shiftsToInsert = presets.map(p => ({
+            group_id: groupId,
+            date: date,
+            start_time: p.start_time.includes(':') && p.start_time.split(':').length === 2 ? p.start_time + ':00' : p.start_time,
+            end_time: p.end_time.includes(':') && p.end_time.split(':').length === 2 ? p.end_time + ':00' : p.end_time,
+            quantity_needed: p.quantity_needed,
+            code: p.code.toUpperCase(),
+            is_published: false,
+            is_individual: true
+        }));
+
+        const { error: insertError } = await supabase
+            .from('shifts')
+            .insert(shiftsToInsert);
+
+        if (insertError) throw insertError;
+    }
+};
+
+/**
+ * Reverts an individual day scale back to the general service presets.
+ */
+export const revertDailyScaleToGeneral = async (groupId: string, date: string) => {
+    // 1. Get general presets for the group
+    const presets = await getShiftPresets(groupId);
+
+    // 2. Clear current shifts for this date
+    const { error: deleteError } = await supabase
+        .from('shifts')
+        .delete()
+        .eq('group_id', groupId)
+        .eq('date', date);
+
+    if (deleteError) throw deleteError;
+
+    // 3. Recreate from general presets (is_individual = false)
+    if (presets.length > 0) {
+        const shiftsToInsert = presets.map(p => ({
+            group_id: groupId,
+            date: date,
+            start_time: p.start_time,
+            end_time: p.end_time,
+            quantity_needed: p.quantity_needed || 1,
+            code: p.code,
+            is_published: false,
+            is_individual: false
+        }));
+
+        const { error: insertError } = await supabase
+            .from('shifts')
+            .insert(shiftsToInsert);
+
+        if (insertError) throw insertError;
+    }
 };

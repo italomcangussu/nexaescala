@@ -270,7 +270,7 @@ const serviceEditorReducer = (state: ServiceEditorState, action: ServiceEditorAc
 export const useServiceEditor = (
     currentUser: Profile,
     existingGroup?: Group,
-    onComplete?: (group: Group, navigate: boolean) => void
+    onComplete?: (group: Group, navigate: boolean, presets?: ShiftPreset[]) => void
 ) => {
     const [state, dispatch] = useReducer(
         serviceEditorReducer,
@@ -636,7 +636,7 @@ export const useServiceEditor = (
         // Completion
         finish: (navigate: boolean) => {
             if (state.createdGroup && onComplete) {
-                onComplete(state.createdGroup, navigate);
+                onComplete(state.createdGroup, navigate, state.shiftPresets);
             }
         },
 

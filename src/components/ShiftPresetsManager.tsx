@@ -8,6 +8,8 @@ interface ShiftPresetsManagerProps {
     groupId: string;
     currentPresets: ShiftPreset[];
     onSave: (presets: ShiftPreset[]) => void;
+    isDailyMode?: boolean;
+    onRevert?: () => void;
 }
 
 const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
@@ -15,7 +17,9 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
     onClose,
     groupId,
     currentPresets,
-    onSave
+    onSave,
+    isDailyMode = false,
+    onRevert
 }) => {
     const [presets, setPresets] = useState<ShiftPreset[]>(currentPresets);
     const [editingPreset, setEditingPreset] = useState<ShiftPreset | null>(null);
@@ -153,10 +157,10 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
                 <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
                     <div>
                         <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">
-                            Gerenciar Turnos
+                            {isDailyMode ? 'Escala Individual do Dia' : 'Gerenciar Turnos'}
                         </h2>
                         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                            Configure os turnos do serviço
+                            {isDailyMode ? 'Configure os turnos apenas para este dia' : 'Configure os turnos gerais do serviço'}
                         </p>
                     </div>
                     <button
@@ -322,9 +326,21 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
 
                 {/* Footer */}
                 <div className="flex items-center justify-between p-6 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                        As mudanças afetarão todos os plantões do serviço
-                    </p>
+                    <div className="flex flex-col gap-1">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                            {isDailyMode
+                                ? 'As mudanças afetarão apenas este dia específico'
+                                : 'As mudanças afetarão todos os plantões gerados'}
+                        </p>
+                        {isDailyMode && onRevert && (
+                            <button
+                                onClick={onRevert}
+                                className="text-[10px] text-primary font-bold hover:underline text-left"
+                            >
+                                Reverter para Escala Geral
+                            </button>
+                        )}
+                    </div>
                     <button
                         onClick={handleSave}
                         className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors shadow-lg"

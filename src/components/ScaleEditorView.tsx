@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Moon, Sun, UserPlus, Save, PlusCircle, ArrowRightLeft, Trash2, Loader2, CheckCircle, Settings } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Moon, Sun, UserPlus, Save, PlusCircle, ArrowRightLeft, Trash2, Loader2, CheckCircle, Settings, Edit } from 'lucide-react';
 import { Shift, Profile, AppRole, Group, ShiftAssignment, ServiceRole, GroupMember, ShiftPreset } from '../types';
 import ShiftAssignmentModal from './ShiftAssignmentModal';
 import AddMemberModal from './AddMemberModal';
@@ -22,7 +22,9 @@ import {
     createShiftPreset,
     updateShiftPreset,
     deleteShiftPreset,
-    regenerateShiftsForMonth
+    regenerateShiftsForMonth,
+    saveDailyScale,
+    revertDailyScaleToGeneral
 } from '../services/api';
 import { useToast } from '../context/ToastContext';
 
@@ -35,6 +37,7 @@ interface ScaleEditorViewProps {
     onBack?: () => void;
     initialGroup?: Group | null;
     initialDate?: Date;
+    initialPresets?: ShiftPreset[];
 }
 
 const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
@@ -45,7 +48,8 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
     userGroups,
     onBack,
     initialGroup,
-    initialDate
+    initialDate,
+    initialPresets = []
 }) => {
     const { showToast } = useToast();
 
@@ -53,8 +57,11 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
     const [viewMode, setViewMode] = useState<'selector' | 'editor'>(initialDate ? 'editor' : 'selector');
 
     const [currentDate, setCurrentDate] = useState(initialDate || new Date());
-    // Initialize with initialGroup if provided, or default to first group
     const [selectedGroup, setSelectedGroup] = useState<Group | null>(initialGroup || userGroups[0] || null);
+
+    const userRole = selectedGroup?.user_role;
+    const isAdmin = userRole === ServiceRole.ADMIN || userRole === ServiceRole.ADMIN_AUX;
+    const isOwner = userRole === ServiceRole.ADMIN;
 
     // Data State
     const [groupShifts, setGroupShifts] = useState<Shift[]>(initialShiftsProp);
@@ -63,9 +70,13 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
     const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]); // Members State
     const [isLoading, setIsLoading] = useState(false);
 
-    // Shift Presets State
-    const [shiftPresets, setShiftPresets] = useState<ShiftPreset[]>([]);
+    const [shiftPresets, setShiftPresets] = useState<ShiftPreset[]>(initialPresets);
     const [isPresetsManagerOpen, setIsPresetsManagerOpen] = useState(false);
+
+    // Individual Day Editing
+    const [isDailyMode, setIsDailyMode] = useState(false);
+    const [editingDate, setEditingDate] = useState<string | null>(null);
+    const [dailyPresets, setDailyPresets] = useState<ShiftPreset[]>([]);
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -109,7 +120,13 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
 
                 // 4. Fetch Shift Presets
                 const presetsData = await getShiftPresets(selectedGroup.id);
-                setShiftPresets(presetsData);
+                if (presetsData.length > 0) {
+                    setShiftPresets(presetsData);
+                } else if (initialPresets && initialPresets.length > 0) {
+                    setShiftPresets(initialPresets);
+                } else {
+                    setShiftPresets([]);
+                }
 
             } catch (error) {
                 console.error("Error fetching scale data:", error);
@@ -461,6 +478,81 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
         }
     };
 
+    const handleOpenDailyEditor = (dateStr: string, currentShifts: Shift[]) => {
+        setEditingDate(dateStr);
+        setIsDailyMode(true);
+        // Map shifts to presets format
+        const presets: ShiftPreset[] = currentShifts.map(s => ({
+            id: s.id,
+            group_id: s.group_id,
+            code: s.code || '',
+            start_time: s.start_time,
+            end_time: s.end_time,
+            quantity_needed: s.quantity_needed
+        }));
+        setDailyPresets(presets);
+        setIsPresetsManagerOpen(true);
+    };
+
+    const handleSaveDailyPresets = async (presets: ShiftPreset[]) => {
+        if (!selectedGroup || !editingDate) return;
+
+        setIsLoading(true);
+        try {
+            await saveDailyScale(
+                selectedGroup.id,
+                editingDate,
+                presets.map(p => ({
+                    code: p.code,
+                    start_time: p.start_time,
+                    end_time: p.end_time,
+                    quantity_needed: p.quantity_needed || 1
+                }))
+            );
+
+            // Refresh data
+            const updatedShifts = await getShifts(selectedGroup.id);
+            setGroupShifts(updatedShifts);
+
+            setIsPresetsManagerOpen(false);
+            setIsDailyMode(false);
+            setEditingDate(null);
+            showToast('Escala do dia atualizada com sucesso!', 'success');
+        } catch (error) {
+            console.error('Error saving daily presets:', error);
+            showToast('Erro ao atualizar escala do dia.', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleRevertToGeneral = async () => {
+        if (!selectedGroup || !editingDate) return;
+
+        if (!confirm('Deseja reverter este dia para a escala geral? Todas as alterações manuais deste dia serão perdidas.')) {
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            await revertDailyScaleToGeneral(selectedGroup.id, editingDate);
+
+            // Refresh data
+            const updatedShifts = await getShifts(selectedGroup.id);
+            setGroupShifts(updatedShifts);
+
+            setIsPresetsManagerOpen(false);
+            setIsDailyMode(false);
+            setEditingDate(null);
+            showToast('Escala revertida para o padrão geral!', 'success');
+        } catch (error) {
+            console.error('Error reverting daily scale:', error);
+            showToast('Erro ao reverter escala.', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
 
 
     // --- SAVE LOGIC ---
@@ -746,7 +838,25 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                                     <span className="text-xs font-bold text-slate-500 md:hidden uppercase">
                                         {monthName.substring(0, 3)}
                                     </span>
+
+                                    {/* Edit Day Icon (Admin only) */}
+                                    {(isAdmin || isOwner) && (
+                                        <button
+                                            onClick={() => handleOpenDailyEditor(dateStr, dailyShifts)}
+                                            className="md:ml-2 w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-primary transition-all active:scale-95"
+                                            title="Editar escala deste dia"
+                                        >
+                                            <Edit size={16} />
+                                        </button>
+                                    )}
                                 </div>
+
+                                {dailyShifts.some(s => s.is_individual) && (
+                                    <div className="flex items-center gap-1 px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-800 rounded-md text-[9px] font-bold uppercase tracking-wider animate-in fade-in zoom-in duration-300">
+                                        <Settings size={10} strokeWidth={3} />
+                                        Escala Individual
+                                    </div>
+                                )}
                             </div>
 
                             {/* Shifts Rows Container */}
@@ -919,10 +1029,16 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
 
             <ShiftPresetsManager
                 isOpen={isPresetsManagerOpen}
-                onClose={() => setIsPresetsManagerOpen(false)}
+                onClose={() => {
+                    setIsPresetsManagerOpen(false);
+                    setIsDailyMode(false);
+                    setEditingDate(null);
+                }}
                 groupId={selectedGroup?.id || ''}
-                currentPresets={shiftPresets}
-                onSave={handleSavePresets}
+                currentPresets={isDailyMode ? dailyPresets : shiftPresets}
+                onSave={isDailyMode ? handleSaveDailyPresets : handleSavePresets}
+                isDailyMode={isDailyMode}
+                onRevert={handleRevertToGeneral}
             />
 
         </div>

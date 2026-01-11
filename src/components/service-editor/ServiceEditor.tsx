@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, ChevronRight, ChevronLeft, Save, Loader2, Check } from 'lucide-react';
-import { Profile, Group, ServiceEditorMode } from '../../types';
+import { Profile, Group, ServiceEditorMode, ShiftPreset } from '../../types';
 import { useServiceEditor } from '../../hooks/useServiceEditor';
 
 // Step Components
@@ -18,7 +18,7 @@ interface ServiceEditorProps {
     group?: Group;
     currentUser: Profile;
     onClose: () => void;
-    onFinish: (group: Group, navigate: boolean) => void;
+    onFinish: (group: Group, navigate: boolean, presets?: ShiftPreset[]) => void;
 }
 
 const ServiceEditor: React.FC<ServiceEditorProps> = ({
