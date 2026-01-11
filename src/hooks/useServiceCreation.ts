@@ -145,32 +145,40 @@ export const useServiceCreation = (currentUser: Profile, onFinish: (group?: Grou
                 quantity_needed: s.quantity_needed ?? 1
             })));
 
-            // 4. Generate Shifts for NEXT Month
-            // Get next month details
+            // 4. Generate Shifts for CURRENT Month (remaining days) AND NEXT Month
             const now = new Date();
-            // Create a date for the 1st of the next month to avoid edge cases (e.g. Jan 31 -> Feb 28/29)
-            const targetDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth();
 
-            const year = targetDate.getFullYear();
-            const month = targetDate.getMonth();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const monthsToGenerate = [
+                { year: currentYear, month: currentMonth }, // Current
+                { year: currentMonth === 11 ? currentYear + 1 : currentYear, month: currentMonth === 11 ? 0 : currentMonth + 1 } // Next
+            ];
 
             const shiftPromises: Promise<any>[] = [];
 
-            // Iterate through all days of the month
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            for (const { year, month } of monthsToGenerate) {
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-                // Create each shift preset for this day
-                for (const preset of shifts) {
-                    shiftPromises.push(createShift({
-                        group_id: newGroup.id,
-                        date: dateStr,
-                        start_time: preset.start_time,
-                        end_time: preset.end_time,
-                        quantity_needed: preset.quantity_needed || 2, // Use preset quantity
-                        is_published: false // Draft mode
-                    }));
+                for (let day = 1; day <= daysInMonth; day++) {
+                    // Skip past days if dealing with current month
+                    if (year === currentYear && month === currentMonth && day < now.getDate()) {
+                        continue;
+                    }
+
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+                    // Create each shift preset for this day
+                    for (const preset of shifts) {
+                        shiftPromises.push(createShift({
+                            group_id: newGroup.id,
+                            date: dateStr,
+                            start_time: preset.start_time,
+                            end_time: preset.end_time,
+                            quantity_needed: preset.quantity_needed || 2, // Use preset quantity
+                            is_published: false // Draft mode
+                        }));
+                    }
                 }
             }
 

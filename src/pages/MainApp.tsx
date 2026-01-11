@@ -99,12 +99,10 @@ const Dashboard: React.FC = () => {
   const handleFinishWizard = async (group?: Group, navigate?: boolean) => {
     await refresh();
     if (group && navigate) {
-      // Create date for next month (1st day) as service shifts are generated for next month
-      const now = new Date();
-      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-
+      // Updated: Simply open the editor. The creation logic now generates shifts for current month too.
+      // Defaulting to undefined will make ScaleEditor use current date/month.
       setEditorTargetGroup(group);
-      setEditorInitialDate(nextMonth);
+      setEditorInitialDate(undefined);
     } else if (group) {
       setSelectedService(group); // Just open detail
     }

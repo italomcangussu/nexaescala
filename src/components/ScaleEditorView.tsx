@@ -160,6 +160,14 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
         return Array.from({ length: days }, (_, i) => new Date(year, month, i + 1));
     };
 
+    // Helper: Local YYYY-MM-DD
+    const toLocalDateString = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     const currentMonthDays = getDaysInMonth(currentDate);
 
     // Handle opening the assignment modal
@@ -194,7 +202,7 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
     };
 
     const handleSlotClick = async (date: Date, key: string, label: string, startTime: string) => {
-        const dateStr = date.toISOString().split('T')[0];
+        const dateStr = toLocalDateString(date);
         const sId = groupShifts.find(s => s.date === dateStr && s.start_time === startTime)?.id;
 
         if (!sId) {
@@ -297,7 +305,7 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
 
         // Helper to find shift ID for a date + time
         const findShiftId = (d: Date) => {
-            const dStr = d.toISOString().split('T')[0];
+            const dStr = toLocalDateString(d);
             const s = groupShifts.find(shift => shift.date === dStr && shift.start_time === startTime);
             return s?.id;
         };
@@ -577,7 +585,7 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
             <div className="px-2 md:px-4 py-4 md:py-8 max-w-5xl mx-auto w-full space-y-2 md:space-y-6">
 
                 {currentMonthDays.map((date) => {
-                    const dateStr = date.toISOString().split('T')[0];
+                    const dateStr = toLocalDateString(date);
                     const weekDay = date.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
                     const dayNumber = date.getDate().toString().padStart(2, '0');
                     const monthName = monthNames[date.getMonth()];
