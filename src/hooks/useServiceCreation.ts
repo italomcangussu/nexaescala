@@ -173,6 +173,7 @@ export const useServiceCreation = (currentUser: Profile, onFinish: (group?: Grou
                         shiftPromises.push(createShift({
                             group_id: newGroup.id,
                             date: dateStr,
+                            code: preset.code, // Include the custom code (D, T, etc.)
                             start_time: preset.start_time,
                             end_time: preset.end_time,
                             quantity_needed: preset.quantity_needed || 2, // Use preset quantity
