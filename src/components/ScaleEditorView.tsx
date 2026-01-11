@@ -601,22 +601,21 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
 
                     const shiftSlots = dailyShifts.length > 0 ? dailyShifts.map(s => {
                         const isNight = s.start_time >= '18:00' || s.start_time < '06:00';
-                        return {
-                            const hoursDiff = (Number(s.end_time.substring(0, 2)) - Number(s.start_time.substring(0, 2)) + 24) % 24;
-                            const duration = hoursDiff === 0 ? 24 : hoursDiff;
+                        const hoursDiff = (Number(s.end_time.substring(0, 2)) - Number(s.start_time.substring(0, 2)) + 24) % 24;
+                        const duration = hoursDiff === 0 ? 24 : hoursDiff;
 
-                            return {
-                                id: s.id, // Use real ID
-                                code: s.code || (isNight ? 'NT' : 'DT'), // Use code or fallback
-                                label: s.code || (isNight ? 'NT' : 'DT'),
-                                hours: `${duration}h`, // Dynamic hours
-                                icon: isNight ? Moon : Sun,
-                                color: isNight
-                                    ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                    : 'text-orange-500 bg-orange-50 dark:bg-orange-900/20',
-                                start_time: s.start_time
-                            };
-                        }).sort((a, b) => a.start_time.localeCompare(b.start_time)) : [];
+                        return {
+                            id: s.id, // Use real ID
+                            code: s.code || (isNight ? 'NT' : 'DT'), // Use code or fallback
+                            label: s.code || (isNight ? 'NT' : 'DT'),
+                            hours: `${duration}h`, // Dynamic hours
+                            icon: isNight ? Moon : Sun,
+                            color: isNight
+                                ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                : 'text-orange-500 bg-orange-50 dark:bg-orange-900/20',
+                            start_time: s.start_time
+                        };
+                    }).sort((a, b) => a.start_time.localeCompare(b.start_time)) : [];
 
                     // If no shifts found, maybe show a "No Shifts" message or keeping existing behaviour?
                     // Existing behavior was hardcoded. 
