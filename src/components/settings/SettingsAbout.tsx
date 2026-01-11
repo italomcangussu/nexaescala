@@ -1,5 +1,5 @@
 import React from 'react';
-import { Info, ArrowLeft, Heart, Shield, Globe } from 'lucide-react';
+import { ArrowLeft, Heart, Shield, Globe } from 'lucide-react';
 import Logo from '../Logo';
 
 interface SettingsAboutProps {

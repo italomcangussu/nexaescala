@@ -1,37 +1,50 @@
 import React, { useState, useEffect } from 'react';
-import { Group, ServiceRole, Profile } from '../types';
+import { Group, ServiceRole, Profile, Shift, ShiftAssignment } from '../types';
 // Cleaned imports
-import { X, LogOut, Users } from 'lucide-react';
+import { X, Users } from 'lucide-react';
 import AdminServiceView from './service-views/AdminServiceView';
 import PlantonistaServiceView from './service-views/PlantonistaServiceView';
-import { getGroupMembers, getShifts } from '../services/api';
+import { getGroupMembers, getShifts, getAssignments, updateMemberPersonalColor, markColorBannerSeen } from '../services/api';
+import ColorPickerBanner from './ColorPickerBanner';
 
 interface ServiceDetailViewProps {
   group: Group;
   currentUser: Profile;
   onClose: () => void;
   onOpenScaleEditor?: (group: Group) => void;
+  onGroupUpdate?: () => void; // Callback to refresh group data after color change
 }
 
-const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUser, onClose, onOpenScaleEditor }) => {
+const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUser, onClose, onOpenScaleEditor, onGroupUpdate }) => {
   const isAdmin = group.user_role === ServiceRole.ADMIN || group.user_role === ServiceRole.ADMIN_AUX;
   const isPlantonista = group.user_role === ServiceRole.PLANTONISTA;
 
   const [memberCount, setMemberCount] = useState<number>(0);
   const [groupStatus, setGroupStatus] = useState<'Vazia' | 'Em rascunho' | 'Publicada'>('Vazia');
+  const [showColorBanner, setShowColorBanner] = useState(!group.has_seen_color_banner);
+  const [shifts, setShifts] = useState<Shift[]>([]);
+  const [assignments, setAssignments] = useState<ShiftAssignment[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [members, shifts] = await Promise.all([
+        const [members, shiftsData] = await Promise.all([
           getGroupMembers(group.id),
           getShifts(group.id)
         ]);
+        setShifts(shiftsData);
+
+        // Fetch assignments if there are shifts
+        if (shiftsData.length > 0) {
+          const shiftIds = shiftsData.map(s => s.id);
+          const assignmentsData = await getAssignments(shiftIds);
+          setAssignments(assignmentsData);
+        }
         setMemberCount(members.length);
 
-        if (shifts.length === 0) {
+        if (shiftsData.length === 0) {
           setGroupStatus('Vazia');
-        } else if (shifts.some(s => !s.is_published)) {
+        } else if (shiftsData.some(s => !s.is_published)) {
           setGroupStatus('Em rascunho');
         } else {
           setGroupStatus('Publicada');
@@ -43,8 +56,41 @@ const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUse
     fetchData();
   }, [group.id]);
 
+  const handleColorSelect = async (color: string) => {
+    try {
+      await updateMemberPersonalColor(group.id, currentUser.id, color);
+      setShowColorBanner(false);
+      // Trigger parent to refresh group data
+      if (onGroupUpdate) {
+        onGroupUpdate();
+      }
+    } catch (error) {
+      console.error('Error saving color:', error);
+      alert('Erro ao salvar cor. Tente novamente.');
+    }
+  };
+
+  const handleDismissBanner = async () => {
+    try {
+      await markColorBannerSeen(group.id, currentUser.id);
+      setShowColorBanner(false);
+    } catch (error) {
+      console.error('Error dismissing banner:', error);
+      // Still hide the banner even if API call fails
+      setShowColorBanner(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[60] bg-background dark:bg-slate-950 flex flex-col animate-fade-in-up overflow-hidden">
+      {/* Color Picker Banner */}
+      {showColorBanner && (
+        <ColorPickerBanner
+          groupName={group.name}
+          onColorSelect={handleColorSelect}
+          onDismiss={handleDismissBanner}
+        />
+      )}
 
       {/* Header */}
       <div className="px-6 py-4 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between shrink-0 shadow-sm z-20">
@@ -64,28 +110,24 @@ const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUse
             <div className="flex items-center gap-2">
               <div className="relative flex">
                 <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${groupStatus === 'Publicada' ? 'bg-emerald-500' :
-                    groupStatus === 'Em rascunho' ? 'bg-amber-500' : 'bg-slate-400'
+                  groupStatus === 'Em rascunho' ? 'bg-amber-500' : 'bg-slate-400'
                   }`}></span>
                 <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${groupStatus === 'Publicada' ? 'bg-emerald-500' :
-                    groupStatus === 'Em rascunho' ? 'bg-amber-500' : 'bg-slate-400'
+                  groupStatus === 'Em rascunho' ? 'bg-amber-500' : 'bg-slate-400'
                   }`}></span>
               </div>
               <span className={`text-[10px] font-bold uppercase tracking-wider ${groupStatus === 'Publicada' ? 'text-emerald-600 dark:text-emerald-400' :
-                  groupStatus === 'Em rascunho' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500'
+                groupStatus === 'Em rascunho' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500'
                 }`}>{groupStatus}</span>
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {isPlantonista && (
-            <button className="p-2 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full hover:bg-red-100 transition-colors" title="Sair do Serviço">
-              <LogOut size={18} />
-            </button>
-          )}
           <button onClick={onClose} className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 rounded-full hover:bg-slate-200 transition-colors">
             <X size={18} />
           </button>
         </div>
+
       </div>
 
       {/* Content based on Role */}
@@ -98,7 +140,7 @@ const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUse
             onOpenEditor={onOpenScaleEditor}
           />
         ) : (
-          <PlantonistaServiceView group={group} currentUser={currentUser} />
+          <PlantonistaServiceView group={group} currentUser={currentUser} shifts={shifts} assignments={assignments} onBack={onClose} onGroupUpdate={onGroupUpdate} />
         )}
       </div>
 

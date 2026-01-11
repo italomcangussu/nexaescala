@@ -47,7 +47,7 @@ const StepCompletion: React.FC<StepCompletionProps> = ({
                     className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-base shadow-lg shadow-emerald-600/40 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 group"
                 >
                     <Calendar size={20} />
-                    Ir para Editor de Escala
+                    Ver Mural de Escalas
                     <ChevronRight size={18} strokeWidth={2.5} className="group-hover:translate-x-1 transition-transform" />
                 </button>
 

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Moon, Sun, UserPlus, Save, PlusCircle, ArrowRightLeft, Trash2, Loader2, CheckCircle } from 'lucide-react';
-import { Shift, Profile, AppRole, Group, ShiftAssignment, ServiceRole, GroupMember } from '../types';
+import { ChevronLeft, ChevronRight, Moon, Sun, UserPlus, Save, PlusCircle, ArrowRightLeft, Trash2, Loader2, CheckCircle, Settings } from 'lucide-react';
+import { Shift, Profile, AppRole, Group, ShiftAssignment, ServiceRole, GroupMember, ShiftPreset } from '../types';
 import ShiftAssignmentModal from './ShiftAssignmentModal';
 import AddMemberModal from './AddMemberModal';
 import ScaleMonthSelector from './ScaleMonthSelector';
 import ScalePublicationView from './ScalePublicationView';
+import ShiftLegend from './ShiftLegend';
+import ShiftPresetsManager from './ShiftPresetsManager';
 import {
     getShifts,
     getAssignments,
@@ -15,7 +17,12 @@ import {
     createAssignment,
     getGroupMembers,
     addGroupMember,
-    createService
+    createService,
+    getShiftPresets,
+    createShiftPreset,
+    updateShiftPreset,
+    deleteShiftPreset,
+    regenerateShiftsForMonth
 } from '../services/api';
 import { useToast } from '../context/ToastContext';
 
@@ -56,6 +63,10 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
     const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]); // Members State
     const [isLoading, setIsLoading] = useState(false);
 
+    // Shift Presets State
+    const [shiftPresets, setShiftPresets] = useState<ShiftPreset[]>([]);
+    const [isPresetsManagerOpen, setIsPresetsManagerOpen] = useState(false);
+
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
@@ -95,6 +106,10 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                 // 3. Fetch Group Members
                 const membersData = await getGroupMembers(selectedGroup.id);
                 setGroupMembers(membersData);
+
+                // 4. Fetch Shift Presets
+                const presetsData = await getShiftPresets(selectedGroup.id);
+                setShiftPresets(presetsData);
 
             } catch (error) {
                 console.error("Error fetching scale data:", error);
@@ -372,6 +387,80 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
         setSelectionData(null); // Clear selection data
     };
 
+    // --- SHIFT PRESETS MANAGEMENT ---
+    const handleSavePresets = async (newPresets: ShiftPreset[]) => {
+        if (!selectedGroup?.id) return;
+
+        setIsLoading(true);
+        try {
+            // 1. Identify changes
+            const toAdd = newPresets.filter(p => p.id.startsWith('temp-'));
+            const toUpdate = newPresets.filter(p =>
+                !p.id.startsWith('temp-') &&
+                shiftPresets.find(old =>
+                    old.id === p.id &&
+                    (old.start_time !== p.start_time ||
+                        old.end_time !== p.end_time ||
+                        old.code !== p.code ||
+                        old.quantity_needed !== p.quantity_needed)
+                )
+            );
+            const toDelete = shiftPresets.filter(old =>
+                !newPresets.find(p => p.id === old.id)
+            );
+
+            // 2. Apply changes to presets
+            for (const preset of toAdd) {
+                await createShiftPreset({
+                    group_id: selectedGroup.id,
+                    code: preset.code,
+                    start_time: preset.start_time,
+                    end_time: preset.end_time,
+                    quantity_needed: preset.quantity_needed
+                });
+            }
+
+            for (const preset of toUpdate) {
+                await updateShiftPreset(preset.id, {
+                    code: preset.code,
+                    start_time: preset.start_time,
+                    end_time: preset.end_time,
+                    quantity_needed: preset.quantity_needed
+                });
+            }
+
+            for (const preset of toDelete) {
+                await deleteShiftPreset(preset.id);
+            }
+
+            // 3. Regenerate shifts for current month
+            await regenerateShiftsForMonth(selectedGroup.id, currentDate);
+
+            // 4. Reload data
+            const updatedShifts = await getShifts(selectedGroup.id);
+            setGroupShifts(updatedShifts);
+
+            const updatedPresets = await getShiftPresets(selectedGroup.id);
+            setShiftPresets(updatedPresets);
+
+            // Reload assignments
+            if (updatedShifts.length > 0) {
+                const shiftIds = updatedShifts.map(s => s.id);
+                const assignmentsData = await getAssignments(shiftIds);
+                setLocalAssignments(assignmentsData);
+                setOriginalAssignments(assignmentsData);
+            }
+
+            setIsPresetsManagerOpen(false);
+            showToast('Turnos atualizados com sucesso!', 'success');
+        } catch (error) {
+            console.error('Error saving presets:', error);
+            showToast('Erro ao atualizar turnos. Tente novamente.', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
 
 
     // --- SAVE LOGIC ---
@@ -524,8 +613,15 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                 {/* Left: Back Btn + Title & Group Info */}
                 <div className="flex items-center gap-3 min-w-0">
                     <button
-                        onClick={() => handleSaveAndExit(false)} // Silent save on back
+                        onClick={() => {
+                            if (viewMode === 'editor') {
+                                setViewMode('selector');
+                            } else {
+                                handleSaveAndExit(false);
+                            }
+                        }}
                         className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                        title={viewMode === 'editor' ? "Voltar para seleção de mês" : "Sair"}
                     >
                         <ChevronLeft size={20} />
                     </button>
@@ -579,6 +675,12 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                 </div>
             </div>
 
+
+            {/* Shift Legend */}
+            <div className="px-2 md:px-4 max-w-5xl mx-auto w-full">
+                <ShiftLegend presets={shiftPresets} />
+            </div>
+
             {/* Main Content - Days List */}
             <div className="px-2 md:px-4 py-4 md:py-8 max-w-5xl mx-auto w-full space-y-2 md:space-y-6">
 
@@ -604,14 +706,15 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
 
                         return {
                             id: s.id, // Use real ID
-                            code: s.code || (isNight ? 'NT' : 'DT'), // Use code or fallback
-                            label: s.code || (isNight ? 'NT' : 'DT'),
+                            code: s.code || 'N/A', // Use code or fallback
+                            label: s.code || 'N/A',
                             hours: `${duration}h`, // Dynamic hours
                             icon: isNight ? Moon : Sun,
                             color: isNight
                                 ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/20'
                                 : 'text-orange-500 bg-orange-50 dark:bg-orange-900/20',
-                            start_time: s.start_time
+                            start_time: s.start_time,
+                            quantity_needed: s.quantity_needed // Include quantity for rendering
                         };
                     }).sort((a, b) => a.start_time.localeCompare(b.start_time)) : [];
 
@@ -619,8 +722,7 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                     // Existing behavior was hardcoded. 
                     // If we return empty, the day will be empty.
 
-                    // Mock Configuration: Rows per day (Quantity of professionals)
-                    const rowsPerDay = 2; // Still hardcoded for now, ideal is s.quantity_needed
+
 
                     return (
                         <div key={dateStr} className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl p-2 md:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-200 dark:border-slate-800 animate-in fade-in duration-700 slide-in-from-bottom-4">
@@ -758,6 +860,17 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
             <div className="fixed bottom-6 inset-x-0 z-40 flex justify-center pointer-events-none px-4">
                 <div className="pointer-events-auto flex items-center gap-3 bg-white/40 dark:bg-slate-900/60 backdrop-blur-xl p-2 rounded-2xl shadow-2xl border border-white/30 dark:border-slate-700/50 scale-95 md:scale-100 transition-transform ring-1 ring-white/40 dark:ring-white/10">
                     <button
+                        onClick={() => setIsPresetsManagerOpen(true)}
+                        className="flex items-center gap-3 bg-blue-600 text-white px-4 py-2 rounded-xl font-bold shadow-sm hover:bg-blue-500 border border-white/20 transition-all text-[10px] md:text-xs lg:text-sm leading-tight"
+                    >
+                        <Settings size={20} />
+                        <span className="text-left">
+                            Gerenciar<br />
+                            Turnos
+                        </span>
+                    </button>
+
+                    <button
                         onClick={() => handleSaveAndExit(true)} // Notify on explicit save
                         className="flex items-center gap-3 bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl font-bold shadow-sm hover:bg-white dark:hover:bg-slate-700 border border-white/20 dark:border-slate-600/50 transition-all text-[10px] md:text-xs lg:text-sm leading-tight backdrop-blur-sm"
                     >
@@ -802,6 +915,14 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                 onClose={() => setIsAddMemberModalOpen(false)}
                 onAddMember={handleAddNewMember}
                 existingMemberIds={groupMembers.map(m => m.profile.id)}
+            />
+
+            <ShiftPresetsManager
+                isOpen={isPresetsManagerOpen}
+                onClose={() => setIsPresetsManagerOpen(false)}
+                groupId={selectedGroup?.id || ''}
+                currentPresets={shiftPresets}
+                onSave={handleSavePresets}
             />
 
         </div>

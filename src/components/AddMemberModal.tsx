@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Search, UserPlus, Check } from 'lucide-react';
+import { X, Search, UserPlus } from 'lucide-react';
 import { Profile } from '../types';
 import { searchProfiles } from '../services/api';
 

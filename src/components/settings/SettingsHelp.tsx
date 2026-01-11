@@ -1,5 +1,5 @@
 import React from 'react';
-import { HelpCircle, ArrowLeft, MessageCircle, Mail, ExternalLink } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Mail, ExternalLink } from 'lucide-react';
 
 interface SettingsHelpProps {
     onBack: () => void;

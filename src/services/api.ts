@@ -52,7 +52,9 @@ export const getUserGroups = async (userId: string): Promise<Group[]> => {
         color
       ),
       role,
-      service_role
+      service_role,
+      personal_color,
+      has_seen_color_banner
     `)
         .eq('profile_id', userId);
 
@@ -61,6 +63,9 @@ export const getUserGroups = async (userId: string): Promise<Group[]> => {
     const groups = data.map((item: any) => ({
         ...item.group,
         user_role: item.service_role,
+        // Use personal_color if set, otherwise default to emerald green
+        color: item.personal_color || '#10b981',
+        has_seen_color_banner: item.has_seen_color_banner || false,
         member_count: 0, // Default, will update below
         unread_messages: 0 // Placeholder
     })) as Group[];
@@ -342,6 +347,104 @@ export const removeGroupMember = async (groupId: string, profileId: string): Pro
     if (error) throw error;
 };
 
+export interface CanLeaveGroupResult {
+    canLeave: boolean;
+    reason?: string;
+    assignmentCount?: number;
+}
+
+export const canUserLeaveGroup = async (groupId: string, userId: string): Promise<CanLeaveGroupResult> => {
+    // 1. Get all shifts for this group (both published and draft)
+    const { data: shifts, error: shiftsError } = await supabase
+        .from('shifts')
+        .select('id, is_published')
+        .eq('group_id', groupId);
+
+    if (shiftsError) throw shiftsError;
+
+    if (!shifts || shifts.length === 0) {
+        return { canLeave: true };
+    }
+
+    const shiftIds = shifts.map(s => s.id);
+
+    // 2. Check if user has any assignments in these shifts
+    const { data: assignments, error: assignmentsError } = await supabase
+        .from('shift_assignments')
+        .select('id, shift_id')
+        .in('shift_id', shiftIds)
+        .eq('profile_id', userId);
+
+    if (assignmentsError) throw assignmentsError;
+
+    if (!assignments || assignments.length === 0) {
+        return { canLeave: true };
+    }
+
+    // 3. User has assignments - determine the reason
+    const publishedAssignments = assignments.filter(a => {
+        const shift = shifts.find(s => s.id === a.shift_id);
+        return shift?.is_published;
+    });
+
+    const draftAssignments = assignments.filter(a => {
+        const shift = shifts.find(s => s.id === a.shift_id);
+        return !shift?.is_published;
+    });
+
+    let reason = '';
+    if (publishedAssignments.length > 0 && draftAssignments.length > 0) {
+        reason = `Você está escalado em ${publishedAssignments.length} plantão(ões) publicado(s) e ${draftAssignments.length} em rascunho. Abandono de plantão é proibido.`;
+    } else if (publishedAssignments.length > 0) {
+        reason = `Você está escalado em ${publishedAssignments.length} plantão(ões) publicado(s). Abandono de plantão é proibido.`;
+    } else {
+        reason = `Você está escalado em ${draftAssignments.length} plantão(ões) em rascunho. Você precisa ser removido da escala antes de sair.`;
+    }
+
+    return {
+        canLeave: false,
+        reason,
+        assignmentCount: assignments.length
+    };
+};
+
+export const leaveGroup = async (groupId: string, userId: string): Promise<void> => {
+    // 1. Validate if user can leave
+    const validation = await canUserLeaveGroup(groupId, userId);
+
+    if (!validation.canLeave) {
+        throw new Error(validation.reason || 'Você não pode sair deste serviço no momento.');
+    }
+
+    // 2. Remove user from group
+    await removeGroupMember(groupId, userId);
+};
+
+// --- PERSONAL COLOR PREFERENCES ---
+
+export const updateMemberPersonalColor = async (groupId: string, userId: string, color: string): Promise<void> => {
+    const { error } = await supabase
+        .from('group_members')
+        .update({
+            personal_color: color,
+            has_seen_color_banner: true
+        })
+        .match({ group_id: groupId, profile_id: userId });
+
+    if (error) throw error;
+};
+
+export const markColorBannerSeen = async (groupId: string, userId: string): Promise<void> => {
+    const { error } = await supabase
+        .from('group_members')
+        .update({ has_seen_color_banner: true })
+        .match({ group_id: groupId, profile_id: userId });
+
+    if (error) throw error;
+};
+
+
+
 export const createShift = async (shift: Partial<Shift>): Promise<Shift> => {
     const { data, error } = await supabase
         .from('shifts')
@@ -546,7 +649,59 @@ export const createShiftPresetsBulk = async (groupId: string, presets: Omit<Shif
     return data as ShiftPreset[];
 };
 
+// Regenerate shifts for a specific month based on current presets
+export const regenerateShiftsForMonth = async (
+    groupId: string,
+    date: Date
+): Promise<void> => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+
+    // 1. Get current presets
+    const presets = await getShiftPresets(groupId);
+    if (presets.length === 0) {
+        console.warn('No presets found for group', groupId);
+        return;
+    }
+
+    // 2. Calculate month range
+    const startDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const endDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+
+    // 3. Get existing shifts for this month
+    const { data: existingShifts, error: fetchError } = await supabase
+        .from('shifts')
+        .select('id, code, date, start_time')
+        .eq('group_id', groupId)
+        .gte('date', startDate)
+        .lte('date', endDate);
+
+    if (fetchError) throw fetchError;
+
+    // 4. Delete shifts that don't have assignments (safe to regenerate)
+    if (existingShifts && existingShifts.length > 0) {
+        for (const shift of existingShifts) {
+            // Check if shift has assignments
+            const { data: assignments } = await supabase
+                .from('shift_assignments')
+                .select('id')
+                .eq('shift_id', shift.id)
+                .limit(1);
+
+            // Only delete if no assignments
+            if (!assignments || assignments.length === 0) {
+                await deleteShift(shift.id);
+            }
+        }
+    }
+
+    // 5. Generate new shifts for the month
+    await generateShiftsForGroup(groupId, [{ year, month }], presets, 1);
+};
+
 // --- SERVICE CREATION (Enhanced) ---
+
 
 export interface CreateServicePayload {
     ownerId: string;
@@ -579,7 +734,10 @@ export const createServiceComplete = async (payload: CreateServicePayload): Prom
     // 2. Create Shift Presets
     if (shiftPresets.length > 0) {
         const presetsWithGroupId = shiftPresets.map(p => ({
-            ...p,
+            code: p.code,
+            start_time: p.start_time,
+            end_time: p.end_time,
+            quantity_needed: p.quantity_needed || 1,
             group_id: groupId
         }));
 
@@ -665,6 +823,7 @@ export const updateServiceComplete = async (
                 code: p.code,
                 start_time: p.start_time,
                 end_time: p.end_time,
+                quantity_needed: p.quantity_needed || 1,
                 group_id: groupId
             }));
 
@@ -767,10 +926,16 @@ export const generateShiftsForGroup = async (
 
     const shiftsToInsert: any[] = [];
 
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+
     for (const { year, month } of months) {
         const days = getDaysInMonth(year, month);
 
         for (const day of days) {
+            // Skip past days if dealing with current month
+            if (day < todayStr) continue;
+
             for (const preset of presets) {
                 shiftsToInsert.push({
                     group_id: groupId,
@@ -778,7 +943,8 @@ export const generateShiftsForGroup = async (
                     start_time: preset.start_time,
                     end_time: preset.end_time,
                     quantity_needed: preset.quantity_needed || quantityPerShift,
-                    is_published: false // Draft state until user publishes
+                    code: preset.code,
+                    is_published: false
                 });
             }
         }

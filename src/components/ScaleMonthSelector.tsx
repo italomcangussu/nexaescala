@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, Calendar as CalendarIcon, CheckCircle, FileText, Loader2 } from 'lucide-react';
+import { ChevronLeft, Calendar as CalendarIcon, Loader2 } from 'lucide-react';
 import { Group, Shift } from '../types';
 import { getShifts } from '../services/api';
 

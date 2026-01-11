@@ -580,30 +580,27 @@ export const useServiceEditor = (
                             code: p.code,
                             start_time: p.start_time,
                             end_time: p.end_time,
+                            quantity_needed: p.quantity_needed || 1
                         })),
                         team: state.team,
                     });
 
-                    // Generate shifts for NEXT Month automatically
+                    // Generate shifts for CURRENT (remaining) and NEXT Month automatically
                     const now = new Date();
-                    // Target next month
-                    const targetDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-
-                    const nextMonth = {
-                        year: targetDate.getFullYear(),
-                        month: targetDate.getMonth()
-                    };
+                    const currentMonth = { year: now.getFullYear(), month: now.getMonth() };
+                    const nextDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                    const nextMonth = { year: nextDate.getFullYear(), month: nextDate.getMonth() };
 
                     await generateShiftsForGroup(
                         resultGroup.id,
-                        [nextMonth],
+                        [currentMonth, nextMonth],
                         state.shiftPresets.map(p => ({
                             code: p.code,
                             start_time: p.start_time,
                             end_time: p.end_time,
                             quantity_needed: p.quantity_needed || 2
                         })),
-                        2 // Fallback quantity (though presets should handle it)
+                        state.quantityPerShift
                     );
                 } else {
                     await updateServiceComplete(

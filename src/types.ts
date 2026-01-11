@@ -79,7 +79,7 @@ export interface Profile {
   crm?: string;
   avatar_url: string;
   push_subscription?: string; // JSON string of PushSubscription
-  updated_at: string;
+  updated_at?: string;
   phone?: string;
   email?: string;
 
@@ -126,7 +126,8 @@ export interface Group {
   member_count: number;
   unread_messages: number;
   user_role: ServiceRole; // Role of current user in this group
-  color?: string; // Personal visual setting
+  color?: string; // Personal color preference for this user (from group_members.personal_color, defaults to #10b981)
+  has_seen_color_banner?: boolean; // Whether user has seen the color picker banner
   members?: GroupMember[];
 }
 
@@ -146,6 +147,8 @@ export interface GroupMember {
   role: AppRole;
   service_role: ServiceRole;
   service_roles?: ServiceRole[]; // Multiple roles support
+  personal_color?: string; // User's custom color for this service
+  has_seen_color_banner?: boolean; // Whether user has dismissed the color banner
 }
 
 // --- SERVICE EDITOR TYPES ---

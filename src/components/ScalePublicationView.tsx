@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-    ChevronLeft,
+    
     ChevronRight,
     Calendar,
     AlertTriangle,
@@ -10,10 +10,10 @@ import {
     Sun,
     CloudSun,
     Moon,
-    CheckCircle2,
-    AlertCircle,
-    Clock3,
-    ArrowLeft,
+    
+    
+    
+    
     Rocket,
     Plus
 } from 'lucide-react';
@@ -63,7 +63,6 @@ const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
     };
 
     // Find conflicts
-    const conflictsIndices: string[] = [];
     const profileAssignmentsMap = new Map<string, Shift[]>();
 
     assignments.forEach(a => {
@@ -77,7 +76,7 @@ const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
     });
 
     const conflictShiftIds = new Set<string>();
-    profileAssignmentsMap.forEach((userShifts, profileId) => {
+    profileAssignmentsMap.forEach(userShifts => {
         for (let i = 0; i < userShifts.length; i++) {
             for (let j = i + 1; j < userShifts.length; j++) {
                 if (checkOverlap(userShifts[i], userShifts[j])) {
@@ -90,7 +89,6 @@ const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
 
     // Stats calculation
     const totalShifts = shifts.length;
-    const totalAssignments = assignments.length;
     const conflictCount = conflictShiftIds.size;
 
     // Hours calculation
@@ -138,49 +136,6 @@ const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
 
     const extraCount = uniqueProfileIds.length > 3 ? `+${uniqueProfileIds.length - 3}` : null;
 
-    const mockShifts = [
-        {
-            day: 'SEGUNDA, 12 OUT',
-            status: 'CONFIRMADO',
-            name: 'Dr. Ricardo Silva',
-            initials: 'RS',
-            desc: 'Clínico Geral • CRM 12345',
-            color: 'emerald'
-        },
-        {
-            day: 'SEGUNDA, 12 OUT',
-            status: 'CONFLITO',
-            name: 'Dra. Ana Beatriz',
-            initials: 'AB',
-            desc: 'Sobreposição detectada',
-            color: 'red',
-            hasConflict: true
-        },
-        {
-            day: 'TERÇA, 13 OUT',
-            status: 'PENDENTE',
-            name: 'Dr. Marcos Souza',
-            initials: 'MS',
-            desc: 'Pediatra • CRM 67890',
-            color: 'blue'
-        },
-        {
-            day: 'QUARTA, 14 OUT',
-            status: 'CONFIRMADO',
-            name: 'Dr. Lucas Henrique',
-            initials: 'LH',
-            desc: 'Urologista • CRM 44556',
-            color: 'emerald'
-        },
-        {
-            day: 'SEGUNDA, 12 OUT',
-            status: 'CONFIRMADO',
-            name: 'Dra. Camila Paiva',
-            initials: 'CP',
-            desc: 'Cardiologista • CRM 99221',
-            color: 'emerald'
-        },
-    ];
 
     return (
         <div className="fixed inset-0 z-[80] bg-slate-50 dark:bg-black flex flex-col animate-fade-in">

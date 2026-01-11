@@ -7,7 +7,6 @@ import { useServiceEditor } from '../../hooks/useServiceEditor';
 import StepInfo from './steps/StepInfo';
 import StepShifts from './steps/StepShifts';
 import StepTeam from './steps/StepTeam';
-import StepGenerate from './steps/StepGenerate';
 import StepCompletion from './steps/StepCompletion';
 
 // Modal Components

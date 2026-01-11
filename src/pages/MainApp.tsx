@@ -99,8 +99,7 @@ const Dashboard: React.FC = () => {
   const handleFinishWizard = async (group?: Group, navigate?: boolean) => {
     await refresh();
     if (group && navigate) {
-      // Updated: Simply open the editor. The creation logic now generates shifts for current month too.
-      // Defaulting to undefined will make ScaleEditor use current date/month.
+      // Updated: Open the editor in 'selector' mode (months overview)
       setEditorTargetGroup(group);
       setEditorInitialDate(undefined);
     } else if (group) {
@@ -375,6 +374,7 @@ const Dashboard: React.FC = () => {
           currentUser={currentUser}
           onClose={() => setSelectedService(null)}
           onOpenScaleEditor={handleOpenScaleEditor}
+          onGroupUpdate={refresh}
         />
       )}
 
