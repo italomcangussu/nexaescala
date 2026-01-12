@@ -21,14 +21,14 @@ import { usePendingRequests } from '../hooks/usePendingRequests';
 import { useAuth } from '../context/AuthContext';
 import { useDashboardData } from '../hooks/useDashboardData';
 
-import { Profile, Shift, ServiceRole, Group, FinancialConfig, ShiftPreset } from '../types';
-import { Search, FilePlus, Share2, X, Plus, Calendar, Users, Sparkles } from 'lucide-react';
+import { Profile, Shift, ServiceRole, Group, FinancialConfig, ShiftPreset, Notification as AppNotification } from '../types';
+import { Search, FilePlus, Share2, X, Calendar, Users, Sparkles } from 'lucide-react';
 import { getFinancialConfig, createFinancialRecord, saveFinancialConfig } from '../services/api';
 
 const Dashboard: React.FC = () => {
   // Navigation State
   const [activeBottomTab, setActiveBottomTab] = useState('home');
-  const [activeHomeTab, setActiveHomeTab] = useState<'shifts' | 'groups'>('shifts');
+  const [activeHomeTab, setActiveHomeTab] = useState<'shifts' | 'groups' | 'requests'>('shifts');
 
 
 
@@ -43,6 +43,7 @@ const Dashboard: React.FC = () => {
     shifts,
     assignments,
     userRole,
+    exchanges,
     refresh
   } = useDashboardData(currentUser);
 
@@ -103,12 +104,8 @@ const Dashboard: React.FC = () => {
   }));
 
   const myShifts = shifts.filter(s => {
-    // Check if user is admin of this specific group
-    const groupRole = userGroups.find(g => g.id === s.group_id)?.user_role;
-    const isAdmin = groupRole === ServiceRole.ADMIN || groupRole === ServiceRole.ADMIN_AUX;
-
-    // Only show published shifts to members
-    if (!isAdmin && !s.is_published) return false;
+    // Only show published shifts
+    if (!s.is_published) return false;
 
     return assignments.some(a => a.shift_id === s.id && a.profile_id === currentUser.id);
   });
@@ -220,6 +217,19 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const handleNotificationClick = (notification: AppNotification) => {
+    if (notification.metadata && notification.metadata.group_id) {
+      const group = userGroups.find(g => g.id === notification.metadata.group_id);
+      if (group) {
+        setSelectedService(group);
+        setActiveBottomTab('home');
+      }
+    } else if (notification.type === 'SHIFT_SWAP' || notification.type === 'SHIFT_OFFER') {
+      setActiveBottomTab('home');
+      setActiveHomeTab('requests');
+    }
+  };
+
   const renderHomeContent = () => {
     return (
       <div className="flex flex-col h-full">
@@ -237,6 +247,17 @@ const Dashboard: React.FC = () => {
             >
               Serviços
             </button>
+            <button
+              onClick={() => setActiveHomeTab('requests')}
+              className={`flex-1 py-1.5 text-sm font-semibold rounded-md transition-all relative ${activeHomeTab === 'requests' ? 'bg-white dark:bg-slate-700 text-textPrimary dark:text-slate-100 shadow-sm' : 'text-textSecondary dark:text-slate-400 hover:text-textPrimary dark:hover:text-slate-200'}`}
+            >
+              Solicitações
+              {(pendingGiveaways.length + pendingSwaps.length) > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm animate-bounce-subtle">
+                  {pendingGiveaways.length + pendingSwaps.length}
+                </span>
+              )}
+            </button>
           </div>
         </div>
 
@@ -253,6 +274,11 @@ const Dashboard: React.FC = () => {
               ) : (
                 myShifts.map(shift => {
                   const assignment = hydratedAssignments.find(a => a.shift_id === shift.id);
+                  const pendingExchange = exchanges.find(ex =>
+                    ex.status === 'PENDING' &&
+                    ex.requesting_profile_id === currentUser.id &&
+                    ex.offered_shift_assignment_id === assignment?.id
+                  );
                   return (
                     <ShiftCard
                       key={shift.id}
@@ -261,12 +287,14 @@ const Dashboard: React.FC = () => {
                       currentUserRole={userRole}
                       onEdit={handleEditShift}
                       currentUserId={currentUser.id}
+                      onRefresh={refresh}
+                      pendingExchange={pendingExchange}
                     />
                   );
                 })
               )}
             </div>
-          ) : (
+          ) : activeHomeTab === 'groups' ? (
             <div className="space-y-6">
               <div className="relative">
                 <input
@@ -276,41 +304,6 @@ const Dashboard: React.FC = () => {
                 />
                 <Search size={18} className="absolute left-3 top-3 text-gray-400 dark:text-slate-500" />
               </div>
-
-              {/* Actionable Alerts (Pending Giveaways & Swaps) */}
-              {(pendingGiveaways.length > 0 || pendingSwaps.length > 0) && (
-                <div className="mb-8 px-2 animate-fade-in">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-black text-slate-800 dark:text-white flex items-center gap-2">
-                      <Sparkles size={18} className="text-amber-500" />
-                      Ações Pendentes
-                    </h2>
-                    <span className="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-[10px] font-black rounded-full uppercase tracking-widest">
-                      {pendingGiveaways.length + pendingSwaps.length} pendente(s)
-                    </span>
-                  </div>
-                  <div className="space-y-4">
-                    {pendingGiveaways.map(g => (
-                      <ActionableNotificationCard
-                        key={g.id}
-                        item={g}
-                        onAccept={onActionAccept}
-                        onDecline={onActionDecline}
-                        isLoading={isActionLoading === g.id}
-                      />
-                    ))}
-                    {pendingSwaps.map(s => (
-                      <ActionableNotificationCard
-                        key={s.id}
-                        item={s}
-                        onAccept={onActionAccept}
-                        onDecline={onActionDecline}
-                        isLoading={isActionLoading === s.id}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Home Tabs */}
               {userGroups.length === 0 ? (
@@ -343,6 +336,95 @@ const Dashboard: React.FC = () => {
                   );
                 })
               )}
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <h2 className="text-xl font-black text-slate-800 dark:text-white flex items-center gap-2 mb-4">
+                <Sparkles size={18} className="text-amber-500" />
+                Deseja Trocar ou Repassar algum plantão?
+              </h2>
+
+              {(() => {
+                const directedSwaps = pendingSwaps;
+                const directedGiveaways = pendingGiveaways.filter(g => g.target_profile_id === currentUser.id);
+                const globalGiveaways = pendingGiveaways.filter(g => !g.target_profile_id);
+
+                const directedCount = directedSwaps.length + directedGiveaways.length;
+                const globalCount = globalGiveaways.length;
+
+                return (
+                  <div className="space-y-8">
+                    {/* Directed Section */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between px-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Direcionadas</h3>
+                          <span className={`h-4 w-4 rounded-full flex items-center justify-center text-[8px] font-black ${directedCount > 0 ? 'bg-indigo-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                            {directedCount}
+                          </span>
+                        </div>
+                      </div>
+
+                      {directedCount === 0 ? (
+                        <div className="bg-slate-50/50 dark:bg-slate-800/30 rounded-3xl p-6 border border-dashed border-slate-200 dark:border-slate-800 text-center">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Nenhuma solicitação direcionada</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {directedGiveaways.map(g => (
+                            <ActionableNotificationCard
+                              key={g.id}
+                              item={g}
+                              onAccept={onActionAccept}
+                              onDecline={onActionDecline}
+                              isLoading={isActionLoading === g.id}
+                            />
+                          ))}
+                          {directedSwaps.map(s => (
+                            <ActionableNotificationCard
+                              key={s.id}
+                              item={s}
+                              onAccept={onActionAccept}
+                              onDecline={onActionDecline}
+                              isLoading={isActionLoading === s.id}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Global Section */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between px-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Globais (Feed)</h3>
+                          <span className={`h-4 w-4 rounded-full flex items-center justify-center text-[8px] font-black ${globalCount > 0 ? 'bg-amber-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                            {globalCount}
+                          </span>
+                        </div>
+                      </div>
+
+                      {globalCount === 0 ? (
+                        <div className="bg-slate-50/50 dark:bg-slate-800/30 rounded-3xl p-6 border border-dashed border-slate-200 dark:border-slate-800 text-center">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Nenhuma oferta global disponível</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {globalGiveaways.map(g => (
+                            <ActionableNotificationCard
+                              key={g.id}
+                              item={g}
+                              onAccept={onActionAccept}
+                              onDecline={onActionDecline}
+                              isLoading={isActionLoading === g.id}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>
@@ -379,6 +461,7 @@ const Dashboard: React.FC = () => {
       currentUser={currentUser}
       onProfileClick={() => handleProfileClick(currentUser.id)}
       onSignOut={signOut}
+      onNotificationClick={handleNotificationClick}
     >
       <NotificationManager />
 

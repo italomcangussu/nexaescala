@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { ArrowRightLeft, Edit, Sun, Moon, MapPin, Sparkles, Megaphone } from 'lucide-react';
 import { Shift, ShiftAssignment, AppRole } from '../types';
-import { cancelShiftExchange } from '../services/api';
-import { useToast } from '../context/ToastContext';
-import Portal from './Portal';
 import RepasseModal from './RepasseModal';
 import ShiftExchangeRequestModal from './ShiftExchangeRequestModal';
+import TransferStatusSheet from './TransferStatusSheet';
 
 
 interface ShiftCardProps {
@@ -21,10 +19,9 @@ interface ShiftCardProps {
 }
 
 const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRole, onEdit, hideProfile = false, accentColor, currentUserId, onRefresh, pendingExchange }) => {
-  const { showToast } = useToast();
   const [isRepasseModalOpen, setIsRepasseModalOpen] = useState(false);
   const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
-  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isStatusSheetOpen, setIsStatusSheetOpen] = useState(false);
 
   // Date Formatting
   const dateObj = new Date(shift.date + 'T12:00:00');
@@ -192,7 +189,7 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setIsCancelModalOpen(true);
+                      setIsStatusSheetOpen(true);
                     }}
                     className={`relative overflow-hidden group/btn flex items-center justify-center w-full px-5 py-2 rounded-xl text-white shadow-lg active:scale-95 transition-all duration-300 bg-amber-500 hover:bg-amber-600 shadow-amber-200`}
                   >
@@ -251,48 +248,17 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
             currentUserRole={currentUserRole || ''}
           />
 
-          {/* Cancel Exchange Modal */}
-          {isCancelModalOpen && pendingExchange && (
-            <Portal>
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm animate-fade-in" onClick={() => setIsCancelModalOpen(false)}></div>
-                <div className="relative bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-2xl w-full max-w-sm animate-zoom-in border border-slate-100 dark:border-slate-800">
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-500 mb-2">
-                      <Megaphone size={32} />
-                    </div>
-                    <h3 className="text-xl font-black text-slate-800 dark:text-white">Cancelar Repasse?</h3>
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                      Ao cancelar, seu plantão não estará mais disponível para outros colegas.
-                    </p>
-                    <div className="flex gap-3 w-full pt-2">
-                      <button
-                        onClick={() => setIsCancelModalOpen(false)}
-                        className="flex-1 py-3 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                      >
-                        Voltar
-                      </button>
-                      <button
-                        onClick={async () => {
-                          try {
-                            await cancelShiftExchange(pendingExchange.id);
-                            showToast('Repasse cancelado com sucesso!', 'success');
-                            setIsCancelModalOpen(false);
-                            onRefresh?.();
-                          } catch (error) {
-                            console.error(error);
-                            showToast('Erro ao cancelar repasse', 'error');
-                          }
-                        }}
-                        className="flex-1 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/20 transition-colors"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Portal>
+          {/* Transfer Status Sheet */}
+          {pendingExchange && (
+            <TransferStatusSheet
+              isOpen={isStatusSheetOpen}
+              onClose={() => setIsStatusSheetOpen(false)}
+              onSuccess={() => {
+                onRefresh?.();
+              }}
+              shift={shift}
+              pendingExchange={pendingExchange}
+            />
           )}
 
           {/* Exchange Request Modal */}

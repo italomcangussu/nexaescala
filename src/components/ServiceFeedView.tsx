@@ -4,15 +4,14 @@ import {
     Repeat,
     ArrowRightLeft,
     Clock,
-    Plus,
     Send,
     User,
     CheckCircle2,
     Calendar,
     Rocket,
 } from 'lucide-react';
-import { Group, Profile, Shift, ShiftAssignment, ChatMessage, ShiftExchange, TradeStatus, TradeType } from '../types';
-import { fetchGroupMessages, sendGroupMessage, getShiftExchanges, executeExchangeTransaction } from '../services/api';
+import { Group, Profile, Shift, ShiftAssignment, ChatMessage, ShiftExchange, TradeStatus, TradeType, GroupMember } from '../types';
+import { fetchGroupMessages, sendGroupMessage, getShiftExchanges, executeExchangeTransaction, getGroupMembers, createNotificationsBulk, createShiftExchange } from '../services/api';
 import OfferShiftModal from './chat/OfferShiftModal';
 import { useToast } from '../context/ToastContext';
 
@@ -50,7 +49,20 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
     const [isLoading, setIsLoading] = useState(true);
     const [inputText, setInputText] = useState('');
     const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+    const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
+    const [mentionSearch, setMentionSearch] = useState('');
+    const [mentionIndex, setMentionIndex] = useState(-1);
+    const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
     const { showToast } = useToast();
+
+    const fetchMembers = useCallback(async () => {
+        try {
+            const members = await getGroupMembers(group.id);
+            setGroupMembers(members);
+        } catch (error) {
+            console.error("Failed to fetch group members:", error);
+        }
+    }, [group.id]);
 
     const displayColor = group.color || '#10b981';
 
@@ -80,7 +92,76 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
 
     useEffect(() => {
         loadFeed();
-    }, [loadFeed]);
+        fetchMembers();
+    }, [loadFeed, fetchMembers]);
+
+    const filteredMentionMembers = mentionSearch
+        ? groupMembers.filter(m => m.profile.full_name.toLowerCase().includes(mentionSearch.toLowerCase()))
+        : [];
+
+    useEffect(() => {
+        if (filteredMentionMembers.length > 0) {
+            setSelectedMentionIndex(0);
+        }
+    }, [mentionSearch, filteredMentionMembers.length]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        const cursorPosition = e.target.selectionStart || 0;
+        const textBeforeCursor = value.slice(0, cursorPosition);
+
+        const lastAtChar = textBeforeCursor.lastIndexOf('@');
+
+        if (lastAtChar !== -1) {
+            const query = textBeforeCursor.slice(lastAtChar + 1);
+            // Only trigger if @ is at start of word or start of string
+            const isWordStart = lastAtChar === 0 || textBeforeCursor[lastAtChar - 1] === ' ';
+
+            if (isWordStart && !query.includes(' ')) {
+                setMentionSearch(query);
+                setMentionIndex(lastAtChar);
+            } else {
+                setMentionSearch('');
+            }
+        } else {
+            setMentionSearch('');
+        }
+
+        setInputText(value);
+    };
+
+    const selectMember = (member: GroupMember) => {
+        if (mentionIndex === -1) return;
+
+        const textBeforeMention = inputText.slice(0, mentionIndex);
+        const textAfterMention = inputText.slice(mentionIndex + mentionSearch.length + 1);
+
+        const newText = `${textBeforeMention}@${member.profile.full_name} ${textAfterMention}`;
+        setInputText(newText);
+        setMentionSearch('');
+        setMentionIndex(-1);
+        setSelectedMentionIndex(0);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (mentionIndex !== -1 && filteredMentionMembers.length > 0) {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setSelectedMentionIndex(prev => (prev + 1) % filteredMentionMembers.length);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setSelectedMentionIndex(prev => (prev - 1 + filteredMentionMembers.length) % filteredMentionMembers.length);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                selectMember(filteredMentionMembers[selectedMentionIndex]);
+            } else if (e.key === 'Escape') {
+                setMentionSearch('');
+                setMentionIndex(-1);
+            }
+        } else if (e.key === 'Enter') {
+            handleSendMessage();
+        }
+    };
 
     const handleSendMessage = async () => {
         if (!inputText.trim()) return;
@@ -91,6 +172,37 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                 content: inputText.trim(),
                 message_type: 'TEXT'
             });
+
+            // Parse mentions for notifications
+            const memberNames = groupMembers.map(m => m.profile.full_name).sort((a, b) => b.length - a.length);
+            if (memberNames.length > 0) {
+                const mentionRegex = new RegExp(`@(${memberNames.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'g');
+                const matches = Array.from(inputText.matchAll(mentionRegex));
+
+                if (matches.length > 0) {
+                    const notifications = matches.map(match => {
+                        const mentionedName = match[1];
+                        const mentionedMember = groupMembers.find(m => m.profile.full_name === mentionedName);
+
+                        if (mentionedMember && mentionedMember.profile.id !== currentUser.id) {
+                            return {
+                                user_id: mentionedMember.profile.id,
+                                title: 'Você foi mencionado',
+                                message: `${currentUser.full_name} mencionou você em ${group.name}`,
+                                type: 'MENTION' as const,
+                                is_read: false,
+                                metadata: { group_id: group.id }
+                            };
+                        }
+                        return null;
+                    }).filter(Boolean);
+
+                    if (notifications.length > 0) {
+                        await createNotificationsBulk(notifications as any[]);
+                    }
+                }
+            }
+
             setInputText('');
             loadFeed();
         } catch (error) {
@@ -144,7 +256,27 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                                 } : undefined}
                                 className={`p-4 rounded-2xl shadow-sm border ${isSystem ? '' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}
                             >
-                                <p className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap">{msg.content}</p>
+                                <p className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
+                                    {(() => {
+                                        const memberNames = groupMembers.map(m => m.profile.full_name).sort((a, b) => b.length - a.length);
+                                        if (memberNames.length === 0) return msg.content;
+
+                                        const mentionRegex = new RegExp(`(@(?:${memberNames.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}))`, 'g');
+                                        return msg.content.split(mentionRegex).map((part, i) => {
+                                            if (part.startsWith('@')) {
+                                                const name = part.substring(1);
+                                                if (memberNames.includes(name)) {
+                                                    return (
+                                                        <span key={i} className="font-black text-primary" style={{ color: displayColor }}>
+                                                            {part}
+                                                        </span>
+                                                    );
+                                                }
+                                            }
+                                            return part;
+                                        });
+                                    })()}
+                                </p>
 
                                 {msg.metadata?.shift_id && (
                                     <div
@@ -170,13 +302,6 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
         } else {
             const exch = item.data;
             const isCompleted = exch.status === TradeStatus.ACCEPTED;
-            // Determine icon color based on type unless completed
-            const iconBg = isCompleted ? hexToRgba(displayColor, 0.1) : (exch.type === TradeType.GIVEAWAY ? hexToRgba(displayColor, 0.1) : 'bg-blue-100');
-            const iconColor = isCompleted ? displayColor : (exch.type === TradeType.GIVEAWAY ? displayColor : 'text-blue-600');
-            // If direct swap (not giveaway), keep blue for distinction? User said "prioritize strong color". 
-            // Let's make giveaways use service color, swaps use Blue? Or simpler: Use service color for "Service Related" things. 
-            // Giveaways are "donations" (aligned with service). Swaps are peer-to-peer. 
-            // I'll stick to: Completed = Service Color. Giveaway = Service Color. Swap = Blue (to distinguish).
 
             return (
                 <div key={exch.id} className="mb-6 animate-fade-in-up">
@@ -279,14 +404,6 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                     <MessageSquare size={18} className="text-primary" />
                     <h2 className="font-black text-sm text-slate-800 dark:text-white uppercase tracking-wider">Feed do Serviço</h2>
                 </div>
-                <button
-                    onClick={() => setIsOfferModalOpen(true)}
-                    style={{ borderColor: displayColor, color: displayColor }}
-                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border rounded-xl text-[10px] font-black shadow-sm hover:shadow-md transition-all uppercase tracking-widest"
-                >
-                    <Plus size={14} />
-                    Oferecer Plantão
-                </button>
             </div>
 
             {/* Feed Scroll Area */}
@@ -327,12 +444,35 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
 
             {/* Input Footer */}
             <div className="p-4 px-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 shrink-0 sticky bottom-0 z-20 pb-safe">
+                {/* Mention Suggester */}
+                {filteredMentionMembers.length > 0 && (
+                    <div className="absolute bottom-full left-6 right-6 mb-2 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden animate-in slide-in-from-bottom-2 duration-200">
+                        <div className="p-2 space-y-1 max-h-48 overflow-y-auto">
+                            {filteredMentionMembers.map((member, idx) => (
+                                <button
+                                    key={member.id}
+                                    onClick={() => selectMember(member)}
+                                    className={`w-full flex items-center gap-3 p-2 rounded-xl transition-colors text-left ${selectedMentionIndex === idx
+                                        ? 'bg-slate-100 dark:bg-slate-700'
+                                        : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                                        }`}
+                                >
+                                    <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-slate-100 dark:border-slate-600">
+                                        <img src={member.profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                                    </div>
+                                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{member.profile.full_name}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 <div className="relative group">
                     <input
                         type="text"
                         value={inputText}
-                        onChange={(e) => setInputText(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                        onChange={handleInputChange}
+                        onKeyDown={handleKeyDown}
                         placeholder="Escreva um comentário ou informe uma troca..."
                         className="w-full bg-slate-50 dark:bg-slate-800 rounded-2xl py-4 pl-6 pr-14 text-sm font-medium border border-transparent focus:border-primary/50 focus:bg-white dark:focus:bg-slate-700 outline-none transition-all shadow-inner"
                     />
@@ -356,11 +496,20 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                     currentUserId={currentUser.id}
                     onConfirm={async (shift) => {
                         setIsOfferModalOpen(false);
-                        // Logic from ServiceChat for offering
                         const assignment = assignments.find(a => a.shift_id === shift.id && a.profile_id === currentUser.id);
                         if (!assignment) return;
 
                         try {
+                            // 1. Create the structured exchange record first so it's actionable
+                            await createShiftExchange({
+                                group_id: group.id,
+                                type: TradeType.GIVEAWAY,
+                                status: TradeStatus.PENDING,
+                                requesting_profile_id: currentUser.id,
+                                offered_shift_assignment_id: assignment.id
+                            });
+
+                            // 2. Send the chat message for UI feed
                             await sendGroupMessage({
                                 group_id: group.id,
                                 sender_id: currentUser.id,
@@ -368,7 +517,7 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                                 message_type: 'SHIFT_OFFER',
                                 metadata: { shift_id: shift.id, date: shift.date }
                             });
-                            await getShiftExchanges(group.id); // Refresh logic is handled by loadFeed
+
                             loadFeed();
                             showToast("Plantão ofertado com sucesso!", "success");
                         } catch (e) {

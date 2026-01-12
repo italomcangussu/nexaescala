@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, MoreHorizontal, Calendar as CalendarIcon, Repeat } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MoreHorizontal, Calendar as CalendarIcon, Repeat, CalendarX } from 'lucide-react';
 import { Shift, ShiftAssignment, AppRole, Profile, ServiceRole, Group, ShiftExchange, TradeStatus, TradeType } from '../types';
 import { getShiftExchanges, getUserShiftExchanges } from '../services/api';
 import DayDetailSheet from './DayDetailSheet';
@@ -123,20 +123,21 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       }
 
       const dayShifts = shifts.filter(s => s.date === dateStr);
-      const publishedDayShifts = dayShifts.filter(s => s.is_published);
+      const dayVisibleShifts = visibleShifts.filter(s => s.date === dateStr);
+      const publishedDayShifts = dayVisibleShifts.filter(s => s.is_published);
 
-      // Check for MY Assignments
-      const myAssignmentsOnDay = assignments.filter(a =>
-        a.profile_id === currentUser.id && dayShifts.some(s => s.id === a.shift_id)
+      // Check for MY Assignments (Visible vs Hidden)
+      const myVisibleAssignmentsOnDay = assignments.filter(a =>
+        a.profile_id === currentUser.id && dayVisibleShifts.some(s => s.id === a.shift_id)
       );
-      const myShiftOnThisDay = myAssignmentsOnDay.length > 0;
+      const myShiftOnThisDay = myVisibleAssignmentsOnDay.length > 0;
 
       // Identify Services for Multi-Service Gradient
       let dayServiceColors: string[] = [];
       if (myShiftOnThisDay && userGroups) {
         // Collect unique colors for my shifts on this day
-        const dayGroups = myAssignmentsOnDay
-          .map(a => dayShifts.find(s => s.id === a.shift_id)?.group_id)
+        const dayGroups = myVisibleAssignmentsOnDay
+          .map(a => dayVisibleShifts.find(s => s.id === a.shift_id)?.group_id)
           .filter(Boolean)
           .map(gid => userGroups.find(g => g.id === gid))
           .filter((g): g is Group => !!g);
@@ -146,8 +147,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         dayServiceColors = Array.from(uniqueColors);
       }
 
+
       if (day === 1) {
-        console.log(`[DEBUG Day 1] myAssignmentsOnDay:`, myAssignmentsOnDay);
+        console.log(`[DEBUG Day 1] myVisibleAssignmentsOnDay:`, myVisibleAssignmentsOnDay);
         console.log(`[DEBUG Day 1] All Exchanges:`, exchanges);
       }
 
@@ -207,8 +209,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           borderStyle = `${activeShiftColor}40`;
         } else {
           // Fallback single logic
-          const shiftId = myAssignmentsOnDay[0].shift_id;
-          const shift = dayShifts.find(s => s.id === shiftId);
+          const shiftId = myVisibleAssignmentsOnDay[0].shift_id;
+          const shift = dayVisibleShifts.find(s => s.id === shiftId);
           if (shift) {
             const group = userGroups.find(g => g.id === shift.group_id);
             if (group && group.color) activeShiftColor = group.color;
@@ -229,7 +231,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       let dotContent = null;
 
       if (isSelected) {
-        dayStyle.background = myShiftOnThisDay ? backgroundStyle : `linear-gradient(135deg, ${displayColor}, ${hexToRgba(displayColor, 0.9)})`;
+        dayStyle.backgroundImage = myShiftOnThisDay ? backgroundStyle : `linear-gradient(135deg, ${displayColor}, ${hexToRgba(displayColor, 0.9)})`;
         dayStyle.color = 'white';
         dayStyle.boxShadow = `0 10px 15px -3px ${hexToRgba(displayColor, 0.4)}, 0 4px 6px -2px ${hexToRgba(displayColor, 0.2)}`;
         dayStyle.borderColor = 'rgba(255,255,255,0.3)';
@@ -241,7 +243,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         dotContent = <Repeat size={12} className="mt-0.5 opacity-60" />;
       } else if (isRepassing) {
         // Repassing: Keep Service Color Gradient
-        dayStyle.background = backgroundStyle || `linear-gradient(135deg, ${activeShiftColor}, ${hexToRgba(activeShiftColor, 0.8)})`;
+        dayStyle.backgroundImage = backgroundStyle || `linear-gradient(135deg, ${activeShiftColor}, ${hexToRgba(activeShiftColor, 0.8)})`;
         dayStyle.color = 'white';
         dayStyle.borderColor = 'rgba(255,255,255,0.2)';
 
@@ -252,12 +254,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           </div>
         );
       } else if (myShiftOnThisDay) {
-        dayStyle.background = backgroundStyle;
         dayStyle.color = 'white';
         dayStyle.fontWeight = 'bold';
         dayStyle.borderColor = borderStyle;
         dayStyle.boxShadow = `0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)`;
-        // Optional: Inner glow
+        // Premium layered gradient
         dayStyle.backgroundImage = `linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%), ${backgroundStyle}`;
       } else if (hasRelevantShifts) {
         if (isAdminView) {
@@ -313,13 +314,12 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     return days;
   };
 
-  // Filter User Groups for Legend: Only those with published shifts in THIS month
+  // Filter User Groups for Legend: Only those with visible shifts in THIS month
   const legendGroups = userGroups?.filter(g => {
     // Check if there are any shifts in current month belonging to this group
-    return shifts.some(s => {
+    return visibleShifts.some(s => {
       const sDate = new Date(s.date + 'T12:00:00'); // Safe date parsing
       return s.group_id === g.id &&
-        s.is_published &&
         sDate.getMonth() === currentDate.getMonth() &&
         sDate.getFullYear() === currentDate.getFullYear();
     });
@@ -332,6 +332,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     showRepassado: false,  // Completed Giveaway
     showTrocado: false,    // Completed Swap
   };
+
 
   exchanges.forEach(ex => {
     // Check if exchange belongs to this month
@@ -419,7 +420,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
           {/* Group 2: Status Legend */}
           {(statusLegend.showRepassando || statusLegend.showTrocando || statusLegend.showRepassado) && (
-            <div className="flex items-center gap-4 pt-3 sm:pt-0 sm:pl-5 border-t sm:border-t-0 sm:border-l border-slate-200 dark:border-slate-800 w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-4 pt-3 sm:pt-0 sm:pl-5 border-t sm:border-t-0 sm:border-l border-slate-200 dark:border-slate-800 w-full sm:w-auto">
               {statusLegend.showRepassando && (
                 <div className="flex items-center gap-1.5">
                   <Repeat size={11} className="text-blue-500 animate-strong-pulse" />

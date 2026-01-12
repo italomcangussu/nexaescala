@@ -75,15 +75,26 @@ const ActionableNotificationCard: React.FC<ActionableNotificationCardProps> = ({
                 </div>
 
                 {/* Shift Details Content */}
-                <div className="flex items-center gap-3 px-4 py-3 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl border border-slate-100/50 dark:border-slate-800/50">
-                    <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                        <Clock size={16} className="text-slate-400" />
-                        <span className="text-xs font-bold">{shiftTime?.slice(0, 5)}</span>
+                <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-3 px-4 py-3 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl border border-slate-100/50 dark:border-slate-800/50">
+                        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                            <Clock size={16} className="text-slate-400" />
+                            <span className="text-xs font-bold">{shiftTime?.slice(0, 5)}</span>
+                        </div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-300 truncate">
+                            {groupName}
+                        </span>
                     </div>
-                    <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-300 truncate">
-                        {groupName}
-                    </span>
+
+                    {isSwap && (item as ShiftExchangeRequest).requested_shift_options && (
+                        <div className="px-4 py-2 border-l-2 border-indigo-500/30 ml-2">
+                            <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-1">Troca por um de seus plantões</p>
+                            <div className="flex flex-wrap gap-2">
+                                {(item as ShiftExchangeRequest).requested_shift_options.length} opções disponíveis
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Action Buttons */}

@@ -12,6 +12,7 @@ interface LayoutProps {
   currentUser: Profile;
   onProfileClick: () => void;
   onSignOut: () => void;
+  onNotificationClick?: (notification: Notification) => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({
@@ -20,7 +21,8 @@ const Layout: React.FC<LayoutProps> = ({
   onTabChange,
   currentUser,
   onProfileClick,
-  onSignOut
+  onSignOut,
+  onNotificationClick
 }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -114,10 +116,22 @@ const Layout: React.FC<LayoutProps> = ({
                 ) : (
                   <div className="divide-y divide-gray-50 dark:divide-slate-800">
                     {notifications.map(n => (
-                      <div key={n.id} className="p-4 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group">
+                      <div
+                        key={n.id}
+                        className="p-4 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group"
+                        onClick={() => {
+                          setShowNotifications(false);
+                          onNotificationClick?.(n);
+                        }}
+                      >
                         <div className="flex gap-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${n.type === 'SHIFT_PUBLISHED' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}>
-                            {n.type === 'SHIFT_PUBLISHED' ? <Calendar size={16} /> : <Bell size={16} />}
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${n.type === 'SHIFT_PUBLISHED' ? 'bg-emerald-100 text-emerald-600' :
+                              n.type === 'MENTION' ? 'bg-amber-100 text-amber-600' :
+                                'bg-blue-100 text-blue-600'
+                            }`}>
+                            {n.type === 'SHIFT_PUBLISHED' ? <Calendar size={16} /> :
+                              n.type === 'MENTION' ? <Search size={16} /> :
+                                <Bell size={16} />}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-primary transition-colors">{n.title}</p>

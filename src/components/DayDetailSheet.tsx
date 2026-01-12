@@ -33,6 +33,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
   const { showToast } = useToast();
   const [exchangeAssignment, setExchangeAssignment] = useState<any | null>(null);
   const [repasseShift, setRepasseShift] = useState<Shift | null>(null);
+  const [selectedAssignment, setSelectedAssignment] = useState<ShiftAssignment | null>(null);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [exchangeToCancel, setExchangeToCancel] = useState<any | null>(null);
 
@@ -302,7 +303,10 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                                           </button>
                                         ) : (
                                           <button
-                                            onClick={() => setRepasseShift(shift)}
+                                            onClick={() => {
+                                              setRepasseShift(shift);
+                                              setSelectedAssignment(assign);
+                                            }}
                                             className="relative overflow-hidden group/btn flex items-center justify-center min-w-[90px] px-3 py-1.5 rounded-lg text-white shadow-md active:scale-95 transition-all bg-blue-500 hover:bg-blue-600"
                                           >
                                             <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer"></div>
@@ -427,8 +431,16 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
       {repasseShift && (
         <RepasseModal
           isOpen={!!repasseShift}
-          onClose={() => setRepasseShift(null)}
+          onClose={() => {
+            setRepasseShift(null);
+            setSelectedAssignment(null);
+          }}
+          onSuccess={() => {
+            setRepasseShift(null);
+            setSelectedAssignment(null);
+          }}
           shift={repasseShift}
+          assignment={selectedAssignment || undefined}
           currentUserProfileId={currentUser.id}
           currentUserRole={currentUserRole}
         />

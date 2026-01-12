@@ -1185,26 +1185,53 @@ export const createShiftExchange = async (exchange: Partial<ShiftExchange>): Pro
                 .eq('group_id', exchange.group_id);
 
             if (members && members.length > 0) {
-                const notifications = members.map(m => ({
-                    user_id: m.profile_id,
-                    title: 'Oportunidade de Plantão',
-                    message: `Um colega ofertou um plantão para o grupo.`,
-                    type: 'SHIFT_OFFER',
-                    is_read: false,
-                    metadata: { exchange_id: data.id }
-                }));
-                await createNotificationsBulk(notifications as any);
+                // EXCLUDE the requesting user from the notification list
+                const otherMembers = members.filter(m => m.profile_id !== exchange.requesting_profile_id);
+
+                if (otherMembers.length > 0) {
+                    const notifications = otherMembers.map(m => ({
+                        user_id: m.profile_id,
+                        title: exchange.type === TradeType.DIRECT_SWAP ? 'Oportunidade de Troca' : 'Oportunidade de Plantão',
+                        message: exchange.type === TradeType.DIRECT_SWAP
+                            ? `Um colega solicitou uma troca de plantão no grupo.`
+                            : `Um colega ofertou um plantão para o grupo.`,
+                        type: 'SHIFT_OFFER',
+                        is_read: false,
+                        metadata: { exchange_id: data.id }
+                    }));
+                    await createNotificationsBulk(notifications as any);
+                }
             }
         }
     }
 };
 
 export const cancelShiftExchange = async (exchangeId: string): Promise<void> => {
+    // 1. Fetch exchange to check for target_profile_id
+    const { data: exchange } = await supabase
+        .from('shift_exchanges')
+        .select('target_profile_id')
+        .eq('id', exchangeId)
+        .single();
+
+    // 2. Notify target if it was directed
+    if (exchange?.target_profile_id) {
+        await createNotificationsBulk([{
+            user_id: exchange.target_profile_id,
+            title: 'Solicitação Cancelada',
+            message: 'Um colega cancelou a solicitação de repasse/troca que enviou para você.',
+            type: 'SHIFT_OFFER',
+            is_read: false,
+            metadata: { exchange_id: exchangeId }
+        }]);
+    }
+
+    // 3. Update status to CANCELLED (better than delete for notification context)
     const { error } = await supabase
         .from('shift_exchanges')
-        .delete()
+        .update({ status: TradeStatus.CANCELLED })
         .eq('id', exchangeId)
-        .eq('status', 'PENDING'); // Security: Only delete pending
+        .eq('status', 'PENDING');
 
     if (error) throw error;
 };
@@ -1313,6 +1340,13 @@ export const getUserShiftExchanges = async (userId: string): Promise<ShiftExchan
 };
 
 export const updateShiftExchangeStatus = async (exchangeId: string, status: TradeStatus): Promise<void> => {
+    // 1. Fetch exchange for notification details
+    const { data: exchange } = await supabase
+        .from('shift_exchanges')
+        .select('requesting_profile_id, type')
+        .eq('id', exchangeId)
+        .single();
+
     const { error } = await supabase
         .from('shift_exchanges')
         .update({ status })
@@ -1320,6 +1354,17 @@ export const updateShiftExchangeStatus = async (exchangeId: string, status: Trad
 
     if (error) throw error;
 
+    // 2. Notify requester if status is REJECTED
+    if (status === TradeStatus.REJECTED && exchange) {
+        await createNotificationsBulk([{
+            user_id: exchange.requesting_profile_id,
+            title: exchange.type === TradeType.DIRECT_SWAP ? 'Troca Recusada' : 'Repasse Recusado',
+            message: 'Sua solicitação de plantão foi recusada.',
+            type: 'SHIFT_OFFER',
+            is_read: false,
+            metadata: { exchange_id: exchangeId }
+        }]);
+    }
     // NOTE: Actual swap logic (changing assignments) should happen transactionally
     // For now, we update status here, and consumer of this function performs the swap if ACCEPTED
 };
@@ -1360,7 +1405,29 @@ export const executeExchangeTransaction = async (exchange: ShiftExchange): Promi
     }
 
     // 2. Update Exchange Status
-    await updateShiftExchangeStatus(exchange.id, TradeStatus.ACCEPTED);
+    const { error } = await supabase
+        .from('shift_exchanges')
+        .update({
+            status: TradeStatus.ACCEPTED,
+            target_profile_id: exchange.target_profile_id,
+            requested_shift_assignment_id: exchange.requested_shift_assignment_id,
+            updated_at: new Date().toISOString()
+        })
+        .eq('id', exchange.id);
+
+    if (error) throw error;
+
+    // Notify original requester that the exchange was finalized
+    await createNotificationsBulk([{
+        user_id: exchange.requesting_profile_id,
+        title: exchange.type === TradeType.DIRECT_SWAP ? 'Troca Confirmada!' : 'Repasse Aceito!',
+        message: exchange.type === TradeType.DIRECT_SWAP
+            ? 'Sua solicitação de troca de plantão foi concluída com sucesso.'
+            : 'Um colega aceitou o seu repasse de plantão.',
+        type: 'SHIFT_OFFER',
+        is_read: false,
+        metadata: { exchange_id: exchange.id }
+    }]);
 };
 
 // --- CHAT ---
@@ -1923,6 +1990,24 @@ const executeShiftSwap = async (
  * Only the requester can cancel
  */
 export const cancelExchangeRequest = async (requestId: string, userId: string): Promise<void> => {
+    // Notify target that request was cancelled
+    const { data: request } = await supabase
+        .from('shift_exchange_requests')
+        .select('target_user_id')
+        .eq('id', requestId)
+        .single();
+
+    if (request) {
+        await createNotificationsBulk([{
+            user_id: request.target_user_id,
+            title: 'Troca Cancelada',
+            message: 'Uma solicitação de troca enviada a você foi cancelada.',
+            type: 'SHIFT_SWAP',
+            is_read: false,
+            metadata: { exchange_request_id: requestId }
+        }]);
+    }
+
     const { error } = await supabase
         .from('shift_exchange_requests')
         .update({ status: 'CANCELLED' })
@@ -1934,7 +2019,15 @@ export const cancelExchangeRequest = async (requestId: string, userId: string): 
 };
 
 export const getPendingActionableRequests = async (userId: string): Promise<{ swaps: ShiftExchangeRequest[], giveaways: ShiftExchange[] }> => {
-    // 1. Fetch Swaps (ShiftExchangeRequest)
+    // Get the user's groups first to filter public giveaways
+    const { data: userGroups } = await supabase
+        .from('group_members')
+        .select('group_id')
+        .eq('profile_id', userId);
+
+    const groupIds = userGroups?.map(g => g.group_id) || [];
+
+    // 1. Fetch Swaps (ShiftExchangeRequest) - Directed to user
     const { data: swaps, error: swapsError } = await supabase
         .from('shift_exchange_requests')
         .select(`
@@ -1947,8 +2040,12 @@ export const getPendingActionableRequests = async (userId: string): Promise<{ sw
 
     if (swapsError) throw swapsError;
 
-    // 2. Fetch Directed Giveaways (ShiftExchange)
-    const { data: giveaways, error: giveawaysError } = await supabase
+    // 2. Fetch Giveaways (ShiftExchange)
+    // - Must be GIVEAWAY type and PENDING status
+    // - Either target_profile_id is NULL (Public) OR matches current user (Directed)
+    // - Current user must NOT be the requester
+    // - Must belong to one of the user's groups
+    let giveawaysQuery = supabase
         .from('shift_exchanges')
         .select(`
             *,
@@ -1958,9 +2055,16 @@ export const getPendingActionableRequests = async (userId: string): Promise<{ sw
                 shift:shifts(*)
             )
         `)
-        .eq('target_profile_id', userId)
         .eq('status', TradeStatus.PENDING)
-        .eq('type', TradeType.GIVEAWAY);
+        .eq('type', TradeType.GIVEAWAY)
+        .neq('requesting_profile_id', userId);
+
+    if (groupIds.length > 0) {
+        giveawaysQuery = giveawaysQuery.in('group_id', groupIds);
+    }
+
+    const { data: giveaways, error: giveawaysError } = await giveawaysQuery
+        .or(`target_profile_id.eq.${userId},target_profile_id.is.null`);
 
     if (giveawaysError) throw giveawaysError;
 

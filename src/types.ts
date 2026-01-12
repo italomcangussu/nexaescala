@@ -298,7 +298,7 @@ export interface Notification {
   user_id: string;
   title: string;
   message: string;
-  type: 'SHIFT_PUBLISHED' | 'SHIFT_SWAP' | 'SYSTEM' | 'SHIFT_OFFER';
+  type: 'SHIFT_PUBLISHED' | 'SHIFT_SWAP' | 'SYSTEM' | 'SHIFT_OFFER' | 'MENTION';
   is_read: boolean;
   created_at: string;
   metadata?: any;
