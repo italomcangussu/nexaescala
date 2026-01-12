@@ -1,4 +1,3 @@
-```
 import React, { useState, useEffect } from 'react';
 import { X, ChevronRight, ChevronLeft, Send, Search } from 'lucide-react';
 import { Profile, Shift, ShiftAssignment } from '../types';
@@ -151,11 +150,11 @@ const ShiftExchangeRequestModal: React.FC<ShiftExchangeRequestModalProps> = ({
 
                     {/* Step Indicator */}
                     <div className="flex items-center gap-2 mt-4">
-                        <div className={`flex items - center justify - center w - 8 h - 8 rounded - full ${ step === 1 ? 'bg-primary text-white' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600' } `}>
+                        <div className={`flex items-center justify-center w-8 h-8 rounded-full ${step === 1 ? 'bg-primary text-white' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600'}`}>
                             {step > 1 ? '✓' : '1'}
                         </div>
-                        <div className={`flex - 1 h - 1 ${ step === 2 ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700' } `} />
-                        <div className={`flex items - center justify - center w - 8 h - 8 rounded - full ${ step === 2 ? 'bg-primary text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-400' } `}>
+                        <div className={`flex-1 h-1 ${step === 2 ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'}`} />
+                        <div className={`flex items-center justify-center w-8 h-8 rounded-full ${step === 2 ? 'bg-primary text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-400'}`}>
                             2
                         </div>
                     </div>
@@ -191,9 +190,9 @@ const ShiftExchangeRequestModal: React.FC<ShiftExchangeRequestModalProps> = ({
                                     >
                                         <img
                                             src={member.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name)}&background=random`}
-alt = { member.full_name }
-className = "w-10 h-10 rounded-full"
-    />
+                                            alt={member.full_name}
+                                            className="w-10 h-10 rounded-full"
+                                        />
                                         <div className="flex-1 text-left">
                                             <p className="font-medium text-slate-800 dark:text-white">
                                                 {member.full_name}
@@ -205,113 +204,109 @@ className = "w-10 h-10 rounded-full"
                                             )}
                                         </div>
                                         <ChevronRight className="text-slate-400" size={20} />
-                                    </button >
+                                    </button>
                                 ))}
-                            </div >
-                        </div >
+                            </div>
+                        </div>
                     )}
 
-{
-    step === 2 && (
-        <div>
-            <div className="flex items-center justify-between mb-4">
-                <h4 className="font-semibold text-slate-800 dark:text-white">
-                    Escolha até 3 opções de plantão
-                </h4>
-                <span className="text-sm text-slate-500">
-                    {selectedShiftIds.length}/3 selecionados
-                </span>
-            </div>
+                    {step === 2 && (
+                        <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <h4 className="font-semibold text-slate-800 dark:text-white">
+                                    Escolha até 3 opções de plantão
+                                </h4>
+                                <span className="text-sm text-slate-500">
+                                    {selectedShiftIds.length}/3 selecionados
+                                </span>
+                            </div>
 
-            {isLoadingShifts ? (
-                <div className="flex items-center justify-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-                </div>
-            ) : availableShifts.length === 0 ? (
-                <div className="text-center py-12">
-                    <p className="text-slate-500">
-                        Nenhum plantão disponível para troca
-                    </p>
-                    <p className="text-xs text-slate-400 mt-2">
-                        Plantões que conflitam com seus outros serviços foram filtrados
-                    </p>
-                </div>
-            ) : (
-                <div className="grid gap-3">
-                    {availableShifts.map(shift => (
-                        <button
-                            key={shift.id}
-                            onClick={() => handleShiftToggle(shift.id)}
-                            disabled={!selectedShiftIds.includes(shift.id) && selectedShiftIds.length >= 3}
-                            className={`p-4 rounded-lg border-2 transition-all text-left ${selectedShiftIds.includes(shift.id)
-                                ? 'border-primary bg-primary/5'
-                                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-                                } ${!selectedShiftIds.includes(shift.id) && selectedShiftIds.length >= 3 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="font-medium text-slate-800 dark:text-white">
-                                        {formatDate(shift.date)}
+                            {isLoadingShifts ? (
+                                <div className="flex items-center justify-center py-12">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+                                </div>
+                            ) : availableShifts.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <p className="text-slate-500">
+                                        Nenhum plantão disponível para troca
                                     </p>
-                                    <p className="text-sm text-slate-500">
-                                        {shift.start_time} - {shift.end_time}
-                                        {shift.code && ` • ${shift.code}`}
+                                    <p className="text-xs text-slate-400 mt-2">
+                                        Plantões que conflitam com seus outros serviços foram filtrados
                                     </p>
                                 </div>
-                                {selectedShiftIds.includes(shift.id) && (
-                                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                                        <span className="text-white text-sm">✓</span>
-                                    </div>
-                                )}
-                            </div>
-                        </button>
-                    ))}
+                            ) : (
+                                <div className="grid gap-3">
+                                    {availableShifts.map(shift => (
+                                        <button
+                                            key={shift.id}
+                                            onClick={() => handleShiftToggle(shift.id)}
+                                            disabled={!selectedShiftIds.includes(shift.id) && selectedShiftIds.length >= 3}
+                                            className={`p-4 rounded-lg border-2 transition-all text-left ${selectedShiftIds.includes(shift.id)
+                                                ? 'border-primary bg-primary/5'
+                                                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                                } ${!selectedShiftIds.includes(shift.id) && selectedShiftIds.length >= 3 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <p className="font-medium text-slate-800 dark:text-white">
+                                                        {formatDate(shift.date)}
+                                                    </p>
+                                                    <p className="text-sm text-slate-500">
+                                                        {shift.start_time} - {shift.end_time}
+                                                        {shift.code && ` • ${shift.code}`}
+                                                    </p>
+                                                </div>
+                                                {selectedShiftIds.includes(shift.id) && (
+                                                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                                                        <span className="text-white text-sm">✓</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
-            )}
+
+                {/* Footer */}
+                <div className="p-6 border-t border-slate-200 dark:border-slate-700 flex gap-3">
+                    {step === 2 && (
+                        <button
+                            onClick={() => {
+                                setStep(1);
+                                setSelectedShiftIds([]);
+                            }}
+                            className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors flex items-center gap-2"
+                        >
+                            <ChevronLeft size={18} />
+                            Voltar
+                        </button>
+                    )}
+
+                    {step === 2 && (
+                        <button
+                            onClick={handleSubmit}
+                            disabled={selectedShiftIds.length === 0 || isLoading}
+                            className="flex-1 px-6 py-3 bg-primary text-white font-semibold rounded-lg shadow-lg shadow-primary/30 hover:bg-primaryDark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                                    Enviando...
+                                </>
+                            ) : (
+                                <>
+                                    <Send size={18} />
+                                    Enviar Pedido
+                                </>
+                            )}
+                        </button>
+                    )}
+                </div>
+            </div>
         </div>
-    )
-}
-                </div >
-
-    {/* Footer */ }
-    < div className = "p-6 border-t border-slate-200 dark:border-slate-700 flex gap-3" >
-        { step === 2 && (
-            <button
-                onClick={() => {
-                    setStep(1);
-                    setSelectedShiftIds([]);
-                }}
-                className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors flex items-center gap-2"
-            >
-                <ChevronLeft size={18} />
-                Voltar
-            </button>
-        )}
-
-{
-    step === 2 && (
-        <button
-            onClick={handleSubmit}
-            disabled={selectedShiftIds.length === 0 || isLoading}
-            className="flex-1 px-6 py-3 bg-primary text-white font-semibold rounded-lg shadow-lg shadow-primary/30 hover:bg-primaryDark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-            {isLoading ? (
-                <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                    Enviando...
-                </>
-            ) : (
-                <>
-                    <Send size={18} />
-                    Enviar Pedido
-                </>
-            )}
-        </button>
-    )
-}
-                </div >
-            </div >
-        </div >
     );
 };
 
