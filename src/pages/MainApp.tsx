@@ -110,6 +110,11 @@ const Dashboard: React.FC = () => {
     if (!s.is_published) return false;
 
     return assignments.some(a => a.shift_id === s.id && a.profile_id === currentUser.id);
+  }).sort((a, b) => {
+    const dateA = new Date(a.date).getTime();
+    const dateB = new Date(b.date).getTime();
+    if (dateA !== dateB) return dateA - dateB;
+    return a.start_time.localeCompare(b.start_time);
   });
 
   const handleEditShift = (shift: Shift) => {
