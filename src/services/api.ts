@@ -1998,38 +1998,7 @@ const executeShiftSwap = async (
     if (swap2Error) throw swap2Error;
 };
 
-/**
- * Cancel a pending exchange request
- * Only the requester can cancel
- */
-export const cancelExchangeRequest = async (requestId: string, userId: string): Promise<void> => {
-    // Notify target that request was cancelled
-    const { data: request } = await supabase
-        .from('shift_exchange_requests')
-        .select('target_user_id')
-        .eq('id', requestId)
-        .single();
 
-    if (request) {
-        await createNotificationsBulk([{
-            user_id: request.target_user_id,
-            title: 'Troca Cancelada',
-            message: 'Uma solicitação de troca enviada a você foi cancelada.',
-            type: 'SHIFT_SWAP',
-            is_read: false,
-            metadata: { exchange_request_id: requestId }
-        }]);
-    }
-
-    const { error } = await supabase
-        .from('shift_exchange_requests')
-        .update({ status: 'CANCELLED' })
-        .eq('id', requestId)
-        .eq('requesting_user_id', userId)
-        .eq('status', 'PENDING');
-
-    if (error) throw error;
-};
 
 export const getPendingActionableRequests = async (userId: string): Promise<{ swaps: ShiftExchangeRequest[], giveaways: ShiftExchange[] }> => {
     // Get the user's groups first to filter public giveaways
@@ -2110,5 +2079,124 @@ export const getPendingActionableRequests = async (userId: string): Promise<{ sw
         swaps: enrichedSwaps as ShiftExchangeRequest[],
         giveaways: (giveaways || []) as ShiftExchange[]
     };
+};
+
+export const cancelExchangeRequest = async (requestId: string): Promise<void> => {
+    // 1. Fetch request to identify target user for notification
+    const { data: request, error: fetchError } = await supabase
+        .from('shift_exchange_requests')
+        .select('target_user_id')
+        .eq('id', requestId)
+        .single();
+
+    if (fetchError) throw fetchError;
+
+    // 2. Update status to CANCELLED
+    const { error } = await supabase
+        .from('shift_exchange_requests')
+        .update({ status: 'CANCELLED' })
+        .eq('id', requestId);
+
+    if (error) throw error;
+
+    // 3. Notify the target user
+    if (request?.target_user_id) {
+        await createNotificationsBulk([{
+            user_id: request.target_user_id,
+            title: 'Solicitação de Troca Cancelada',
+            message: 'A solicitação de troca enviada para você foi cancelada pelo remetente.',
+            type: 'SHIFT_SWAP',
+            is_read: false,
+            metadata: { exchange_request_id: requestId }
+        }]);
+    }
+};
+
+/**
+ * TRADES HISTORY
+ * Unified history of completed exchanges (Swaps and Giveaways)
+ */
+export const getTradeHistory = async (userId: string): Promise<any[]> => {
+    // 1. Fetch Accepted Swaps (ShiftExchangeRequest)
+    // Involved as requester or target
+    const { data: swaps, error: swapsError } = await supabase
+        .from('shift_exchange_requests')
+        .select(`
+            *,
+            requesting_user:profiles!requesting_user_id(*),
+            target_user:profiles!target_user_id(*),
+            offered_shift:shifts!offered_shift_id(
+                 *,
+                 group:groups(name, institution)
+            ),
+            accepted_shift:shifts!accepted_shift_id(
+                 *,
+                 group:groups(name, institution)
+            )
+        `)
+        .eq('status', 'ACCEPTED')
+        .or(`requesting_user_id.eq.${userId},target_user_id.eq.${userId}`);
+
+    if (swapsError) throw swapsError;
+
+    // 2. Fetch Accepted Giveaways (ShiftExchange)
+    // Involved as requester (giver) or target (receiver)
+    const { data: giveaways, error: giveawaysError } = await supabase
+        .from('shift_exchanges')
+        .select(`
+            *,
+            requesting_profile:profiles!requesting_profile_id(*),
+            target_profile:profiles!target_profile_id(*),
+            offered_shift:shift_assignments!offered_shift_assignment_id(
+                id,
+                shift:shifts(
+                    *,
+                    group:groups(name, institution)
+                )
+            )
+        `)
+        .eq('status', TradeStatus.ACCEPTED)
+        .or(`requesting_profile_id.eq.${userId},target_profile_id.eq.${userId}`);
+
+    if (giveawaysError) throw giveawaysError;
+
+    // Normalize and Combine
+    const normalizedSwaps = (swaps || []).map(s => ({
+        id: s.id,
+        type: 'SWAP',
+        date: s.updated_at || s.created_at,
+        status: s.status,
+        // Context
+        isRequester: s.requesting_user_id === userId,
+        counterparty: s.requesting_user_id === userId ? s.target_user : s.requesting_user,
+        // Details
+        givenShift: s.requesting_user_id === userId ? s.offered_shift : s.accepted_shift,
+        receivedShift: s.requesting_user_id === userId ? s.accepted_shift : s.offered_shift,
+        serviceName: s.offered_shift?.group?.name
+    }));
+
+    const normalizedGiveaways = (giveaways || []).map(g => {
+        const isGiver = g.requesting_profile_id === userId;
+        return {
+            id: g.id,
+            type: isGiver ? 'GIVEN' : 'TAKEN', // Repassado vs Pego
+            date: g.updated_at || g.created_at,
+            status: g.status,
+            // Context
+            isRequester: isGiver,
+            counterparty: isGiver ? g.target_profile : g.requesting_profile,
+            // Details
+            givenShift: isGiver ? g.offered_shift?.shift : null,
+            receivedShift: !isGiver ? g.offered_shift?.shift : null,
+            serviceName: g.offered_shift?.shift?.group?.name
+        };
+    });
+
+    // Merge and Sort by Date Descending
+    const history = [...normalizedSwaps, ...normalizedGiveaways].sort((a, b) =>
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+
+    return history;
 };
 

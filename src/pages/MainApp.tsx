@@ -15,6 +15,7 @@ import NotificationManager from '../components/NotificationManager';
 import Logo from '../components/Logo';
 import ActionableNotificationCard from '../components/ActionableNotificationCard';
 import ExchangeResponseModal from '../components/ExchangeResponseModal';
+import TradeHistory from '../components/TradeHistory';
 import DraggableFAB from '../components/DraggableFAB';
 import { usePendingRequests } from '../hooks/usePendingRequests';
 
@@ -44,6 +45,7 @@ const Dashboard: React.FC = () => {
     assignments,
     userRole,
     exchanges,
+    pendingSwapRequests,
     refresh
   } = useDashboardData(currentUser);
 
@@ -279,6 +281,11 @@ const Dashboard: React.FC = () => {
                     ex.requesting_profile_id === currentUser.id &&
                     ex.offered_shift_assignment_id === assignment?.id
                   );
+                  const pendingSwapRequest = pendingSwapRequests.find(req =>
+                    req.status === 'PENDING' &&
+                    req.requesting_user_id === currentUser.id &&
+                    req.offered_shift_id === shift.id
+                  );
                   return (
                     <ShiftCard
                       key={shift.id}
@@ -289,6 +296,7 @@ const Dashboard: React.FC = () => {
                       currentUserId={currentUser.id}
                       onRefresh={refresh}
                       pendingExchange={pendingExchange}
+                      pendingSwapRequest={pendingSwapRequest}
                     />
                   );
                 })
@@ -422,13 +430,19 @@ const Dashboard: React.FC = () => {
                         </div>
                       )}
                     </div>
+
+
+                    {/* Trade History Section */}
+                    <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                      <TradeHistory currentUser={currentUser} />
+                    </div>
                   </div>
                 );
               })()}
             </div>
           )}
         </div>
-      </div>
+      </div >
     );
   };
 
@@ -543,6 +557,7 @@ const Dashboard: React.FC = () => {
           onClose={() => setSelectedService(null)}
           onOpenScaleEditor={handleOpenScaleEditor}
           onGroupUpdate={refresh}
+          pendingSwapRequests={pendingSwapRequests}
         />
       )}
 

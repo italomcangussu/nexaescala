@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Group, ServiceRole, Profile, Shift, ShiftAssignment } from '../types';
+import { Group, ServiceRole, Profile, Shift, ShiftAssignment, ShiftExchangeRequest } from '../types';
 // Cleaned imports
 import { X, Users } from 'lucide-react';
 import AdminServiceView from './service-views/AdminServiceView';
@@ -13,9 +13,10 @@ interface ServiceDetailViewProps {
   onClose: () => void;
   onOpenScaleEditor?: (group: Group) => void;
   onGroupUpdate?: () => void; // Callback to refresh group data after color change
+  pendingSwapRequests: ShiftExchangeRequest[];
 }
 
-const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUser, onClose, onOpenScaleEditor, onGroupUpdate }) => {
+const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUser, onClose, onOpenScaleEditor, onGroupUpdate, pendingSwapRequests }) => {
   const isAdmin = group.user_role === ServiceRole.ADMIN || group.user_role === ServiceRole.ADMIN_AUX;
   const isPlantonista = group.user_role === ServiceRole.PLANTONISTA;
 
@@ -163,7 +164,7 @@ const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUse
             onGroupUpdate={onGroupUpdate}
           />
         ) : (
-          <PlantonistaServiceView group={group} currentUser={currentUser} shifts={shifts} assignments={assignments} onBack={onClose} onGroupUpdate={onGroupUpdate} />
+          <PlantonistaServiceView group={group} currentUser={currentUser} shifts={shifts} assignments={assignments} onBack={onClose} onGroupUpdate={onGroupUpdate} pendingSwapRequests={pendingSwapRequests} />
         )}
       </div>
 

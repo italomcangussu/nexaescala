@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { PieChart, Pie, Cell } from 'recharts';
 import { getFinancialRecords, updateFinancialRecordPaidStatus, FinancialRecordWithGroup } from '../services/api';
 import { Profile, Group } from '../types';
 import { DollarSign, Filter, Check, Settings, ChevronRight, Building, Plus, Loader, RefreshCw } from 'lucide-react';
@@ -141,22 +141,20 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ currentUser, userGr
             {/* Chart Section */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
                <div className="h-24 w-24 shrink-0 relative">
-                  <ResponsiveContainer width="100%" height="100%" minWidth={40} minHeight={40}>
-                     <PieChart>
-                        <Pie
-                           data={breakdownData.filter(d => d.value > 0)}
-                           innerRadius={35}
-                           outerRadius={45}
-                           paddingAngle={5}
-                           dataKey="value"
-                           stroke="none"
-                        >
-                           {breakdownData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                           ))}
-                        </Pie>
-                     </PieChart>
-                  </ResponsiveContainer>
+                  <PieChart width={96} height={96}>
+                     <Pie
+                        data={breakdownData.filter(d => d.value > 0)}
+                        innerRadius={35}
+                        outerRadius={45}
+                        paddingAngle={5}
+                        dataKey="value"
+                        stroke="none"
+                     >
+                        {breakdownData.map((entry, index) => (
+                           <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                     </Pie>
+                  </PieChart>
                   <div className="absolute inset-0 flex items-center justify-center">
                      <span className="text-[10px] font-bold text-slate-400">{currentMonth}</span>
                   </div>

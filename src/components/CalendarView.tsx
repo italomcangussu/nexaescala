@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, MoreHorizontal, Calendar as CalendarIcon, Repeat, CalendarX } from 'lucide-react';
-import { Shift, ShiftAssignment, AppRole, Profile, ServiceRole, Group, ShiftExchange, TradeStatus, TradeType } from '../types';
+import { ChevronLeft, ChevronRight, MoreHorizontal, Calendar as CalendarIcon, Repeat } from 'lucide-react';
+import { Shift, ShiftAssignment, AppRole, Profile, ServiceRole, Group, ShiftExchange, TradeStatus, TradeType, ShiftExchangeRequest } from '../types';
 import { getShiftExchanges, getUserShiftExchanges } from '../services/api';
 import DayDetailSheet from './DayDetailSheet';
 import ShiftCard from './ShiftCard';
@@ -28,6 +28,7 @@ interface CalendarViewProps {
   groupId?: string; // Optional (e.g. for MainApp aggregated view)
   userServiceRole?: ServiceRole; // Role in specific group
   userGroups?: Group[]; // For unified view color lookup
+  pendingSwapRequests?: ShiftExchangeRequest[];
 }
 
 const CalendarView: React.FC<CalendarViewProps> = ({
@@ -39,7 +40,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   showAvailableShifts = true,
   groupId,
   userServiceRole,
-  userGroups
+  userGroups,
+  pendingSwapRequests = []
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -173,7 +175,18 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
       const isRepassing = !isTransferred && myPendingExchangesOnDay.length > 0;
 
-      const pendingType = isRepassing ? myPendingExchangesOnDay[0].type : null; // 'GIVEAWAY' or 'DIRECT_SWAP'
+      // Check for Pending Swaps (ShiftExchangeRequest)
+      const myPendingSwapsOnDay = pendingSwapRequests.filter(req =>
+        req.status === 'PENDING' &&
+        req.requesting_user_id === currentUser.id &&
+        req.offered_shift?.date === dateStr
+      );
+
+      const isSwapping = !isTransferred && myPendingSwapsOnDay.length > 0;
+
+      // Consolidated Status
+      const showPendingStatus = isRepassing || isSwapping;
+      const pendingType = isRepassing ? myPendingExchangesOnDay[0].type : (isSwapping ? TradeType.DIRECT_SWAP : null);
 
       const isSelected = selectedDate === dateStr;
       const isToday =
@@ -241,7 +254,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         dayStyle.color = '#94a3b8'; // Slate 400
         dayStyle.borderColor = 'transparent';
         dotContent = <Repeat size={12} className="mt-0.5 opacity-60" />;
-      } else if (isRepassing) {
+        dotContent = <Repeat size={12} className="mt-0.5 opacity-60" />;
+      } else if (showPendingStatus) {
         // Repassing: Keep Service Color Gradient
         dayStyle.backgroundImage = backgroundStyle || `linear-gradient(135deg, ${activeShiftColor}, ${hexToRgba(activeShiftColor, 0.8)})`;
         dayStyle.color = 'white';
@@ -274,7 +288,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         return shiftAssigns.length < (s.quantity_needed || 1);
       });
 
-      const shouldPulse = !isSelected && !isRepassing && !myShiftOnThisDay && hasVacancy;
+      const shouldPulse = !isSelected && !showPendingStatus && !myShiftOnThisDay && hasVacancy;
       if (shouldPulse) {
         dayStyle.boxShadow = `0 0 0 2px ${hexToRgba(displayColor, 0.4)}`;
       }
@@ -298,7 +312,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         >
           <span className={`text-sm font-bold ${isPast && !isSelected && !isTransferred ? 'opacity-50' : ''}`}>{day}</span>
           {dotContent}
-          {isRepassing && !isSelected && (
+          {showPendingStatus && !isSelected && (
             <span className={`
               absolute -bottom-2 scale-75 whitespace-nowrap px-1.5 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-md border border-white/20
               ${pendingType === TradeType.GIVEAWAY
@@ -502,6 +516,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         currentUserRole={currentUserRole}
         groupId={groupId}
         exchanges={exchanges}
+        pendingSwapRequests={pendingSwapRequests}
       />
     </div >
   );

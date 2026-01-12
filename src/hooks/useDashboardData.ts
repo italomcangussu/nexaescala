@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Profile, Shift, ShiftAssignment, Group, AppRole, ShiftExchange } from '../types';
-import { getProfiles, getUserGroups, getMyShifts, getUserShiftExchanges } from '../services/api';
+import { Profile, Shift, ShiftAssignment, Group, AppRole, ShiftExchange, ShiftExchangeRequest } from '../types';
+import { getProfiles, getUserGroups, getMyShifts, getUserShiftExchanges, getMyPendingExchangeRequests } from '../services/api';
 
 
 interface UseDashboardDataReturn {
@@ -12,6 +12,7 @@ interface UseDashboardDataReturn {
     isLoading: boolean;
     userRole: AppRole;
     exchanges: ShiftExchange[];
+    pendingSwapRequests: ShiftExchangeRequest[];
     refresh: () => Promise<void>;
 }
 
@@ -21,6 +22,7 @@ export const useDashboardData = (currentUser: Profile | null): UseDashboardDataR
     const [shifts, setShifts] = useState<Shift[]>([]);
     const [assignments, setAssignments] = useState<ShiftAssignment[]>([]);
     const [exchanges, setExchanges] = useState<ShiftExchange[]>([]);
+    const [pendingSwapRequests, setPendingSwapRequests] = useState<ShiftExchangeRequest[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [userRole] = useState<AppRole>(AppRole.MEDICO);
 
@@ -28,11 +30,12 @@ export const useDashboardData = (currentUser: Profile | null): UseDashboardDataR
         if (!currentUser) return;
         setIsLoading(true);
         try {
-            const [fetchedProfiles, fetchedGroups, myShiftData, fetchedExchanges] = await Promise.all([
+            const [fetchedProfiles, fetchedGroups, myShiftData, fetchedExchanges, fetchedRequests] = await Promise.all([
                 getProfiles(),
                 getUserGroups(currentUser.id),
                 getMyShifts(currentUser.id),
-                getUserShiftExchanges(currentUser.id)
+                getUserShiftExchanges(currentUser.id),
+                getMyPendingExchangeRequests(currentUser.id)
             ]);
 
             setProfiles(fetchedProfiles);
@@ -40,6 +43,7 @@ export const useDashboardData = (currentUser: Profile | null): UseDashboardDataR
             setShifts(myShiftData.shifts);
             setAssignments(myShiftData.assignments);
             setExchanges(fetchedExchanges);
+            setPendingSwapRequests(fetchedRequests);
         } catch (error) {
             console.error("Error fetching dashboard data:", error);
         } finally {
@@ -58,6 +62,7 @@ export const useDashboardData = (currentUser: Profile | null): UseDashboardDataR
         shifts,
         assignments,
         exchanges,
+        pendingSwapRequests,
         isLoading,
         userRole,
         refresh: fetchData

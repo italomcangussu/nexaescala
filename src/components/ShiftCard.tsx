@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRightLeft, Edit, Sun, Moon, MapPin, Sparkles, Megaphone } from 'lucide-react';
-import { Shift, ShiftAssignment, AppRole } from '../types';
+import { Shift, ShiftAssignment, AppRole, ShiftExchangeRequest } from '../types';
 import RepasseModal from './RepasseModal';
 import ShiftExchangeRequestModal from './ShiftExchangeRequestModal';
 import TransferStatusSheet from './TransferStatusSheet';
@@ -15,10 +15,12 @@ interface ShiftCardProps {
   accentColor?: string;
   currentUserId?: string;
   onRefresh?: () => void;
+
   pendingExchange?: any;
+  pendingSwapRequest?: ShiftExchangeRequest;
 }
 
-const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRole, onEdit, hideProfile = false, accentColor, currentUserId, onRefresh, pendingExchange }) => {
+const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRole, onEdit, hideProfile = false, accentColor, currentUserId, onRefresh, pendingExchange, pendingSwapRequest }) => {
   const [isRepasseModalOpen, setIsRepasseModalOpen] = useState(false);
   const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
   const [isStatusSheetOpen, setIsStatusSheetOpen] = useState(false);
@@ -183,7 +185,7 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
                 </button>
               )}
 
-              {/* Repasse Button */}
+              {/* Repasse/Swap Button */}
               {assignment?.profile_id === currentUserId && (
                 pendingExchange ? (
                   <button
@@ -196,6 +198,24 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
                     <div className="absolute inset-0 w-full h-full bg-white/20 animate-pulse-slow"></div>
                     <span className="relative flex items-center gap-1 text-xs font-bold uppercase tracking-wide">
                       Repassando
+                      <span className="flex gap-0.5">
+                        <span className="animate-bounce delay-0">.</span>
+                        <span className="animate-bounce delay-100">.</span>
+                        <span className="animate-bounce delay-200">.</span>
+                      </span>
+                    </span>
+                  </button>
+                ) : pendingSwapRequest ? (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsStatusSheetOpen(true);
+                    }}
+                    className={`relative overflow-hidden group/btn flex items-center justify-center w-full px-5 py-2 rounded-xl text-white shadow-lg active:scale-95 transition-all duration-300 bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200`}
+                  >
+                    <div className="absolute inset-0 w-full h-full bg-white/20 animate-pulse-slow"></div>
+                    <span className="relative flex items-center gap-1 text-xs font-bold uppercase tracking-wide">
+                      Em Troca
                       <span className="flex gap-0.5">
                         <span className="animate-bounce delay-0">.</span>
                         <span className="animate-bounce delay-100">.</span>
@@ -249,7 +269,7 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
           />
 
           {/* Transfer Status Sheet */}
-          {pendingExchange && (
+          {(pendingExchange || pendingSwapRequest) && (
             <TransferStatusSheet
               isOpen={isStatusSheetOpen}
               onClose={() => setIsStatusSheetOpen(false)}
@@ -258,6 +278,7 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
               }}
               shift={shift}
               pendingExchange={pendingExchange}
+              pendingSwapRequest={pendingSwapRequest}
             />
           )}
 

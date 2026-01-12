@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { X, Clock, Users, ArrowRightLeft, Trash2, Sun, Moon, CloudSun, Sparkles, Megaphone, Repeat } from 'lucide-react';
-import { Shift, ShiftAssignment, AppRole, Profile, Group } from '../types';
+import { Shift, ShiftAssignment, AppRole, Profile, Group, ShiftExchangeRequest } from '../types';
 import ShiftExchangeRequestModal from './ShiftExchangeRequestModal';
 import RepasseModal from './RepasseModal'; // Import RepasseModal
-import { getRelatedShiftsForDay, cancelShiftExchange } from '../services/api';
+import { getRelatedShiftsForDay, cancelShiftExchange, cancelExchangeRequest } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import Portal from './Portal';
 
@@ -17,6 +17,7 @@ interface DayDetailSheetProps {
   currentUserRole: AppRole;
   groupId?: string;
   exchanges?: any[]; // Pass exchanges
+  pendingSwapRequests?: ShiftExchangeRequest[];
 }
 
 const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
@@ -28,7 +29,8 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
   currentUser,
   currentUserRole,
   groupId,
-  exchanges = []
+  exchanges = [],
+  pendingSwapRequests = []
 }) => {
   const { showToast } = useToast();
   const [exchangeAssignment, setExchangeAssignment] = useState<any | null>(null);
@@ -225,7 +227,12 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                                   ex.status === 'PENDING' &&
                                   ex.offered_shift_assignment_id === assign.id
                                 );
-                                return { type: 'active', data: assign, pendingEx };
+                                const pendingSwap = pendingSwapRequests.find(req =>
+                                  req.status === 'PENDING' &&
+                                  req.requesting_user_id === currentUser.id &&
+                                  req.offered_shift_id === shift.id // assignment belongs to shift
+                                );
+                                return { type: 'active', data: assign, pendingEx, pendingSwap };
                               }),
                               ...(exchanges.filter(ex =>
                                 ex.status === 'ACCEPTED' &&
@@ -255,6 +262,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
 
                               const assign = item.data;
                               const pendingEx = item.pendingEx;
+                              const pendingSwap = item.pendingSwap;
 
                               return (
                                 <div key={assign.id} className="flex items-center justify-between group/user">
@@ -300,6 +308,17 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                                           >
                                             <div className="absolute inset-0 w-full h-full bg-white/20 animate-pulse-slow"></div>
                                             <span className="relative text-[10px] font-black uppercase tracking-wider">Repassando...</span>
+                                          </button>
+                                        ) : pendingSwap ? (
+                                          <button
+                                            onClick={() => {
+                                              setExchangeToCancel({ ...pendingSwap, isSwap: true }); // Mark as swap for cancel modal
+                                              setIsCancelModalOpen(true);
+                                            }}
+                                            className="relative overflow-hidden flex items-center justify-center min-w-[90px] px-3 py-1.5 rounded-lg text-white shadow-md active:scale-95 transition-all bg-emerald-500 hover:bg-emerald-600"
+                                          >
+                                            <div className="absolute inset-0 w-full h-full bg-white/20 animate-pulse-slow"></div>
+                                            <span className="relative text-[10px] font-black uppercase tracking-wider">Em Troca...</span>
                                           </button>
                                         ) : (
                                           <button
@@ -470,13 +489,18 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                   <button
                     onClick={async () => {
                       try {
-                        await cancelShiftExchange(exchangeToCancel.id);
-                        showToast('Repasse cancelado com sucesso!', 'success');
+                        if (exchangeToCancel.isSwap) {
+                          await cancelExchangeRequest(exchangeToCancel.id);
+                          showToast('Solicitação de troca cancelada!', 'success');
+                        } else {
+                          await cancelShiftExchange(exchangeToCancel.id);
+                          showToast('Repasse cancelado com sucesso!', 'success');
+                        }
                         setIsCancelModalOpen(false);
                         onClose(); // Optional: Close sheet to force refresh or callback
                       } catch (error) {
                         console.error(error);
-                        showToast('Erro ao cancelar repasse', 'error');
+                        showToast('Erro ao cancelar', 'error');
                       }
                     }}
                     className="flex-1 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/20 transition-colors"

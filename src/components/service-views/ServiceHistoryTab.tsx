@@ -157,7 +157,7 @@ const ServiceHistoryTab: React.FC<ServiceHistoryTabProps> = ({ groupId }) => {
                                     <Calendar size={12} className="text-primary" />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-[10px] text-slate-400 font-bold uppercase leading-none mb-0.5">Plantão Negociado</span>
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase leading-none mb-0.5">{isSwap ? 'Plantão Trocado' : 'Plantão Cedido'}</span>
                                     <span className="text-xs font-bold text-slate-700 dark:text-slate-300 leading-none">
                                         {formatDate(shiftDate)} • {shiftTime?.slice(0, 5)}
                                     </span>

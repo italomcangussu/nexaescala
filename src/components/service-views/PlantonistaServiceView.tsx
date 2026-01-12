@@ -30,9 +30,10 @@ interface PlantonistaServiceViewProps {
     currentUser: Profile;
     onBack: () => void;
     onGroupUpdate?: () => void;
+    pendingSwapRequests: ShiftExchangeRequest[];
 }
 
-const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, shifts, assignments, currentUser, onBack, onGroupUpdate }) => {
+const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, shifts, assignments, currentUser, onBack, onGroupUpdate, pendingSwapRequests }) => {
     const [activeTab, setActiveTab] = useState<'calendar' | 'members' | 'history' | 'settings' | 'notifications'>('calendar');
     const displayColor = group.color || '#10b981';
     const [canLeave, setCanLeave] = useState(true);
@@ -189,6 +190,7 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                             showAvailableShifts={false}
                             groupId={group.id}
                             userServiceRole={group.user_role}
+                            pendingSwapRequests={pendingSwapRequests}
                         />
 
                     </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Megaphone, Clock, Calendar, MapPin, Trash2, ArrowRightLeft, Sparkles, AlertCircle } from 'lucide-react';
-import { Shift, ShiftExchange, TradeType } from '../types';
-import { cancelShiftExchange } from '../services/api';
+import { Shift, ShiftExchange, TradeType, ShiftExchangeRequest } from '../types';
+import { cancelShiftExchange, cancelExchangeRequest } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import Portal from './Portal';
 
@@ -10,7 +10,8 @@ interface TransferStatusSheetProps {
     onClose: () => void;
     onSuccess: () => void;
     shift: Shift;
-    pendingExchange: ShiftExchange;
+    pendingExchange?: ShiftExchange;
+    pendingSwapRequest?: ShiftExchangeRequest;
 }
 
 const TransferStatusSheet: React.FC<TransferStatusSheetProps> = ({
@@ -18,7 +19,8 @@ const TransferStatusSheet: React.FC<TransferStatusSheetProps> = ({
     onClose,
     onSuccess,
     shift,
-    pendingExchange
+    pendingExchange,
+    pendingSwapRequest
 }) => {
     const { showToast } = useToast();
     const [isCancelling, setIsCancelling] = useState(false);
@@ -37,20 +39,28 @@ const TransferStatusSheet: React.FC<TransferStatusSheetProps> = ({
     const handleCancel = async () => {
         setIsCancelling(true);
         try {
-            await cancelShiftExchange(pendingExchange.id);
-            showToast('Repasse cancelado com sucesso!', 'success');
+            if (pendingSwapRequest) {
+                await cancelExchangeRequest(pendingSwapRequest.id);
+                showToast('Solicitação de troca cancelada!', 'success');
+            } else if (pendingExchange) {
+                await cancelShiftExchange(pendingExchange.id);
+                showToast('Repasse cancelado com sucesso!', 'success');
+            }
             onSuccess();
             onClose();
         } catch (error) {
             console.error(error);
-            showToast('Erro ao cancelar o repasse', 'error');
+            showToast('Erro ao cancelar', 'error');
         } finally {
             setIsCancelling(false);
         }
     };
 
-    const isDirected = !!pendingExchange.target_profile_id;
-    const isSwap = pendingExchange.type === TradeType.DIRECT_SWAP;
+    const isSwap = !!pendingSwapRequest || pendingExchange?.type === TradeType.DIRECT_SWAP;
+    const isDirected = !!pendingSwapRequest?.target_user_id || !!pendingExchange?.target_profile_id;
+    const targetName = pendingSwapRequest
+        ? (pendingSwapRequest as any).target_user?.full_name // Assuming relation exists
+        : pendingExchange?.target_profile?.full_name;
 
     return (
         <Portal>
@@ -82,8 +92,9 @@ const TransferStatusSheet: React.FC<TransferStatusSheetProps> = ({
                                         </h2>
                                     </div>
                                     <div className="flex items-center gap-2 mt-1">
+
                                         <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${isSwap ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-600'}`}>
-                                            {isSwap ? 'Troca Direcionada' : (isDirected ? 'Repasse Direcionado' : 'Repasse Público')}
+                                            {isSwap ? 'Troca de Plantão' : (isDirected ? 'Repasse Direcionado' : 'Repasse Público')}
                                         </span>
                                         <span className="w-1 h-1 rounded-full bg-slate-300" />
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Aguardando</span>
@@ -138,7 +149,7 @@ const TransferStatusSheet: React.FC<TransferStatusSheetProps> = ({
                             <AlertCircle className="text-primary shrink-0 mt-0.5" size={18} />
                             <p className="text-sm font-medium text-slate-600 dark:text-slate-300 leading-relaxed">
                                 {isDirected
-                                    ? `Aguardando a resposta de ${pendingExchange.target_profile?.full_name || 'um colega'}. Se ele recusar, o plantão voltará para sua escala.`
+                                    ? `Aguardando a resposta de ${targetName || 'um colega'}. Se ele recusar, o plantão voltará para sua escala.`
                                     : "Este plantão está visível no feed do grupo e na aba global de solicitações. O primeiro colega que aceitar ficará com a vaga."
                                 }
                             </p>
@@ -153,7 +164,7 @@ const TransferStatusSheet: React.FC<TransferStatusSheetProps> = ({
                                 className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-black text-xs uppercase tracking-widest hover:bg-red-100 dark:hover:bg-red-900/30 transition-all active:scale-95"
                             >
                                 <Trash2 size={18} />
-                                Cancelar Repasse
+                                {isSwap ? 'Cancelar Troca' : 'Cancelar Repasse'}
                             </button>
                         ) : (
                             <div className="flex gap-3 animate-fade-in">
