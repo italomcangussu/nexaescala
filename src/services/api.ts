@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { Profile, Group, Shift, ShiftAssignment, FinancialRecord, FinancialConfig, ServiceRole, ShiftExchange, TradeStatus, GroupMember, ChatMessage, ShiftPreset, TeamMember, AppRole, GroupRelationship, Notification, ShiftExchangeRequest } from '../types';
+import { Profile, Group, Shift, ShiftAssignment, FinancialRecord, FinancialConfig, ServiceRole, ShiftExchange, TradeStatus, TradeType, GroupMember, ChatMessage, ShiftPreset, TeamMember, AppRole, GroupRelationship, Notification, ShiftExchangeRequest } from '../types';
 
 
 // --- PROFILES ---
@@ -530,6 +530,24 @@ export const publishShifts = async (groupId: string, shiftIds: string[]): Promis
         .eq('group_id', groupId)
         .in('id', shiftIds);
     if (error) throw error;
+
+    // Notify all group members about the new scale
+    const { data: members } = await supabase
+        .from('group_members')
+        .select('profile_id')
+        .eq('group_id', groupId);
+
+    if (members && members.length > 0) {
+        const notifications = members.map(m => ({
+            user_id: m.profile_id,
+            title: 'Nova Escala Publicada',
+            message: 'Uma nova escala foi publicada no seu serviço.',
+            type: 'SHIFT_PUBLISHED',
+            is_read: false,
+            metadata: { group_id: groupId }
+        }));
+        await createNotificationsBulk(notifications as any);
+    }
 };
 
 export const deleteShift = async (shiftId: string) => {
@@ -1127,11 +1145,118 @@ export const createNotificationsBulk = async (notifications: Partial<Notificatio
 // --- SHIFT EXCHANGES ---
 
 export const createShiftExchange = async (exchange: Partial<ShiftExchange>): Promise<void> => {
-    const { error } = await supabase
+    const { data, error } = await supabase
         .from('shift_exchanges')
-        .insert(exchange);
+        .insert(exchange)
+        .select()
+        .single();
 
     if (error) throw error;
+
+    // Notification Logic for Giveaways
+    if (exchange.type === TradeType.GIVEAWAY) {
+        if (exchange.target_profile_id) {
+            // Directed Giveaway: Notify the target user
+            await createNotificationsBulk([{
+                user_id: exchange.target_profile_id,
+                title: 'Repasse de Plantão Recebido',
+                message: 'Um colega repassou um plantão diretamente para você.',
+                type: 'SHIFT_OFFER',
+                is_read: false,
+                metadata: { exchange_id: data.id }
+            }]);
+        } else {
+            // Global Giveaway: Notify ALL group members
+            const { data: members } = await supabase
+                .from('group_members')
+                .select('profile_id')
+                .eq('group_id', exchange.group_id);
+
+            if (members && members.length > 0) {
+                const notifications = members.map(m => ({
+                    user_id: m.profile_id,
+                    title: 'Oportunidade de Plantão',
+                    message: `Um colega ofertou um plantão para o grupo.`,
+                    type: 'SHIFT_OFFER',
+                    is_read: false,
+                    metadata: { exchange_id: data.id }
+                }));
+                await createNotificationsBulk(notifications as any);
+            }
+        }
+    }
+};
+
+export const respondToShiftExchange = async (
+    exchangeId: string,
+    action: 'ACCEPT' | 'REJECT',
+    targetUserId: string
+): Promise<void> => {
+    // 1. Fetch the exchange
+    const { data: exchange, error: fetchError } = await supabase
+        .from('shift_exchanges')
+        .select('*')
+        .eq('id', exchangeId)
+        .single();
+
+    if (fetchError) throw fetchError;
+    if (!exchange) throw new Error('Repasse/Troca não encontrada.');
+
+    if (action === 'ACCEPT') {
+        // Execute the transfer/swap
+        // For GIVEAWAY: Update offered_shift_assignment_id to targetUserId
+        const { error: updateAssignmentError } = await supabase
+            .from('shift_assignments')
+            .update({ profile_id: targetUserId })
+            .eq('id', exchange.offered_shift_assignment_id);
+
+        if (updateAssignmentError) throw updateAssignmentError;
+
+        // If it was a DIRECT_SWAP (rarely used now but supported by types), we'd need more logic
+        // but for GIVEAWAY this is sufficient.
+
+        // Update exchange status
+        const { error: updateExchangeError } = await supabase
+            .from('shift_exchanges')
+            .update({
+                status: TradeStatus.ACCEPTED,
+                target_profile_id: targetUserId // Ensure target is set if it was global
+            })
+            .eq('id', exchangeId);
+
+        if (updateExchangeError) throw updateExchangeError;
+
+        // Notify original requester
+        await createNotificationsBulk([{
+            user_id: exchange.requesting_profile_id,
+            title: 'Repasse Aceito!',
+            message: 'Um colega aceitou o seu repasse de plantão.',
+            type: 'SHIFT_OFFER',
+            is_read: false,
+            metadata: { exchange_id: exchangeId }
+        }]);
+    } else {
+        // Reject - Only relevant for DIRECTED giveaways
+        // Global ones basically don't get "rejected" in the same way, others just ignore.
+        if (exchange.target_profile_id === targetUserId) {
+            const { error: updateExchangeError } = await supabase
+                .from('shift_exchanges')
+                .update({ status: TradeStatus.REJECTED })
+                .eq('id', exchangeId);
+
+            if (updateExchangeError) throw updateExchangeError;
+
+            // Notify original requester
+            await createNotificationsBulk([{
+                user_id: exchange.requesting_profile_id,
+                title: 'Repasse Recusado',
+                message: 'Um colega recusou o seu repasse direcionado.',
+                type: 'SHIFT_OFFER',
+                is_read: false,
+                metadata: { exchange_id: exchangeId }
+            }]);
+        }
+    }
 };
 
 export const getShiftExchanges = async (groupId: string): Promise<ShiftExchange[]> => {
@@ -1776,5 +1901,42 @@ export const cancelExchangeRequest = async (requestId: string, userId: string): 
         .eq('status', 'PENDING');
 
     if (error) throw error;
+};
+
+export const getPendingActionableRequests = async (userId: string): Promise<{ swaps: ShiftExchangeRequest[], giveaways: ShiftExchange[] }> => {
+    // 1. Fetch Swaps (ShiftExchangeRequest)
+    const { data: swaps, error: swapsError } = await supabase
+        .from('shift_exchange_requests')
+        .select(`
+            *,
+            requesting_user:profiles!requesting_user_id(*),
+            offered_shift:shifts!offered_shift_id(*)
+        `)
+        .eq('target_user_id', userId)
+        .eq('status', 'PENDING');
+
+    if (swapsError) throw swapsError;
+
+    // 2. Fetch Directed Giveaways (ShiftExchange)
+    const { data: giveaways, error: giveawaysError } = await supabase
+        .from('shift_exchanges')
+        .select(`
+            *,
+            requesting_profile:profiles!requesting_profile_id(*),
+            offered_shift:shift_assignments!offered_shift_assignment_id(
+                id,
+                shift:shifts(*)
+            )
+        `)
+        .eq('target_profile_id', userId)
+        .eq('status', TradeStatus.PENDING)
+        .eq('type', TradeType.GIVEAWAY);
+
+    if (giveawaysError) throw giveawaysError;
+
+    return {
+        swaps: (swaps || []) as ShiftExchangeRequest[],
+        giveaways: (giveaways || []) as ShiftExchange[]
+    };
 };
 

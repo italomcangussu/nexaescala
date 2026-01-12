@@ -213,7 +213,12 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
           <RepasseModal
             isOpen={isRepasseModalOpen}
             onClose={() => setIsRepasseModalOpen(false)}
+            onSuccess={() => {
+              setIsRepasseModalOpen(false);
+              onRefresh?.();
+            }}
             shift={shift}
+            assignment={assignment}
             currentUserProfileId={currentUserId || ''}
             currentUserRole={currentUserRole || ''}
           />

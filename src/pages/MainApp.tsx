@@ -13,12 +13,16 @@ import ShiftCheckoutModal from '../components/ShiftCheckoutModal';
 import FinancialConfigModal from '../components/FinancialConfigModal';
 import NotificationManager from '../components/NotificationManager';
 import Logo from '../components/Logo';
+import ActionableNotificationCard from '../components/ActionableNotificationCard';
+import ExchangeResponseModal from '../components/ExchangeResponseModal';
+import DraggableFAB from '../components/DraggableFAB';
+import { usePendingRequests } from '../hooks/usePendingRequests';
 
 import { useAuth } from '../context/AuthContext';
 import { useDashboardData } from '../hooks/useDashboardData';
 
 import { Profile, Shift, ServiceRole, Group, FinancialConfig, ShiftPreset } from '../types';
-import { Search, FilePlus, Share2, X, Plus, Calendar, Users } from 'lucide-react';
+import { Search, FilePlus, Share2, X, Plus, Calendar, Users, Sparkles } from 'lucide-react';
 import { getFinancialConfig, createFinancialRecord, saveFinancialConfig } from '../services/api';
 
 const Dashboard: React.FC = () => {
@@ -63,6 +67,18 @@ const Dashboard: React.FC = () => {
   const [editorTargetGroup, setEditorTargetGroup] = useState<Group | null>(null);
   const [editorInitialDate, setEditorInitialDate] = useState<Date | undefined>(undefined);
   const [editorInitialPresets, setEditorInitialPresets] = useState<ShiftPreset[]>([]);
+
+  // Pending Actions State
+  const {
+    pendingSwaps,
+    pendingGiveaways,
+    isActionLoading,
+    handleAccept,
+    handleDecline,
+    refresh: refreshPending
+  } = usePendingRequests(currentUser);
+
+  const [respondingToSwap, setRespondingToSwap] = useState<any>(null);
 
   // Keep selectedService in sync with userGroups updates (e.g. after color change)
   React.useEffect(() => {
@@ -151,6 +167,20 @@ const Dashboard: React.FC = () => {
     } else {
       alert("Nenhum plantão recente encontrado para checkout.");
     }
+  };
+
+  const onActionAccept = async (item: any) => {
+    const result = await handleAccept(item);
+    if (result?.type === 'OPEN_MODAL') {
+      setRespondingToSwap(result.item);
+    } else {
+      await refresh();
+    }
+  };
+
+  const onActionDecline = async (item: any) => {
+    await handleDecline(item);
+    await refresh();
   };
 
   const handleSaveFinConfig = async (config: FinancialConfig) => {
@@ -247,6 +277,42 @@ const Dashboard: React.FC = () => {
                 <Search size={18} className="absolute left-3 top-3 text-gray-400 dark:text-slate-500" />
               </div>
 
+              {/* Actionable Alerts (Pending Giveaways & Swaps) */}
+              {(pendingGiveaways.length > 0 || pendingSwaps.length > 0) && (
+                <div className="mb-8 px-2 animate-fade-in">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-black text-slate-800 dark:text-white flex items-center gap-2">
+                      <Sparkles size={18} className="text-amber-500" />
+                      Ações Pendentes
+                    </h2>
+                    <span className="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-[10px] font-black rounded-full uppercase tracking-widest">
+                      {pendingGiveaways.length + pendingSwaps.length} pendente(s)
+                    </span>
+                  </div>
+                  <div className="space-y-4">
+                    {pendingGiveaways.map(g => (
+                      <ActionableNotificationCard
+                        key={g.id}
+                        item={g}
+                        onAccept={onActionAccept}
+                        onDecline={onActionDecline}
+                        isLoading={isActionLoading === g.id}
+                      />
+                    ))}
+                    {pendingSwaps.map(s => (
+                      <ActionableNotificationCard
+                        key={s.id}
+                        item={s}
+                        onAccept={onActionAccept}
+                        onDecline={onActionDecline}
+                        isLoading={isActionLoading === s.id}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Home Tabs */}
               {userGroups.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 mx-auto bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
@@ -318,19 +384,9 @@ const Dashboard: React.FC = () => {
 
       {renderContent()}
 
-      {/* FAB (Custom Logo + Plus) */}
+      {/* LiquidGlass Draggable FAB */}
       {activeBottomTab !== 'editor' && (
-        <div className="fixed bottom-24 right-4 z-50">
-          <button
-            onClick={() => setIsFabOpen(true)}
-            className="w-16 h-16 rounded-full shadow-float flex items-center justify-center bg-white dark:bg-slate-800 active:scale-95 transition-transform relative group border border-primary/20"
-          >
-            <Logo className="w-10 h-10" />
-            <div className="absolute top-1 right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center border-2 border-white dark:border-slate-800">
-              <Plus size={12} className="text-white" strokeWidth={4} />
-            </div>
-          </button>
-        </div>
+        <DraggableFAB key="fab-reset-v4" onClick={() => setIsFabOpen(true)} />
       )}
 
       {/* FAB Overlay (Animated) */}
@@ -384,6 +440,18 @@ const Dashboard: React.FC = () => {
         />
       )}
 
+      {/* Exchange Response Modal */}
+      {respondingToSwap && (
+        <ExchangeResponseModal
+          request={respondingToSwap}
+          onClose={() => setRespondingToSwap(null)}
+          onSuccess={() => {
+            setRespondingToSwap(null);
+            refresh();
+            refreshPending();
+          }}
+        />
+      )}
       {/* Service Detail View (Role Based) */}
       {selectedService && (
         <ServiceDetailView
