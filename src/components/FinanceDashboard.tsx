@@ -141,7 +141,7 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ currentUser, userGr
             {/* Chart Section */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
                <div className="h-24 w-24 shrink-0 relative">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={40} minHeight={40}>
                      <PieChart>
                         <Pie
                            data={breakdownData.filter(d => d.value > 0)}

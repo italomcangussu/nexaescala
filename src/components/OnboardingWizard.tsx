@@ -31,7 +31,7 @@ const BRAZILIAN_STATES = [
 ];
 
 const SPECIALTIES = [
-    'Clínica Geral',
+    'Médico Generalista',
     'Cardiologia',
     'Clínica Médica',
     'Cirurgia Geral',

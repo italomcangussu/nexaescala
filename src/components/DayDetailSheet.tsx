@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { X, Clock, Users, ArrowRightLeft, Trash2, Sun, Moon, CloudSun, Sparkles, Megaphone } from 'lucide-react';
+import { X, Clock, Users, ArrowRightLeft, Trash2, Sun, Moon, CloudSun, Sparkles, Megaphone, Repeat } from 'lucide-react';
 import { Shift, ShiftAssignment, AppRole, Profile, Group } from '../types';
-import ShiftExchangeModal from './ShiftExchangeModal';
+import ShiftExchangeRequestModal from './ShiftExchangeRequestModal';
 import RepasseModal from './RepasseModal'; // Import RepasseModal
-import { getRelatedShiftsForDay } from '../services/api';
+import { getRelatedShiftsForDay, cancelShiftExchange } from '../services/api';
+import { useToast } from '../context/ToastContext';
+import Portal from './Portal';
 
 interface DayDetailSheetProps {
   isOpen: boolean;
@@ -13,7 +15,8 @@ interface DayDetailSheetProps {
   assignments: ShiftAssignment[];
   currentUser: Profile;
   currentUserRole: AppRole;
-  groupId?: string; // Add groupId to props
+  groupId?: string;
+  exchanges?: any[]; // Pass exchanges
 }
 
 const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
@@ -24,10 +27,15 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
   assignments,
   currentUser,
   currentUserRole,
-  groupId
+  groupId,
+  exchanges = []
 }) => {
+  const { showToast } = useToast();
   const [exchangeAssignment, setExchangeAssignment] = useState<any | null>(null);
-  const [repasseShift, setRepasseShift] = useState<Shift | null>(null); // State for Repasse Modal
+  const [repasseShift, setRepasseShift] = useState<Shift | null>(null);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [exchangeToCancel, setExchangeToCancel] = useState<any | null>(null);
+
   const [relatedShifts, setRelatedShifts] = useState<{
     group: Group;
     label: string | null;
@@ -72,21 +80,17 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 transition-opacity"
         onClick={onClose}
       />
 
-      {/* Sheet */}
       <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 rounded-t-[2.5rem] z-50 max-h-[85vh] overflow-y-auto shadow-2xl animate-slide-up transition-colors duration-300 ring-1 ring-black/5 dark:ring-white/10">
 
-        {/* Handle */}
         <div className="w-full flex justify-center pt-3 pb-2" onClick={onClose}>
           <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full"></div>
         </div>
 
-        {/* Header */}
         <div className="px-8 pb-6 pt-2 flex justify-between items-start border-b border-slate-100 dark:border-slate-800">
           <div>
             <h2 className="text-2xl font-black text-slate-800 dark:text-white capitalize tracking-tight">{formatDate(date)}</h2>
@@ -99,7 +103,6 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6 space-y-6 pb-20 bg-slate-50 dark:bg-slate-950 min-h-[300px] transition-colors">
           {sortedShifts.length === 0 ? (
             <div className="text-center py-16 text-slate-400 dark:text-slate-600">
@@ -122,7 +125,6 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
               const missingCount = shift.quantity_needed - shiftAssignments.length;
               const isUserAssigned = shiftAssignments.some(a => a.profile_id === currentUser.id);
 
-              // --- Determine Time & Style (Copied Logic from ShiftCard) ---
               const startH = parseInt(shift.start_time.split(':')[0], 10);
               const isNightShift = startH >= 18 || startH <= 5;
 
@@ -130,192 +132,235 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
               if (startH >= 12 && startH < 18) TimeIcon = CloudSun;
               else if (isNightShift) TimeIcon = Moon;
 
-              // Styles based on Day/Night
               const cardStyles = isNightShift ? {
-                // Night Shift Styles
                 container: 'bg-slate-900 border-slate-800 shadow-lg shadow-indigo-900/10',
-                headerBg: 'bg-gradient-to-r from-slate-800/50 to-indigo-900/20',
                 textPrimary: 'text-slate-100',
                 textSecondary: 'text-slate-400',
                 iconColor: 'text-indigo-400',
                 badge: 'bg-indigo-900/30 text-indigo-300 border-indigo-800',
-                timeBg: 'bg-slate-800/80',
+                orb1: 'from-indigo-900/40 to-purple-900/10',
+                orb2: 'bg-indigo-900/20',
+                divider: 'border-slate-800',
+                buttonBg: 'bg-emerald-600 hover:bg-emerald-700 shadow-indigo-900/40'
               } : {
-                // Day Shift Styles
-                container: 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 shadow-sm',
-                headerBg: 'bg-orange-50/50 dark:bg-orange-900/10', // Warm accent for day
+                container: 'bg-white dark:bg-slate-900 border-slate-50 dark:border-slate-800 shadow-sm',
                 textPrimary: 'text-slate-800 dark:text-slate-100',
                 textSecondary: 'text-slate-500 dark:text-slate-400',
                 iconColor: 'text-amber-500',
-                badge: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700',
-                timeBg: 'bg-slate-50 dark:bg-slate-800/50',
+                badge: 'bg-emerald-50/80 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800',
+                orb1: 'from-emerald-100/30 to-teal-50/10 dark:from-emerald-900/20 dark:to-teal-900/10',
+                orb2: 'bg-green-50/30 dark:bg-green-900/10',
+                divider: 'border-slate-50 dark:border-slate-800',
+                buttonBg: 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100 dark:shadow-none'
               };
 
-              // Override for Day/Afternoon specifics if needed, but keeping it simple like ShiftCard
-              if (startH >= 12 && startH < 18 && !isNightShift) {
-                // Afternoon tweak
-                cardStyles.headerBg = 'bg-amber-50/50 dark:bg-amber-900/10';
-              }
-
-
               return (
-                <div key={shift.id} className={`rounded-3xl border transition-all overflow-hidden ${cardStyles.container} ${isUserAssigned ? 'ring-2 ring-primary/20 dark:ring-primary/10' : ''}`}>
+                <div key={shift.id} className="group relative w-full mb-4 animate-fade-in-up">
+                  <div className={`relative overflow-hidden rounded-[2rem] border transition-all duration-500 ${cardStyles.container} ${isUserAssigned ? 'ring-2 ring-primary/20' : ''}`}>
 
-                  {/* Modern Header Section */}
-                  <div className={`p-5 pb-4 ${cardStyles.headerBg} relative overflow-hidden`}>
-                    {/* Decorative Orbs */}
-                    <div className={`absolute -right-6 -top-6 w-24 h-24 bg-current rounded-full blur-2xl opacity-5 ${isNightShift ? 'text-indigo-500' : 'text-orange-400'}`}></div>
+                    {/* Animated Decorative Background Orbs */}
+                    <div className={`absolute -right-10 -top-10 w-40 h-40 bg-gradient-to-br rounded-full blur-3xl transition-all duration-700 group-hover:scale-125 ${cardStyles.orb1}`}></div>
+                    <div className={`absolute -left-6 bottom-0 w-24 h-24 rounded-full blur-2xl transition-all duration-700 group-hover:scale-110 ${cardStyles.orb2}`}></div>
 
-                    {/* Service & Institution Header (NEW) */}
-                    <div className="flex justify-between items-start mb-4 relative z-10">
-                      <div className="flex flex-col">
-                        <h3 className={`font-bold text-lg leading-tight transition-colors ${cardStyles.textPrimary}`}>
-                          {shift.group_name || 'Serviço'}
-                        </h3>
-                        <div className={`flex items-center text-xs font-medium mt-1 ${cardStyles.textSecondary}`}>
-                          <Users size={12} className={`mr-1 ${isNightShift ? 'text-indigo-400' : 'text-amber-500'}`} />
-                          <span className="opacity-80 tracking-wide">{shift.institution_name || 'Instituição'}</span>
+                    <div className="relative z-10 p-5">
+                      {/* Header: Institution & Status */}
+                      <div className="flex justify-between items-start mb-6">
+                        <div className="flex flex-col">
+                          <h3 className={`font-black text-xl leading-tight transition-colors ${cardStyles.textPrimary}`}>
+                            {shift.group_name || 'Serviço'}
+                          </h3>
+                          <div className={`flex items-center text-xs font-semibold mt-1 ${cardStyles.textSecondary}`}>
+                            <Users size={12} className={`mr-1 ${isNightShift ? 'text-indigo-400' : 'text-primary'}`} />
+                            <span className="opacity-80 tracking-wide">{shift.institution_name || 'Instituição'}</span>
+                          </div>
                         </div>
+
+                        {/* Premium Status Badge */}
+                        {missingCount > 0 ? (
+                          <div className="px-3 py-1.5 bg-red-50/80 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[10px] font-black rounded-xl flex items-center gap-1.5 border border-red-100 dark:border-red-900/30 backdrop-blur-sm">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                            Faltam {missingCount}
+                          </div>
+                        ) : (
+                          <div className={`px-3 py-1.5 text-[10px] font-black rounded-xl flex items-center gap-1.5 border backdrop-blur-sm ${cardStyles.badge}`}>
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            Completo
+                          </div>
+                        )}
                       </div>
 
-                      {/* Status Badge */}
-                      {missingCount > 0 ? (
-                        <div className="px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[10px] font-bold rounded-lg flex items-center gap-1.5 border border-red-100 dark:border-red-900/30">
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                          Need {missingCount}
-                        </div>
-                      ) : (
-                        <div className={`px-3 py-1.5 text-[10px] font-bold rounded-lg flex items-center gap-1.5 border ${cardStyles.badge}`}>
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                          Completo
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-start justify-between relative z-10">
-                      {/* Time & Icon */}
-                      <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${isNightShift ? 'bg-slate-800 text-indigo-400' : 'bg-white text-amber-500'}`}>
-                          <TimeIcon size={24} strokeWidth={2.5} className={isNightShift ? 'drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]' : 'drop-shadow-sm'} />
-                        </div>
+                      {/* Body: Time & Visuals */}
+                      <div className="flex items-center justify-between mb-6">
                         <div>
-                          <div className="flex items-baseline gap-1.5">
-                            <span className={`text-2xl font-black tracking-tight ${cardStyles.textPrimary}`}>
+                          <span className={`text-[10px] font-black uppercase tracking-widest mb-1 block opacity-60 ${cardStyles.textSecondary}`}>Horário</span>
+                          <div className="flex items-baseline space-x-1">
+                            <span className={`text-4xl font-black tracking-tighter ${isNightShift ? 'text-white' : 'text-slate-800 dark:text-slate-100'}`}>
                               {shift.start_time}
                             </span>
-                            <span className={`text-sm font-medium opacity-60 ${cardStyles.textSecondary}`}>
-                              - {shift.end_time}
-                            </span>
+                            <span className={`text-lg font-medium opacity-40 ${cardStyles.textSecondary}`}>- {shift.end_time}</span>
                           </div>
-                          <span className={`text-[10px] font-bold uppercase tracking-widest opacity-70 ${cardStyles.textSecondary}`}>
+                          <span className={`text-[10px] font-bold uppercase tracking-widest mt-1 block opacity-60 ${cardStyles.textSecondary}`}>
                             {shift.code || (isNightShift ? 'Noturno' : 'Diurno')}
                           </span>
                         </div>
+
+                        {/* Animated Icon */}
+                        <div className="relative w-14 h-14 flex items-center justify-center">
+                          <div className={`absolute inset-0 bg-gradient-to-tr ${isNightShift ? 'from-indigo-500/20 to-purple-500/10' : 'from-emerald-100 to-green-50 dark:from-emerald-900/30 dark:to-green-900/20'} rounded-full opacity-50 animate-pulse-slow`}></div>
+                          <TimeIcon size={28} className={`relative z-10 drop-shadow-sm animate-float ${isNightShift ? cardStyles.iconColor : 'text-amber-500'}`} strokeWidth={2.5} />
+                          <Sparkles size={12} className={`absolute top-0 right-0 animate-pulse ${isNightShift ? 'text-indigo-300' : 'text-emerald-400'}`} />
+                        </div>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Assignments List */}
-                  <div className="p-4 space-y-3 bg-white dark:bg-slate-900/50">
-                    <h4 className={`text-[10px] uppercase font-bold tracking-wider mb-2 ${cardStyles.textSecondary}`}>Plantonistas Escalados</h4>
+                      {/* Footer: User & Actions */}
+                      <div className={`pt-4 border-t ${cardStyles.divider}`}>
+                        <h4 className={`text-[10px] uppercase font-black tracking-wider mb-4 opacity-50 ${cardStyles.textSecondary}`}>Plantonistas Escalados</h4>
 
-                    {shiftAssignments.length > 0 ? (
-                      shiftAssignments.map(assign => (
-                        <div key={assign.id} className="flex items-center justify-between group py-1.5">
-                          <div className="flex items-center space-x-3">
-                            <div className="relative">
-                              {assign.profile?.avatar_url ? (
-                                <img
-                                  src={assign.profile.avatar_url}
-                                  alt={assign.profile.full_name}
-                                  className={`w-9 h-9 rounded-full object-cover ring-2 ${isNightShift ? 'ring-slate-800' : 'ring-white dark:ring-slate-800'}`}
-                                />
-                              ) : (
-                                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold ${isNightShift ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
-                                  {assign.profile?.full_name?.substring(0, 2).toUpperCase()}
+                        <div className="space-y-4">
+                          {shiftAssignments.length > 0 ? (
+                            [
+                              ...shiftAssignments.map(assign => {
+                                const pendingEx = exchanges.find(ex =>
+                                  ex.status === 'PENDING' &&
+                                  ex.offered_shift_assignment_id === assign.id
+                                );
+                                return { type: 'active', data: assign, pendingEx };
+                              }),
+                              ...(exchanges.filter(ex =>
+                                ex.status === 'ACCEPTED' &&
+                                ex.requesting_profile_id === currentUser.id &&
+                                ex.offered_shift?.shift_id === shift.id
+                              ).map(ex => ({ type: 'ghost', data: ex })))
+                            ].map((item: any) => {
+                              if (item.type === 'ghost') {
+                                const ex = item.data;
+                                return (
+                                  <div key={`ghost-${ex.id}`} className="flex items-center justify-between py-2 opacity-40 grayscale select-none pointer-events-none relative rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 px-3 border border-dashed border-slate-200 dark:border-slate-700">
+                                    <div className="flex items-center space-x-3">
+                                      <div className="relative">
+                                        <img src={currentUser.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover ring-2 ring-slate-200" />
+                                        <div className="absolute -bottom-0.5 -right-0.5 bg-slate-500 text-white rounded-full p-0.5">
+                                          <Repeat size={10} />
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-bold text-slate-600 dark:text-slate-400 italic">Você (Repassado)</p>
+                                        <p className="text-[10px] opacity-60">Para: {ex.target_profile?.full_name || 'Comunidade'}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              }
+
+                              const assign = item.data;
+                              const pendingEx = item.pendingEx;
+
+                              return (
+                                <div key={assign.id} className="flex items-center justify-between group/user">
+                                  <div className="flex items-center space-x-3">
+                                    <div className="relative">
+                                      {assign.profile?.avatar_url ? (
+                                        <img
+                                          src={assign.profile.avatar_url}
+                                          alt=""
+                                          className={`w-10 h-10 rounded-full object-cover ring-2 transition-transform group-hover/user:scale-105 ${isNightShift ? 'ring-slate-800 border-slate-700' : 'ring-emerald-50 border-white'}`}
+                                        />
+                                      ) : (
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-black ${isNightShift ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                                          {assign.profile?.full_name?.substring(0, 2).toUpperCase()}
+                                        </div>
+                                      )}
+                                      {assign.is_confirmed && (
+                                        <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full"></div>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <p className={`text-sm ${assign.profile_id === currentUser.id ? `font-black ${cardStyles.textPrimary}` : `font-bold ${cardStyles.textSecondary}`}`}>
+                                        {assign.profile?.full_name}
+                                      </p>
+                                      <p className={`text-[10px] font-medium ${assign.profile_id === currentUser.id ? 'text-primary' : 'opacity-60 text-slate-500'}`}>
+                                        {assign.profile?.specialty || assign.profile?.crm || 'Plantonista'}
+                                        {assign.profile_id === currentUser.id && <span className="font-bold ml-1">(Você)</span>}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  {/* Action Buttons - Vertical Layout matching ShiftCard */}
+                                  <div className="flex flex-col items-end gap-1.5">
+                                    {assign.profile_id === currentUser.id && (
+                                      <>
+                                        {pendingEx ? (
+                                          <button
+                                            onClick={() => {
+                                              setExchangeToCancel(pendingEx);
+                                              setIsCancelModalOpen(true);
+                                            }}
+                                            className="relative overflow-hidden flex items-center justify-center min-w-[90px] px-3 py-1.5 rounded-lg text-white shadow-md active:scale-95 transition-all bg-amber-500 hover:bg-amber-600"
+                                          >
+                                            <div className="absolute inset-0 w-full h-full bg-white/20 animate-pulse-slow"></div>
+                                            <span className="relative text-[10px] font-black uppercase tracking-wider">Repassando...</span>
+                                          </button>
+                                        ) : (
+                                          <button
+                                            onClick={() => setRepasseShift(shift)}
+                                            className="relative overflow-hidden group/btn flex items-center justify-center min-w-[90px] px-3 py-1.5 rounded-lg text-white shadow-md active:scale-95 transition-all bg-blue-500 hover:bg-blue-600"
+                                          >
+                                            <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer"></div>
+                                            <Megaphone size={12} className="mr-1.5" />
+                                            <span className="text-[10px] font-black uppercase tracking-wider">Repassar</span>
+                                          </button>
+                                        )}
+
+                                        <button
+                                          onClick={() => setExchangeAssignment({ ...assign, shift })}
+                                          className={`relative overflow-hidden group/btn flex items-center justify-center min-w-[90px] px-3 py-1.5 rounded-lg text-white shadow-md active:scale-95 transition-all ${cardStyles.buttonBg}`}
+                                        >
+                                          <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer delay-75"></div>
+                                          <ArrowRightLeft size={12} className="mr-1.5" />
+                                          <span className="text-[10px] font-black uppercase tracking-wider">Trocar</span>
+                                        </button>
+                                      </>
+                                    )}
+
+                                    {currentUserRole === AppRole.GESTOR && (
+                                      <button className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                                        <Trash2 size={14} />
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
-                              )}
-                              {assign.is_confirmed && (
-                                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full flex items-center justify-center">
-                                  <div className="w-1 h-0.5 bg-white"></div>
-                                </div>
-                              )}
-                            </div>
+                              );
+                            })
+                          ) : (
+                            <p className="text-xs text-slate-400 italic">Nenhum plantonista confirmado.</p>
+                          )}
 
-                            <div>
-                              <p className={`text-sm ${assign.profile_id === currentUser.id ? `font-black ${cardStyles.textPrimary}` : `font-medium ${cardStyles.textSecondary}`}`}>
-                                {assign.profile?.full_name} {assign.profile_id === currentUser.id && <span className="text-primary font-bold text-xs ml-1">(Você)</span>}
-                              </p>
-                              <div className="flex items-center gap-1">
-                                <p className={`text-[10px] ${assign.profile_id === currentUser.id ? 'text-primary' : 'opacity-60'}`}>{assign.profile?.specialty || 'Plantonista'}</p>
+                          {missingCount > 0 && (
+                            <div className="pt-2">
+                              <div className="flex items-center justify-between p-3 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/10">
+                                <div className="flex items-center gap-2 opacity-60">
+                                  <Users size={14} className="text-slate-400" />
+                                  <span className="text-xs font-bold text-slate-500">
+                                    {missingCount} {missingCount === 1 ? 'vaga disponível' : 'vagas disponíveis'}
+                                  </span>
+                                </div>
+                                {currentUserRole === AppRole.GESTOR && (
+                                  <button className="text-[10px] font-black text-primary uppercase hover:bg-primary/10 px-3 py-1 rounded-lg transition-colors border border-primary/20">+ Add</button>
+                                )}
                               </div>
                             </div>
-                          </div>
-
-                          {/* Actions */}
-                          <div className="flex items-center gap-1">
-                            {/* MY ASSIGNMENT ACTIONS */}
-                            {assign.profile_id === currentUser.id && (
-                              <>
-                                {/* Repasse Button */}
-                                <button
-                                  onClick={() => setRepasseShift(shift)}
-                                  className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg text-[10px] font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5 hover:bg-blue-100 transition-colors"
-                                >
-                                  <Megaphone size={12} />
-                                  Repassar
-                                </button>
-
-                                {/* Troca Button */}
-                                <button
-                                  onClick={() => setExchangeAssignment({ ...assign, shift })}
-                                  className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1.5 hover:bg-slate-100 transition-colors"
-                                >
-                                  <ArrowRightLeft size={12} />
-                                  Trocar
-                                </button>
-                              </>
-                            )}
-
-                            {/* MANAGER ACTIONS */}
-                            {currentUserRole === AppRole.GESTOR && (
-                              <button className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors ml-1">
-                                <Trash2 size={14} />
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-xs text-slate-400 italic">Nenhum plantonista confirmado.</p>
-                    )}
-
-                    {/* Empty Slots Indicator */}
-                    {missingCount > 0 && (
-                      <div className="pt-2">
-                        <div className="flex items-center justify-between p-2.5 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/10">
-                          <div className="flex items-center gap-2 opacity-60">
-                            <Users size={14} className="text-slate-400" />
-                            <span className="text-xs font-medium text-slate-500">
-                              {missingCount} {missingCount === 1 ? 'vaga disponível' : 'vagas disponíveis'}
-                            </span>
-                          </div>
-                          {currentUserRole === AppRole.GESTOR && (
-                            <button className="text-[10px] font-bold text-primary uppercase hover:bg-primary/10 px-2 py-1 rounded transition-colors">+ Add</button>
                           )}
                         </div>
                       </div>
-                    )}
-
+                    </div>
                   </div>
                 </div>
               );
+
             })
           )}
         </div>
 
-
-        {/* Related Services Section */}
         {relatedShifts.length > 0 && (
           <div className="px-8 pb-10 bg-white dark:bg-slate-950">
             <div className="h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent mb-6" />
@@ -367,22 +412,18 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
 
       </div>
 
-      {/* Exchange Modal */}
-      {exchangeAssignment && groupId && (
-        <ShiftExchangeModal
-          assignment={exchangeAssignment}
-          groupId={groupId}
-          currentUserId={currentUser.id}
+      {exchangeAssignment && (
+        <ShiftExchangeRequestModal
+          myShiftAssignment={exchangeAssignment}
+          groupId={exchangeAssignment.shift.group_id}
           onClose={() => setExchangeAssignment(null)}
           onSuccess={() => {
             setExchangeAssignment(null);
-            alert('Solicitação enviada com sucesso!');
-            // onClose(); // Optional: close sheet too
+            showToast('Solicitação de troca enviada!', 'success');
           }}
         />
       )}
 
-      {/* Repasse Modal */}
       {repasseShift && (
         <RepasseModal
           isOpen={!!repasseShift}
@@ -391,6 +432,50 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
           currentUserProfileId={currentUser.id}
           currentUserRole={currentUserRole}
         />
+      )}
+
+      {/* Cancel Exchange Modal */}
+      {isCancelModalOpen && exchangeToCancel && (
+        <Portal>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm animate-fade-in" onClick={() => setIsCancelModalOpen(false)}></div>
+            <div className="relative bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-2xl w-full max-w-sm animate-zoom-in border border-slate-100 dark:border-slate-800">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-500 mb-2">
+                  <Megaphone size={32} />
+                </div>
+                <h3 className="text-xl font-black text-slate-800 dark:text-white">Cancelar Repasse?</h3>
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                  Ao cancelar, seu plantão não estará mais disponível para outros colegas.
+                </p>
+                <div className="flex gap-3 w-full pt-2">
+                  <button
+                    onClick={() => setIsCancelModalOpen(false)}
+                    className="flex-1 py-3 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    Voltar
+                  </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        await cancelShiftExchange(exchangeToCancel.id);
+                        showToast('Repasse cancelado com sucesso!', 'success');
+                        setIsCancelModalOpen(false);
+                        onClose(); // Optional: Close sheet to force refresh or callback
+                      } catch (error) {
+                        console.error(error);
+                        showToast('Erro ao cancelar repasse', 'error');
+                      }
+                    }}
+                    className="flex-1 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/20 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Portal>
       )}
 
       <style>{`

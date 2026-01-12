@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { ArrowRightLeft, Edit, Sun, Moon, MapPin, Sparkles, Megaphone } from 'lucide-react';
 import { Shift, ShiftAssignment, AppRole } from '../types';
+import { cancelShiftExchange } from '../services/api';
+import { useToast } from '../context/ToastContext';
+import Portal from './Portal';
 import RepasseModal from './RepasseModal';
 import ShiftExchangeRequestModal from './ShiftExchangeRequestModal';
 
@@ -14,11 +17,14 @@ interface ShiftCardProps {
   accentColor?: string;
   currentUserId?: string;
   onRefresh?: () => void;
+  pendingExchange?: any;
 }
 
-const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRole, onEdit, hideProfile = false, accentColor, currentUserId, onRefresh }) => {
+const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRole, onEdit, hideProfile = false, accentColor, currentUserId, onRefresh, pendingExchange }) => {
+  const { showToast } = useToast();
   const [isRepasseModalOpen, setIsRepasseModalOpen] = useState(false);
   const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
   // Date Formatting
   const dateObj = new Date(shift.date + 'T12:00:00');
@@ -156,10 +162,12 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
                   <div className="flex flex-col">
                     <span className={`text-xs font-bold truncate max-w-[120px] ${isNightShift ? 'text-slate-300' : 'text-slate-700 dark:text-slate-200'}`}>
                       {assignment?.profile?.full_name}
-                      {assignment?.profile_id === assignment?.profile?.id &&
-                        <span className={`${isNightShift ? 'text-indigo-400' : 'text-emerald-600 dark:text-emerald-400'} font-normal ml-1`}>(Você)</span>}
                     </span>
-                    <span className={`text-[10px] font-medium ${cardStyles.textSecondary}`}>CRM {assignment?.profile?.crm || '---'}</span>
+                    <span className={`text-[10px] font-medium ${cardStyles.textSecondary}`}>
+                      CRM {assignment?.profile?.crm || '---'}
+                      {assignment?.profile_id === currentUserId &&
+                        <span className="font-bold ml-1">(Você)</span>}
+                    </span>
                   </div>
                 </>
               )}
@@ -180,17 +188,37 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
 
               {/* Repasse Button */}
               {assignment?.profile_id === currentUserId && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsRepasseModalOpen(true);
-                  }}
-                  className={`relative overflow-hidden group/btn flex items-center justify-center w-full px-5 py-2 rounded-xl text-white shadow-lg active:scale-95 transition-all duration-300 ${isNightShift ? 'bg-sky-600 hover:bg-sky-700 shadow-sky-900/40' : 'bg-blue-500 hover:bg-blue-600 shadow-blue-200 hover:shadow-blue-300 dark:shadow-none'}`}
-                >
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer"></div>
-                  <Megaphone size={14} className="mr-2 group-hover/btn:rotate-12 transition-transform duration-500" />
-                  <span className="text-xs font-bold uppercase tracking-wide">Repassar</span>
-                </button>
+                pendingExchange ? (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsCancelModalOpen(true);
+                    }}
+                    className={`relative overflow-hidden group/btn flex items-center justify-center w-full px-5 py-2 rounded-xl text-white shadow-lg active:scale-95 transition-all duration-300 bg-amber-500 hover:bg-amber-600 shadow-amber-200`}
+                  >
+                    <div className="absolute inset-0 w-full h-full bg-white/20 animate-pulse-slow"></div>
+                    <span className="relative flex items-center gap-1 text-xs font-bold uppercase tracking-wide">
+                      Repassando
+                      <span className="flex gap-0.5">
+                        <span className="animate-bounce delay-0">.</span>
+                        <span className="animate-bounce delay-100">.</span>
+                        <span className="animate-bounce delay-200">.</span>
+                      </span>
+                    </span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsRepasseModalOpen(true);
+                    }}
+                    className={`relative overflow-hidden group/btn flex items-center justify-center w-full px-5 py-2 rounded-xl text-white shadow-lg active:scale-95 transition-all duration-300 ${isNightShift ? 'bg-sky-600 hover:bg-sky-700 shadow-sky-900/40' : 'bg-blue-500 hover:bg-blue-600 shadow-blue-200 hover:shadow-blue-300 dark:shadow-none'}`}
+                  >
+                    <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer"></div>
+                    <Megaphone size={14} className="mr-2 group-hover/btn:rotate-12 transition-transform duration-500" />
+                    <span className="text-xs font-bold uppercase tracking-wide">Repassar</span>
+                  </button>
+                )
               )}
 
               {/* Trocar Button - Only for future shifts assigned to current user */}
@@ -222,6 +250,50 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
             currentUserProfileId={currentUserId || ''}
             currentUserRole={currentUserRole || ''}
           />
+
+          {/* Cancel Exchange Modal */}
+          {isCancelModalOpen && pendingExchange && (
+            <Portal>
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm animate-fade-in" onClick={() => setIsCancelModalOpen(false)}></div>
+                <div className="relative bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-2xl w-full max-w-sm animate-zoom-in border border-slate-100 dark:border-slate-800">
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-500 mb-2">
+                      <Megaphone size={32} />
+                    </div>
+                    <h3 className="text-xl font-black text-slate-800 dark:text-white">Cancelar Repasse?</h3>
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                      Ao cancelar, seu plantão não estará mais disponível para outros colegas.
+                    </p>
+                    <div className="flex gap-3 w-full pt-2">
+                      <button
+                        onClick={() => setIsCancelModalOpen(false)}
+                        className="flex-1 py-3 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      >
+                        Voltar
+                      </button>
+                      <button
+                        onClick={async () => {
+                          try {
+                            await cancelShiftExchange(pendingExchange.id);
+                            showToast('Repasse cancelado com sucesso!', 'success');
+                            setIsCancelModalOpen(false);
+                            onRefresh?.();
+                          } catch (error) {
+                            console.error(error);
+                            showToast('Erro ao cancelar repasse', 'error');
+                          }
+                        }}
+                        className="flex-1 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/20 transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Portal>
+          )}
 
           {/* Exchange Request Modal */}
           {isExchangeModalOpen && assignment && shift.group_id && (

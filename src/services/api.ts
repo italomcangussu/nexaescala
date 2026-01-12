@@ -1145,6 +1145,18 @@ export const createNotificationsBulk = async (notifications: Partial<Notificatio
 // --- SHIFT EXCHANGES ---
 
 export const createShiftExchange = async (exchange: Partial<ShiftExchange>): Promise<void> => {
+    // Check if there is already a pending exchange for this assignment
+    const { data: existing } = await supabase
+        .from('shift_exchanges')
+        .select('id')
+        .eq('offered_shift_assignment_id', exchange.offered_shift_assignment_id)
+        .eq('status', 'PENDING')
+        .maybeSingle();
+
+    if (existing) {
+        throw new Error('Já existe um pedido de repasse pendente para este plantão.');
+    }
+
     const { data, error } = await supabase
         .from('shift_exchanges')
         .insert(exchange)
@@ -1187,6 +1199,16 @@ export const createShiftExchange = async (exchange: Partial<ShiftExchange>): Pro
     }
 };
 
+export const cancelShiftExchange = async (exchangeId: string): Promise<void> => {
+    const { error } = await supabase
+        .from('shift_exchanges')
+        .delete()
+        .eq('id', exchangeId)
+        .eq('status', 'PENDING'); // Security: Only delete pending
+
+    if (error) throw error;
+};
+
 export const respondToShiftExchange = async (
     exchangeId: string,
     action: 'ACCEPT' | 'REJECT',
@@ -1203,28 +1225,13 @@ export const respondToShiftExchange = async (
     if (!exchange) throw new Error('Repasse/Troca não encontrada.');
 
     if (action === 'ACCEPT') {
-        // Execute the transfer/swap
-        // For GIVEAWAY: Update offered_shift_assignment_id to targetUserId
-        const { error: updateAssignmentError } = await supabase
-            .from('shift_assignments')
-            .update({ profile_id: targetUserId })
-            .eq('id', exchange.offered_shift_assignment_id);
+        // Use RPC to safely accept the exchange (handles race conditions for global giveaways)
+        const { error } = await supabase.rpc('accept_shift_exchange', {
+            exchange_id: exchangeId,
+            user_id: targetUserId
+        });
 
-        if (updateAssignmentError) throw updateAssignmentError;
-
-        // If it was a DIRECT_SWAP (rarely used now but supported by types), we'd need more logic
-        // but for GIVEAWAY this is sufficient.
-
-        // Update exchange status
-        const { error: updateExchangeError } = await supabase
-            .from('shift_exchanges')
-            .update({
-                status: TradeStatus.ACCEPTED,
-                target_profile_id: targetUserId // Ensure target is set if it was global
-            })
-            .eq('id', exchangeId);
-
-        if (updateExchangeError) throw updateExchangeError;
+        if (error) throw error;
 
         // Notify original requester
         await createNotificationsBulk([{
@@ -1280,6 +1287,29 @@ export const getShiftExchanges = async (groupId: string): Promise<ShiftExchange[
 
     if (error) throw error;
     return data as any; // Cast due to complex join structure
+};
+
+export const getUserShiftExchanges = async (userId: string): Promise<ShiftExchange[]> => {
+    const { data, error } = await supabase
+        .from('shift_exchanges')
+        .select(`
+            *,
+            requesting_profile: profiles!requesting_profile_id(*),
+            target_profile: profiles!target_profile_id(*),
+            offered_shift: shift_assignments!offered_shift_assignment_id(
+                id,
+                shift: shifts(*)
+            ),
+            requested_shift: shift_assignments!requested_shift_assignment_id(
+                id,
+                shift: shifts(*)
+            )
+        `)
+        .or(`requesting_profile_id.eq.${userId},target_profile_id.eq.${userId}`)
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data as any;
 };
 
 export const updateShiftExchangeStatus = async (exchangeId: string, status: TradeStatus): Promise<void> => {

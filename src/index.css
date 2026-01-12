@@ -99,3 +99,23 @@
     transform: translateX(100%);
   }
 }
+
+@keyframes strongPulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.3;
+    transform: scale(0.9);
+  }
+}
+
+@layer utilities {
+  .animate-strong-pulse {
+    animation: strongPulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
