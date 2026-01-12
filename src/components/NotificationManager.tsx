@@ -12,7 +12,7 @@ const NotificationManager: React.FC = () => {
 
     // VAPID Public Key - Placeholder (Needs to be generated for production)
     // You can generate one with 'npx web-push generate-vapid-keys'
-    const VAPID_PUBLIC_KEY = 'BI5QO8U-i2V7fO1oYp0m2p0m2p0m2p0m2p0m2p0m2p0m2p0m2p0m2p0m2p0m2p0m2p0m2p0m2p0m2p0';
+    const VAPID_PUBLIC_KEY = 'BGLk82NQyHgeqPW-SMaw8DM3P7HOvyM70oRulole1344JMggQIOCT6hglOZXnPvjBfs5k0wLToAO1EiGqrzSoOI';
 
     useEffect(() => {
         // Platform detection and base logic...

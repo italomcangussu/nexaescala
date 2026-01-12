@@ -8,6 +8,7 @@ import ShiftInbox from '../ShiftInbox';
 import { useToast } from '../../context/ToastContext';
 import ExchangeRequestBanner from '../ExchangeRequestBanner';
 import ExchangeResponseModal from '../ExchangeResponseModal';
+import ServiceHistoryTab from './ServiceHistoryTab';
 
 const hexToRgba = (hex: string, alpha: number) => {
     let c: any;
@@ -238,12 +239,7 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                     </div>
                 );
             case 'history':
-                return (
-                    <div className="p-6 space-y-4">
-                        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">Histórico de Plantões</h2>
-                        <p className="text-slate-600 dark:text-slate-400">Histórico em desenvolvimento.</p>
-                    </div>
-                );
+                return <ServiceHistoryTab groupId={group.id} />;
             case 'settings':
                 return (
                     <div className="p-6 space-y-6 max-w-2xl mx-auto">

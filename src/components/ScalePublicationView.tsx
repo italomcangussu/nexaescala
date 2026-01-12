@@ -3,24 +3,19 @@ import {
     ChevronRight,
     Calendar as CalendarIcon,
     AlertTriangle,
-    Clock,
-    Filter,
     Share2,
     Sun,
     CloudSun,
     Moon,
     Rocket,
-    Plus,
     X,
     User,
-    ChevronLeft,
-    CheckCircle2
+    ChevronLeft
 } from 'lucide-react';
 import { Group, Profile, Shift, ShiftAssignment } from '../types';
 
 interface ScalePublicationViewProps {
     group: Group;
-    currentUser: Profile;
     shifts: Shift[];
     assignments: ShiftAssignment[];
     currentDate: Date;
@@ -30,7 +25,6 @@ interface ScalePublicationViewProps {
 
 const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
     group,
-    currentUser,
     shifts,
     assignments,
     currentDate,
@@ -235,10 +229,9 @@ const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
                             </div>
                         </div>
 
-                        {/* Calendar Grid */}
                         <div className="grid grid-cols-7 gap-2 text-center mb-2">
-                            {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(d => (
-                                <span key={d} className="text-xs font-black text-slate-300 dark:text-slate-600">{d}</span>
+                            {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => (
+                                <span key={`${d}-${i}`} className="text-xs font-black text-slate-300 dark:text-slate-600">{d}</span>
                             ))}
                         </div>
                         <div className="grid grid-cols-7 gap-2">
@@ -372,8 +365,8 @@ const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                                    {memberStats.map((stat, i) => (
-                                        <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                    {memberStats.map((stat) => (
+                                        <tr key={stat.profile.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                                             <td className="px-5 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">

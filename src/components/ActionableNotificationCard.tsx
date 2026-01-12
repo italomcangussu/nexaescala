@@ -56,7 +56,12 @@ const ActionableNotificationCard: React.FC<ActionableNotificationCardProps> = ({
                             <div className="flex items-center gap-2">
                                 <Sparkles size={14} className={isSwap ? 'text-indigo-500' : 'text-sky-500'} />
                                 <h4 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider">
-                                    {isSwap ? 'Solicitação de Troca' : 'Repasse Direcionado'}
+                                    {isSwap
+                                        ? 'Solicitação de Troca'
+                                        : (item as ShiftExchange).target_profile_id
+                                            ? 'Repasse Direcionado'
+                                            : 'Repasse Global'
+                                    }
                                 </h4>
                             </div>
                             <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-0.5">

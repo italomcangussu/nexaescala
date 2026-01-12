@@ -745,7 +745,6 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
         return (
             <ScalePublicationView
                 group={selectedGroup}
-                currentUser={currentUser}
                 shifts={groupShifts}
                 assignments={localAssignments}
                 currentDate={currentDate}

@@ -1252,26 +1252,10 @@ export const respondToShiftExchange = async (
     if (!exchange) throw new Error('Repasse/Troca não encontrada.');
 
     if (action === 'ACCEPT') {
-        // Use RPC to safely accept the exchange (handles race conditions for global giveaways)
-        const { error } = await supabase.rpc('accept_shift_exchange', {
-            exchange_id: exchangeId,
-            user_id: targetUserId
-        });
-
-        if (error) throw error;
-
-        // Notify original requester
-        await createNotificationsBulk([{
-            user_id: exchange.requesting_profile_id,
-            title: 'Repasse Aceito!',
-            message: 'Um colega aceitou o seu repasse de plantão.',
-            type: 'SHIFT_OFFER',
-            is_read: false,
-            metadata: { exchange_id: exchangeId }
-        }]);
+        // Execute transaction client-side to ensure proper handling of Swaps and Global Giveaways
+        await executeExchangeTransaction(exchange, targetUserId);
     } else {
         // Reject - Only relevant for DIRECTED giveaways
-        // Global ones basically don't get "rejected" in the same way, others just ignore.
         if (exchange.target_profile_id === targetUserId) {
             const { error: updateExchangeError } = await supabase
                 .from('shift_exchanges')
@@ -1339,6 +1323,36 @@ export const getUserShiftExchanges = async (userId: string): Promise<ShiftExchan
     return data as any;
 };
 
+export const getServiceExchangeHistory = async (groupId: string): Promise<ShiftExchange[]> => {
+    // Calculate date 30 days ago
+    const date = new Date();
+    date.setDate(date.getDate() - 30);
+    const thirtyDaysAgo = date.toISOString();
+
+    const { data, error } = await supabase
+        .from('shift_exchanges')
+        .select(`
+            *,
+            requesting_profile: profiles!requesting_profile_id(*),
+            target_profile: profiles!target_profile_id(*),
+            offered_shift: shift_assignments!offered_shift_assignment_id(
+                id,
+                shift: shifts(*)
+            ),
+            requested_shift: shift_assignments!requested_shift_assignment_id(
+                id,
+                shift: shifts(*)
+            )
+        `)
+        .eq('group_id', groupId)
+        .eq('status', 'ACCEPTED')
+        .gte('created_at', thirtyDaysAgo)
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data as any;
+};
+
 export const updateShiftExchangeStatus = async (exchangeId: string, status: TradeStatus): Promise<void> => {
     // 1. Fetch exchange for notification details
     const { data: exchange } = await supabase
@@ -1370,29 +1384,29 @@ export const updateShiftExchangeStatus = async (exchangeId: string, status: Trad
 };
 
 // Helper to execute the swap/giveaway atomic transaction
-export const executeExchangeTransaction = async (exchange: ShiftExchange): Promise<void> => {
+export async function executeExchangeTransaction(exchange: ShiftExchange, acceptingUserId?: string): Promise<void> {
+    const finalTargetId = exchange.type === 'DIRECT_SWAP' || exchange.target_profile_id
+        ? exchange.target_profile_id
+        : acceptingUserId;
+
+    if (!finalTargetId) {
+        throw new Error("Target user not identified for exchange.");
+    }
+
     // 1. Update assignments
-    // If Giveaway: Assign offered shift to target (or current user if group claim)
-    // If Swap: Swap profiles on both assignments
-
-    // This requires complex logic. For MVP, we will do it client-side sequentially 
-    // but ideally this is a Postgres Function.
-
-    // Placeholder Implementation for MVP:
-
-    if (exchange.type === 'GIVEAWAY' && exchange.target_profile_id) {
-        // Transfer offered shift to target
+    if (exchange.type === 'GIVEAWAY') {
+        // Transfer offered shift to target (Global or Directed)
         const { error } = await supabase
             .from('shift_assignments')
-            .update({ profile_id: exchange.target_profile_id })
+            .update({ profile_id: finalTargetId })
             .eq('id', exchange.offered_shift_assignment_id);
         if (error) throw error;
-    } else if (exchange.type === 'DIRECT_SWAP' && exchange.target_profile_id && exchange.requested_shift_assignment_id) {
+    } else if (exchange.type === 'DIRECT_SWAP' && exchange.requested_shift_assignment_id) {
         // Swap
         // 1. Offered -> Target
         const { error: e1 } = await supabase
             .from('shift_assignments')
-            .update({ profile_id: exchange.target_profile_id })
+            .update({ profile_id: finalTargetId })
             .eq('id', exchange.offered_shift_assignment_id);
         if (e1) throw e1;
 
@@ -1409,8 +1423,7 @@ export const executeExchangeTransaction = async (exchange: ShiftExchange): Promi
         .from('shift_exchanges')
         .update({
             status: TradeStatus.ACCEPTED,
-            target_profile_id: exchange.target_profile_id,
-            requested_shift_assignment_id: exchange.requested_shift_assignment_id,
+            target_profile_id: finalTargetId, // Ensure target is set for Global ones
             updated_at: new Date().toISOString()
         })
         .eq('id', exchange.id);
@@ -1428,7 +1441,7 @@ export const executeExchangeTransaction = async (exchange: ShiftExchange): Promi
         is_read: false,
         metadata: { exchange_id: exchange.id }
     }]);
-};
+}
 
 // --- CHAT ---
 

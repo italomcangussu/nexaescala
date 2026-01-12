@@ -10,6 +10,7 @@ import AddMemberModal from '../AddMemberModal';
 import RemoveMemberModal from '../RemoveMemberModal';
 import ServiceFeedView from '../ServiceFeedView';
 import RelatedServicesSection from './RelatedServicesSection';
+import ServiceHistoryTab from './ServiceHistoryTab';
 
 const hexToRgba = (hex: string, alpha: number) => {
     let c: any;
@@ -407,17 +408,7 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                     )}
 
                     {activeTab === 'history' && (
-                        <div className="p-6">
-                            <div className="flex items-center gap-2 mb-6">
-                                <ClipboardList className="text-primary" size={24} />
-                                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Log de Atividades</h3>
-                            </div>
-                            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-8 text-center">
-                                <History size={48} className="mx-auto text-slate-200 dark:text-slate-700 mb-4" />
-                                <p className="text-slate-500 dark:text-slate-400 font-medium">Nenhuma atividade recente registrada.</p>
-                                <p className="text-xs text-slate-400 mt-1">Sendo um administrador, você verá aqui todas as trocas e edições feitas na escala.</p>
-                            </div>
-                        </div>
+                        <ServiceHistoryTab groupId={group.id} />
                     )}
                 </div>
             </div>
