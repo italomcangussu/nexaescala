@@ -2046,7 +2046,10 @@ export const getPendingActionableRequests = async (userId: string): Promise<{ sw
         .select(`
             *,
             requesting_user:profiles!requesting_user_id(*),
-            offered_shift:shifts!offered_shift_id(*)
+            offered_shift:shifts!offered_shift_id(
+                *,
+                group:groups(name, institution)
+            )
         `)
         .eq('target_user_id', userId)
         .eq('status', 'PENDING');
@@ -2065,7 +2068,10 @@ export const getPendingActionableRequests = async (userId: string): Promise<{ sw
             requesting_profile:profiles!requesting_profile_id(*),
             offered_shift:shift_assignments!offered_shift_assignment_id(
                 id,
-                shift:shifts(*)
+                shift:shifts(
+                    *,
+                    group:groups(name, institution)
+                )
             )
         `)
         .eq('status', TradeStatus.PENDING)
@@ -2081,8 +2087,27 @@ export const getPendingActionableRequests = async (userId: string): Promise<{ sw
 
     if (giveawaysError) throw giveawaysError;
 
+    // Fetch requested shifts for each swap request
+    const enrichedSwaps = await Promise.all(
+        (swaps || []).map(async (request: any) => {
+            const shiftIds = request.requested_shift_options as string[];
+
+            if (shiftIds && shiftIds.length > 0) {
+                const { data: shifts, error: shiftsError } = await supabase
+                    .from('shifts')
+                    .select('*')
+                    .in('id', shiftIds);
+
+                if (!shiftsError && shifts) {
+                    request.requested_shifts = shifts;
+                }
+            }
+            return request;
+        })
+    );
+
     return {
-        swaps: (swaps || []) as ShiftExchangeRequest[],
+        swaps: enrichedSwaps as ShiftExchangeRequest[],
         giveaways: (giveaways || []) as ShiftExchange[]
     };
 };

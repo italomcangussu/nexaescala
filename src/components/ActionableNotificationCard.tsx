@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRightLeft, Megaphone, Check, X, Clock, Sparkles } from 'lucide-react';
+import { ArrowRightLeft, Megaphone, Check, X, Clock, Sparkles, Calendar } from 'lucide-react';
 import { ShiftExchange, ShiftExchangeRequest } from '../types';
 
 interface ActionableNotificationCardProps {
@@ -30,9 +30,13 @@ const ActionableNotificationCard: React.FC<ActionableNotificationCardProps> = ({
         ? (item as ShiftExchangeRequest).offered_shift?.start_time
         : (item as ShiftExchange).offered_shift?.shift.start_time;
 
-    const groupName = isSwap
-        ? 'Troca de Plantão'
-        : (item as ShiftExchange).offered_shift?.shift.group_name || 'Repasse de Plantão';
+    const serviceName = isSwap
+        ? (item as any).offered_shift?.group?.name || 'Serviço'
+        : (item as any).offered_shift?.shift?.group?.name || 'Serviço';
+
+    const institutionName = isSwap
+        ? (item as any).offered_shift?.group?.institution || 'Instituição'
+        : (item as any).offered_shift?.shift?.group?.institution || 'Instituição';
 
     const formatDate = (dateStr: string | undefined) => {
         if (!dateStr) return '';
@@ -82,21 +86,38 @@ const ActionableNotificationCard: React.FC<ActionableNotificationCardProps> = ({
                 {/* Shift Details Content */}
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-3 px-4 py-3 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl border border-slate-100/50 dark:border-slate-800/50">
-                        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                            <Clock size={16} className="text-slate-400" />
-                            <span className="text-xs font-bold">{shiftTime?.slice(0, 5)}</span>
+                        <div className="hidden sm:flex flex-col items-center gap-0.5 min-w-[60px] pr-3 border-r border-slate-200 dark:border-slate-700">
+                            <Clock size={16} className="text-slate-400 mb-1" />
+                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">HORÁRIO</span>
                         </div>
-                        <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
-                        <span className="text-xs font-bold text-slate-800 dark:text-slate-300 truncate">
-                            {groupName}
-                        </span>
+
+                        <div className="flex flex-col min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-0.5">
+                                <span className="text-xs font-black text-slate-800 dark:text-slate-100 truncate">
+                                    {serviceName}
+                                </span>
+                                <div className="flex items-center gap-1 px-1.5 py-0.5 bg-white dark:bg-slate-700 rounded text-[10px] font-bold text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
+                                    {shiftTime?.slice(0, 5)} - {isSwap ? (item as ShiftExchangeRequest).offered_shift?.end_time?.slice(0, 5) : (item as ShiftExchange).offered_shift?.shift.end_time?.slice(0, 5)}
+                                </div>
+                            </div>
+                            <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 truncate">
+                                {institutionName}
+                            </span>
+                        </div>
                     </div>
 
-                    {isSwap && (item as ShiftExchangeRequest).requested_shift_options && (
-                        <div className="px-4 py-2 border-l-2 border-indigo-500/30 ml-2">
-                            <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-1">Troca por um de seus plantões</p>
-                            <div className="flex flex-wrap gap-2">
-                                {(item as ShiftExchangeRequest).requested_shift_options.length} opções disponíveis
+                    {isSwap && (item as ShiftExchangeRequest).requested_shifts && (item as ShiftExchangeRequest).requested_shifts!.length > 0 && (
+                        <div className="px-4 py-2 border-l-2 border-indigo-500/30 ml-2 space-y-2">
+                            <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-1">Troca por um de seus plantões:</p>
+                            <div className="flex flex-col gap-2">
+                                {(item as ShiftExchangeRequest).requested_shifts!.map((shift) => (
+                                    <div key={shift.id} className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-lg border border-indigo-100 dark:border-indigo-800/30">
+                                        <Calendar size={12} className="text-indigo-400" />
+                                        <span className="font-bold">{formatDate(shift.date)}</span>
+                                        <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 mx-1" />
+                                        <span>{shift.start_time.slice(0, 5)} - {shift.end_time.slice(0, 5)}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}
