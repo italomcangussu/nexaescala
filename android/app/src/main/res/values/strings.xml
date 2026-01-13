@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">NexaEscala</string>
+    <string name="title_activity_main">NexaEscala</string>
+    <string name="package_name">com.nexaescala.app</string>
+    <string name="custom_url_scheme">com.nexaescala.app</string>
+</resources>

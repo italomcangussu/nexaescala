@@ -6,6 +6,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 // Lazy load pages for better performance
 const Dashboard = React.lazy(() => import('./pages/MainApp'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
+const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
 
 const LoadingFallback = () => (
     <div className="flex items-center justify-center h-screen bg-slate-50 dark:bg-slate-950">
@@ -23,6 +24,7 @@ const App: React.FC = () => {
                 <Suspense fallback={<LoadingFallback />}>
                     <Routes>
                         <Route path="/login" element={<LoginPage />} />
+                        <Route path="/politicas-de-privacidade" element={<PrivacyPolicy />} />
 
                         {/* Protected Routes */}
                         <Route
