@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { Profile, Group, Shift, ShiftAssignment, FinancialRecord, FinancialConfig, ServiceRole, ShiftExchange, TradeStatus, TradeType, GroupMember, ChatMessage, ShiftPreset, TeamMember, AppRole, GroupRelationship, Notification, ShiftExchangeRequest } from '../types';
+import { Profile, Group, Shift, ShiftAssignment, FinancialRecord, FinancialConfig, ServiceRole, ShiftExchange, TradeStatus, TradeType, GroupMember, ChatMessage, ShiftPreset, TeamMember, AppRole, GroupRelationship, Notification, ShiftExchangeRequest, AppLog } from '../types';
 
 
 // --- PROFILES ---
@@ -38,7 +38,87 @@ export const searchProfiles = async (query: string): Promise<Profile[]> => {
     return data as Profile[];
 };
 
-// --- GROUPS ---
+
+
+// --- ADMIN API ---
+
+export const getAdminStats = async (): Promise<{ totalUsers: number, activeUsers24h: number, totalGroups: number }> => {
+    // Basic stats (approximate since we might not have 'last_sign_in' exposed in public profile)
+    // We can count profiles
+    const { count: totalUsers, error: usersError } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+    const { count: totalGroups, error: groupsError } = await supabase
+        .from('groups')
+        .select('*', { count: 'exact', head: true });
+
+    if (usersError) console.warn('Error fetching total users:', usersError);
+    if (groupsError) console.warn('Error fetching total groups:', groupsError);
+
+    // For active users, we could query logs if we had them populated
+    return {
+        totalUsers: totalUsers || 0,
+        activeUsers24h: 0, // Mock for now until logs are active
+        totalGroups: totalGroups || 0
+    };
+};
+
+export const getAllUsers = async (page = 0, limit = 50): Promise<{ users: Profile[], total: number }> => {
+    const { data, count, error } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact' })
+        .range(page * limit, (page + 1) * limit - 1)
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return { users: data as Profile[], total: count || 0 };
+};
+
+export const updateUserAppRole = async (userId: string, role: 'admin' | 'user' | 'support'): Promise<void> => {
+    const { error } = await supabase
+        .from('profiles')
+        .update({ app_role: role })
+        .eq('id', userId);
+
+    if (error) throw error;
+};
+
+export const getAppLogs = async (limit = 100): Promise<AppLog[]> => {
+    const { data, error } = await supabase
+        .from('app_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+    if (error) throw error;
+    return data as AppLog[];
+    return data as AppLog[];
+};
+
+export const createAppLog = async (
+    level: 'info' | 'warn' | 'error',
+    message: string,
+    metadata?: any
+): Promise<void> => {
+    // Current user is automatically attached via RLS if we set default user_id or we can pass it manually?
+    // In our schema: user_id uuid REFERENCES auth.users(id)
+    // RLS: "Users can insert logs" WITH CHECK (auth.uid() = user_id)
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return; // Can't log if not authenticated (or handle anonymous logs differently if needed)
+
+    const { error } = await supabase
+        .from('app_logs')
+        .insert({
+            user_id: user.id,
+            level,
+            message,
+            metadata
+        });
+
+    if (error) console.error('Failed to create app log:', error);
+};
 
 export const getUserGroups = async (userId: string): Promise<Group[]> => {
     // We need to join group_members to find groups the user belongs to

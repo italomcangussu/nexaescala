@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Profile } from '../types';
+import { createAppLog } from '../services/api';
 
 interface AuthContextType {
     user: any | null;
@@ -35,7 +36,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             else setLoading(false);
         });
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            if (_event === 'SIGNED_IN' && session?.user) {
+                // Log the sign in event (fire and forget)
+                createAppLog('info', 'User signed in', { email: session.user.email })
+                    .catch(e => console.error('Log error', e));
+            }
+
             setUser(session?.user ?? null);
             if (session?.user) fetchProfile(session.user.id);
             else {

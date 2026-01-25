@@ -105,6 +105,16 @@ export interface Profile {
 
   // Onboarding flag
   onboarding_completed?: boolean;
+  app_role?: 'admin' | 'user' | 'support';
+}
+
+export interface AppLog {
+  id: string;
+  user_id: string;
+  level: 'info' | 'warn' | 'error';
+  message: string;
+  metadata?: any;
+  created_at: string;
 }
 
 export interface Post {
