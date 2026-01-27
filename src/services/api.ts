@@ -2,6 +2,47 @@ import { supabase } from '../lib/supabase';
 import { Profile, Group, Shift, ShiftAssignment, FinancialRecord, FinancialConfig, ServiceRole, ShiftExchange, TradeStatus, TradeType, GroupMember, ChatMessage, ShiftPreset, TeamMember, AppRole, GroupRelationship, Notification, ShiftExchangeRequest, AppLog } from '../types';
 
 
+// --- CACHE HELPER ---
+const CACHE_PREFIX = 'nexaescala_cache_';
+// Default cache duration: 7 days (offline first approach)
+
+
+const fetchWithCache = async <T>(key: string, fetcher: () => Promise<T>, forceRefresh = false): Promise<T> => {
+    const cacheKey = CACHE_PREFIX + key;
+
+    // If online and force refresh is true, skip cache read
+    if (!forceRefresh && navigator.onLine) {
+        // We still prefer fresh data if online, but could implement Stale-While-Revalidate here
+        // For now, simpler approach: Network First, Fallback to Cache
+    }
+
+    try {
+        // Try network first
+        const data = await fetcher();
+        // If successful, save to cache
+        try {
+            localStorage.setItem(cacheKey, JSON.stringify({
+                timestamp: Date.now(),
+                data
+            }));
+        } catch (e) {
+            console.warn('LocalStorage full, skipping cache save', e);
+        }
+        return data;
+    } catch (error) {
+        // If network fails, try cache
+        console.warn(`[Offline Mode] Network request failed for ${key}, checking cache...`);
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            console.info(`[Offline Mode] Using cached data for ${key} (${new Date(parsed.timestamp).toLocaleString()})`);
+            return parsed.data as T;
+        }
+        // If no cache, propagate error
+        throw error;
+    }
+};
+
 // --- PROFILES ---
 
 export const getProfiles = async (): Promise<Profile[]> => {
@@ -120,11 +161,50 @@ export const createAppLog = async (
     if (error) console.error('Failed to create app log:', error);
 };
 
+export const deleteUserAccount = async (userId: string): Promise<void> => {
+    // 1. Log the deletion request for audit
+    await createAppLog('info', `User requested account deletion: ${userId}`);
+
+    // 2. Here we should ideally verify if it's safe to delete (e.g. not the only admin of a large group)
+    // For MVP/Review compiliance, we can proceed.
+
+    // 3. Option A: Call a Supabase Edge Function to handle full deletion (Auth + Data)
+    // Option B: Client-side soft delete (update profile) and sign out.
+    // We'll go with Option B + SignOut for now as it's safer without server-side admin setup.
+    // Ideally, you should have an RPC function 'delete_user' that handles this securely.
+
+    // Attempt to delete profile row (this usually triggers cascading deletes if set up, or fails if restricted)
+    // If strict RLS prevents deletion, we update status.
+    const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+
+    if (error) {
+        console.warn("Could not hard delete profile, attempting soft delete/anonymization...", error);
+        // Fallback: Anonymize
+        const { error: updateError } = await supabase
+            .from('profiles')
+            .update({
+                full_name: 'Usuário Excluído',
+                email: `${userId}@deleted.nexaescala.com`,
+                app_role: 'user' // Downgrade
+            })
+            .eq('id', userId);
+
+        if (updateError) throw updateError;
+    }
+
+    // 4. Sign out
+    await supabase.auth.signOut();
+};
+
 export const getUserGroups = async (userId: string): Promise<Group[]> => {
-    // We need to join group_members to find groups the user belongs to
-    const { data, error } = await supabase
-        .from('group_members')
-        .select(`
+    return fetchWithCache(`user_groups_${userId}`, async () => {
+        // We need to join group_members to find groups the user belongs to
+        const { data, error } = await supabase
+            .from('group_members')
+            .select(`
       group:groups (
         id,
         name,
@@ -137,47 +217,48 @@ export const getUserGroups = async (userId: string): Promise<Group[]> => {
       personal_color,
       has_seen_color_banner
     `)
-        .eq('profile_id', userId);
+            .eq('profile_id', userId);
 
-    if (error) throw error;
+        if (error) throw error;
 
-    const groups = data.map((item: any) => {
-        const computedColor = item.personal_color || item.group.color || '#10b981';
-        console.log(`[API] Group ${item.group.name} - Personal: ${item.personal_color}, Global: ${item.group.color} -> Computed: ${computedColor}`);
-        return {
-            ...item.group,
-            user_role: item.service_role,
-            // Use personal_color if set, then group color, otherwise default to emerald green
-            color: computedColor,
-            has_seen_color_banner: item.has_seen_color_banner || false,
-            member_count: 0, // Default, will update below
-            unread_messages: 0 // Placeholder
+        const groups = data.map((item: any) => {
+            const computedColor = item.personal_color || item.group.color || '#10b981';
+            // Debug deprecated: console.log(`[API] Group ${item.group.name} - Personal: ${item.personal_color}`);
+            return {
+                ...item.group,
+                user_role: item.service_role,
+                // Use personal_color if set, then group color, otherwise default to emerald green
+                color: computedColor,
+                has_seen_color_banner: item.has_seen_color_banner || false,
+                member_count: 0, // Default, will update below
+                unread_messages: 0 // Placeholder
+            }
+        }) as Group[];
+
+        // Fetch member counts for these groups
+        const groupIds = groups.map(g => g.id);
+        if (groupIds.length > 0) {
+            const { data: members, error: membersError } = await supabase
+                .from('group_members')
+                .select('group_id')
+                .in('group_id', groupIds);
+
+            if (!membersError && members) {
+                // Aggregate counts
+                const counts: Record<string, number> = {};
+                members.forEach((m: any) => {
+                    counts[m.group_id] = (counts[m.group_id] || 0) + 1;
+                });
+
+                // Update groups with counts
+                groups.forEach(g => {
+                    g.member_count = counts[g.id] || 0;
+                });
+            }
         }
-    }) as Group[];
 
-    // Fetch member counts for these groups
-    const groupIds = groups.map(g => g.id);
-    if (groupIds.length > 0) {
-        const { data: members, error: membersError } = await supabase
-            .from('group_members')
-            .select('group_id')
-            .in('group_id', groupIds);
-
-        if (!membersError && members) {
-            // Aggregate counts
-            const counts: Record<string, number> = {};
-            members.forEach((m: any) => {
-                counts[m.group_id] = (counts[m.group_id] || 0) + 1;
-            });
-
-            // Update groups with counts
-            groups.forEach(g => {
-                g.member_count = counts[g.id] || 0;
-            });
-        }
-    }
-
-    return groups;
+        return groups;
+    });
 };
 
 // --- SHIFTS ---
@@ -257,27 +338,29 @@ export const getMemberAssignmentsForPeriod = async (memberIds: string[], startDa
 };
 
 export const getShifts = async (groupId: string): Promise<Shift[]> => {
-    const { data, error } = await supabase
-        .from('shifts')
-        .select(`
+    return fetchWithCache(`shifts_${groupId}`, async () => {
+        const { data, error } = await supabase
+            .from('shifts')
+            .select(`
             *,
             group:groups (
                 name,
                 institution
             )
         `)
-        .eq('group_id', groupId);
+            .eq('group_id', groupId);
 
-    if (error) throw error;
+        if (error) throw error;
 
-    // Map group details to shift object
-    const shifts = (data as any[]).map(shift => ({
-        ...shift,
-        group_name: shift.group?.name,
-        institution_name: shift.group?.institution
-    }));
+        // Map group details to shift object
+        const shifts = (data as any[]).map(shift => ({
+            ...shift,
+            group_name: shift.group?.name,
+            institution_name: shift.group?.institution
+        }));
 
-    return shifts as Shift[];
+        return shifts as Shift[];
+    });
 };
 
 export const getAssignments = async (shiftIds: string[]): Promise<ShiftAssignment[]> => {
@@ -352,15 +435,17 @@ export const createFinancialRecord = async (record: Omit<FinancialRecord, 'id'>)
 // --- FINANCIAL CONFIG ---
 
 export const getFinancialConfig = async (userId: string, groupId: string): Promise<FinancialConfig | null> => {
-    const { data, error } = await supabase
-        .from('financial_configs')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('group_id', groupId)
-        .maybeSingle();
+    return fetchWithCache(`fin_config_${userId}_${groupId}`, async () => {
+        const { data, error } = await supabase
+            .from('financial_configs')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('group_id', groupId)
+            .maybeSingle();
 
-    if (error) return null;
-    return data as FinancialConfig;
+        if (error) return null;
+        return data as FinancialConfig;
+    });
 };
 
 export const saveFinancialConfig = async (userId: string, config: FinancialConfig): Promise<void> => {
@@ -430,16 +515,18 @@ export const addGroupMember = async (groupId: string, profileId: string, role: s
 };
 
 export const getGroupMembers = async (groupId: string): Promise<GroupMember[]> => {
-    const { data, error } = await supabase
-        .from('group_members')
-        .select(`
+    return fetchWithCache(`group_members_${groupId}`, async () => {
+        const { data, error } = await supabase
+            .from('group_members')
+            .select(`
             *,
             profile:profiles(*)
         `)
-        .eq('group_id', groupId);
+            .eq('group_id', groupId);
 
-    if (error) throw error;
-    return data as GroupMember[];
+        if (error) throw error;
+        return data as GroupMember[];
+    });
 };
 
 export const removeGroupMember = async (groupId: string, profileId: string): Promise<void> => {

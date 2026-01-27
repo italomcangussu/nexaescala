@@ -62,10 +62,10 @@ const Layout: React.FC<LayoutProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background dark:bg-slate-950 overflow-hidden relative font-sans transition-colors duration-300">
+    <div className="flex flex-col h-screen bg-surface dark:bg-slate-900 overflow-hidden relative font-sans transition-colors duration-300 pt-[env(safe-area-inset-top)]">
 
       {/* Top Header - Modernized with Logo */}
-      <header className="bg-surface dark:bg-slate-900 px-5 py-3 flex items-center justify-between sticky top-0 z-30 border-b border-gray-50/50 dark:border-slate-800/50 shadow-sm transition-colors duration-300">
+      <header className="bg-surface dark:bg-slate-900 px-5 pb-3 pt-3 flex items-center justify-between sticky top-0 z-30 border-b border-gray-50/50 dark:border-slate-800/50 shadow-sm transition-colors duration-300">
         <div
           className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity"
           onClick={onProfileClick}
@@ -126,8 +126,8 @@ const Layout: React.FC<LayoutProps> = ({
                       >
                         <div className="flex gap-3">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${n.type === 'SHIFT_PUBLISHED' ? 'bg-emerald-100 text-emerald-600' :
-                              n.type === 'MENTION' ? 'bg-amber-100 text-amber-600' :
-                                'bg-blue-100 text-blue-600'
+                            n.type === 'MENTION' ? 'bg-amber-100 text-amber-600' :
+                              'bg-blue-100 text-blue-600'
                             }`}>
                             {n.type === 'SHIFT_PUBLISHED' ? <Calendar size={16} /> :
                               n.type === 'MENTION' ? <Search size={16} /> :
@@ -163,7 +163,7 @@ const Layout: React.FC<LayoutProps> = ({
 
       {/* Bottom Navigation - Glassmorphism hint (Hidden in Editor) */}
       {activeTab !== 'editor' && (
-        <nav className="fixed bottom-0 w-full z-40 bg-surface/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-gray-100 dark:border-slate-800 pb-safe transition-colors duration-300">
+        <nav className="fixed bottom-0 w-full z-40 bg-surface/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-gray-100 dark:border-slate-800 pb-[env(safe-area-inset-bottom)] transition-colors duration-300">
           <div className="flex justify-around items-center h-[72px] px-2">
 
             <NavButton

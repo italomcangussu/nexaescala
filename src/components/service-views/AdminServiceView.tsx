@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Users, Settings, Grid, Bell, Shield, UserPlus, UserMinus, Save, Palette, History, ClipboardList } from 'lucide-react';
+import { Calendar, Users, Settings, Grid, Bell, Shield, UserPlus, UserMinus, Save, History } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { Group, Profile, GroupMember, ServiceRole, AppRole } from '../../types';
 import CalendarView from '../CalendarView';
-import { getGroupMembers, deleteGroup, updateGroup, getShifts, getAssignments, addGroupMember } from '../../services/api';
+import { getGroupMembers, deleteGroup, updateGroup, getShifts, getAssignments, addGroupMember, updateMemberPersonalColor } from '../../services/api';
 import { Shift, ShiftAssignment } from '../../types';
 import ShiftInbox from '../ShiftInbox';
 import AddMemberModal from '../AddMemberModal';
@@ -11,6 +11,7 @@ import RemoveMemberModal from '../RemoveMemberModal';
 import ServiceFeedView from '../ServiceFeedView';
 import RelatedServicesSection from './RelatedServicesSection';
 import ServiceHistoryTab from './ServiceHistoryTab';
+import ColorPalette from '../ColorPalette';
 
 const hexToRgba = (hex: string, alpha: number) => {
     let c: any;
@@ -50,8 +51,11 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
     // Settings State
     const [editName, setEditName] = useState(group.name);
     const [editInstitution, setEditInstitution] = useState(group.institution);
-    const [editColor, setEditColor] = useState(group.color || '#3b82f6');
+    // REMOVED: const [editColor, setEditColor] = useState(group.color || '#3b82f6'); 
+    // ADDED: Personal color state management
+    const [personalColor, setPersonalColor] = useState(group.color || '#10b981');
     const [isSavingSettings, setIsSavingSettings] = useState(false);
+
     const { showToast } = useToast();
 
     useEffect(() => {
@@ -318,28 +322,16 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                        Cor de Identificação
-                                    </label>
-                                    <div className="flex items-center gap-3 overflow-x-auto p-1">
-                                        {['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#6366f1'].map(color => (
-                                            <button
-                                                key={color}
-                                                onClick={() => setEditColor(color)}
-                                                className={`w-10 h-10 rounded-full border-2 transition-all ${editColor === color ? 'border-slate-900 dark:border-white scale-110 shadow-md' : 'border-transparent opacity-70 hover:opacity-100 hover:scale-105'}`}
-                                                style={{ backgroundColor: color }}
-                                                aria-label={`Select color ${color}`}
-                                            />
-                                        ))}
-                                        <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-slate-200 dark:border-slate-700 ml-2">
-                                            <input
-                                                type="color"
-                                                value={editColor}
-                                                onChange={(e) => setEditColor(e.target.value)}
-                                                className="absolute -top-2 -left-2 w-16 h-16 cursor-pointer"
-                                            />
-                                            <Palette className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 text-white pointer-events-none" size={16} />
-                                        </div>
+                                    <div className="mb-2">
+                                        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">Cor de Identificação Pessoal</h3>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">Esta cor será visível apenas para você na sua lista de serviços.</p>
+                                    </div>
+                                    <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                                        <ColorPalette
+                                            selectedColor={personalColor}
+                                            onColorChange={setPersonalColor}
+                                            size="md"
+                                        />
                                     </div>
                                 </div>
 
@@ -347,11 +339,15 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                                     onClick={async () => {
                                         setIsSavingSettings(true);
                                         try {
+                                            // 1. Update Global Info
                                             await updateGroup(group.id, {
                                                 name: editName,
-                                                institution: editInstitution,
-                                                color: editColor
+                                                institution: editInstitution
                                             });
+
+                                            // 2. Update Personal Color Preference
+                                            await updateMemberPersonalColor(group.id, currentUser.id, personalColor);
+
                                             showToast('Configurações salvas com sucesso!', 'success');
                                             if (onGroupUpdate) {
                                                 onGroupUpdate();

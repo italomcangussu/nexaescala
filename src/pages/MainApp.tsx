@@ -191,7 +191,6 @@ const Dashboard: React.FC = () => {
     if (!currentUser) return;
     try {
       await saveFinancialConfig(currentUser.id, config);
-      setIsFinConfigOpen(false);
       // Success
     } catch (error) {
       console.error("Error saving config:", error);

@@ -46,6 +46,7 @@ const LoginPage: React.FC = () => {
     const [showPasswordHints, setShowPasswordHints] = useState(false);
     const [forgotPassword, setForgotPassword] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
 
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -65,6 +66,11 @@ const LoginPage: React.FC = () => {
 
         try {
             if (isSignUp) {
+                // Validation
+                if (!acceptedTerms) {
+                    throw new Error('Você precisa aceitar os Termos de Uso e Política de Privacidade.');
+                }
+
                 // Validate password strength
                 if (!passwordStrength.hasMinLength || !passwordStrength.hasUppercase || !passwordStrength.hasLowercase || !passwordStrength.hasSpecialChar) {
                     throw new Error('A senha não atende aos requisitos mínimos');
@@ -80,13 +86,11 @@ const LoginPage: React.FC = () => {
                 });
                 if (error) throw error;
 
-                // Auto-login: If user is created and session exists, they're logged in
+                // Auto-login logic
                 if (data.user && data.session) {
-                    // Force reload to trigger AuthContext detection
                     window.location.href = '/';
                     return;
                 } else if (data.user && !data.session) {
-                    // Email confirmation required - show success message not error
                     setSuccessMessage('Conta criada! Verifique seu email para confirmar o cadastro.');
                     setLoading(false);
                     return;
@@ -178,7 +182,7 @@ const LoginPage: React.FC = () => {
                         />
                     </div>
 
-                    <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-emerald-800 to-slate-900 dark:from-white dark:via-emerald-400 dark:to-white tracking-tight mb-2">
+                    <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 via-emerald-800 to-slate-900 dark:from-white dark:via-emerald-400 dark:to-white tracking-tight mb-2">
                         NexaEscala
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 font-medium">
@@ -195,7 +199,7 @@ const LoginPage: React.FC = () => {
                     {/* Error Alert */}
                     {error && (
                         <div className="mb-4 p-4 bg-red-50/80 dark:bg-red-900/20 border border-red-100 dark:border-red-800/30 text-red-600 dark:text-red-400 text-sm rounded-xl flex items-start gap-3 animate-shake">
-                            <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />
+                            <AlertCircle size={20} className="shrink-0 mt-0.5" />
                             <span>{error}</span>
                         </div>
                     )}
@@ -203,7 +207,7 @@ const LoginPage: React.FC = () => {
                     {/* Success Alert */}
                     {successMessage && (
                         <div className="mb-4 p-4 bg-emerald-50/80 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 text-emerald-600 dark:text-emerald-400 text-sm rounded-xl flex items-start gap-3 animate-fade-in">
-                            <CheckCircle size={20} className="flex-shrink-0 mt-0.5" />
+                            <CheckCircle size={20} className="shrink-0 mt-0.5" />
                             <span>{successMessage}</span>
                         </div>
                     )}
@@ -318,6 +322,31 @@ const LoginPage: React.FC = () => {
                                     </div>
                                 )}
 
+                                {/* EULA & Terms Checkbox (Only for Sign Up) */}
+                                {isSignUp && (
+                                    <div className="mt-4 flex items-start gap-3 animate-fade-in-up px-1">
+                                        <div className="flex h-5 items-center">
+                                            <input
+                                                id="terms-checkbox"
+                                                name="terms"
+                                                type="checkbox"
+                                                checked={acceptedTerms}
+                                                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                                                className="h-5 w-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-800 dark:ring-offset-slate-900 cursor-pointer accent-emerald-600"
+                                            />
+                                        </div>
+                                        <div className="text-xs leading-5">
+                                            <label htmlFor="terms-checkbox" className="font-medium text-slate-600 dark:text-slate-400 select-none cursor-pointer">
+                                                Li e concordo com os{' '}
+                                                <a href="/privacy" target="_blank" className="font-bold text-emerald-600 hover:text-emerald-500 hover:underline transition-colors">Termos de Uso</a>
+                                                {' '}e{' '}
+                                                <a href="/privacy" target="_blank" className="font-bold text-emerald-600 hover:text-emerald-500 hover:underline transition-colors">Política de Privacidade</a>
+                                                .
+                                            </label>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Forgot Password Link */}
                                 {!isSignUp && !forgotPassword && (
                                     <div className="flex justify-end mt-2">
@@ -336,7 +365,11 @@ const LoginPage: React.FC = () => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2"
+                                className={`w-full py-3.5 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 
+                                    ${loading || (isSignUp && !acceptedTerms)
+                                        ? 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed text-slate-500 dark:text-slate-400 shadow-none'
+                                        : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/30 hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:translate-y-0'
+                                    }`}
                             >
                                 {loading ? <Loader className="animate-spin" size={20} /> : (isSignUp ? 'Criar Conta' : 'Entrar')}
                             </button>
@@ -389,7 +422,7 @@ const LoginPage: React.FC = () => {
                 </div>
 
                 {/* Decorative bottom bar */}
-                <div className="h-1.5 w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500"></div>
+                <div className="h-1.5 w-full bg-linear-to-r from-emerald-500 via-teal-500 to-emerald-500"></div>
             </div>
         </div>
     );

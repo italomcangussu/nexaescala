@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Users, Settings, Clock, Bell, LogOut } from 'lucide-react';
-import { Group, Profile, Shift, ShiftAssignment, AppRole, GroupMember, ServiceRole, ShiftExchangeRequest } from '../../types';
+import { Calendar, Users, Settings, Clock, Bell, LogOut, Banknote } from 'lucide-react';
+import { Group, Profile, Shift, ShiftAssignment, AppRole, GroupMember, ServiceRole, ShiftExchangeRequest, FinancialConfig } from '../../types';
 import CalendarView from '../CalendarView';
-import { canUserLeaveGroup, leaveGroup, updateMemberPersonalColor, getGroupMembers, getMyPendingExchangeRequests } from '../../services/api';
+import { canUserLeaveGroup, leaveGroup, updateMemberPersonalColor, getGroupMembers, getMyPendingExchangeRequests, getFinancialConfig, saveFinancialConfig } from '../../services/api';
 import ColorPalette from '../ColorPalette';
 import ShiftInbox from '../ShiftInbox';
 import { useToast } from '../../context/ToastContext';
 import ExchangeRequestBanner from '../ExchangeRequestBanner';
 import ExchangeResponseModal from '../ExchangeResponseModal';
 import ServiceHistoryTab from './ServiceHistoryTab';
+import FinancialConfigModal from '../FinancialConfigModal';
 
 const hexToRgba = (hex: string, alpha: number) => {
     let c: any;
@@ -153,6 +154,36 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
         }
     };
 
+    // Financial Config State
+    const [isFinConfigModalOpen, setIsFinConfigModalOpen] = useState(false);
+    const [finConfig, setFinConfig] = useState<FinancialConfig | undefined>(undefined);
+    const [isLoadingFinConfig, setIsLoadingFinConfig] = useState(false);
+
+    const handleOpenFinConfig = async () => {
+        setIsLoadingFinConfig(true);
+        try {
+            const config = await getFinancialConfig(currentUser.id, group.id);
+            setFinConfig(config || undefined);
+            setIsFinConfigModalOpen(true);
+        } catch (error) {
+            console.error("Error fetching financial config:", error);
+            showToast("Erro ao carregar configurações financeiras.", "error");
+        } finally {
+            setIsLoadingFinConfig(false);
+        }
+    };
+
+    const handleSaveFinConfig = async (newConfig: FinancialConfig) => {
+        try {
+            await saveFinancialConfig(currentUser.id, newConfig);
+            setFinConfig(newConfig);
+            // showToast("Configurações financeiras salvas!", "success"); // Validation is already in the modal
+        } catch (error) {
+            console.error("Error saving financial config:", error);
+            showToast("Erro ao salvar config financeira.", "error");
+        }
+    };
+
     // ...
 
     const renderContent = () => {
@@ -267,6 +298,32 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                             )}
                         </div>
 
+                        {/* Financial Config Section */}
+                        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 space-y-4">
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-1">Configuração de Honorários</h3>
+                                <p className="text-sm text-slate-600 dark:text-slate-400">Defina como você recebe neste serviço</p>
+                            </div>
+
+                            <button
+                                onClick={handleOpenFinConfig}
+                                disabled={isLoadingFinConfig}
+                                className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-emerald-500/50 hover:shadow-md transition-all group"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                                        <Banknote size={20} />
+                                    </div>
+                                    <div className="text-left">
+                                        <h4 className="font-bold text-slate-700 dark:text-slate-200 group-hover:text-emerald-600 transition-colors">Configurar Valores</h4>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                                            {isLoadingFinConfig ? 'Carregando...' : 'Toque para ajustar'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </button>
+                        </div>
+
                         {/* Leave Service Section */}
                         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 space-y-4">
                             <div>
@@ -376,6 +433,18 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                     }}
                 />
             )}
+
+            {/* Financial Config Modal */}
+            {isFinConfigModalOpen && (
+                <FinancialConfigModal
+                    group={group}
+                    initialConfig={finConfig}
+                    onClose={() => setIsFinConfigModalOpen(false)}
+                    onSave={handleSaveFinConfig}
+                />
+            )}
+
+
         </div>
     );
 };

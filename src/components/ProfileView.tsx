@@ -29,7 +29,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ profile, currentUser, onBack,
 
          {/* Header Image - Taller and safe area aware */}
          <div className="h-48 bg-gradient-to-r from-emerald-600 to-teal-500 relative shrink-0">
-            <div className="absolute top-0 left-0 w-full p-4 pt-12 flex justify-between items-start">
+            <div className="absolute top-0 left-0 w-full p-4 pt-safe flex justify-between items-start mt-2">
                <button onClick={onBack} className="p-2.5 bg-black/20 text-white rounded-full backdrop-blur-md hover:bg-black/30 transition-colors active:scale-95">
                   <ArrowLeft size={24} />
                </button>

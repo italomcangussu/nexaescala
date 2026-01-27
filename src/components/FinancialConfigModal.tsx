@@ -215,7 +215,10 @@ const FinancialConfigModal: React.FC<FinancialConfigModalProps> = ({ group, init
             {/* Footer - simplified since we auto-save */}
             <div className="p-4 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
                <button
-                  onClick={onClose}
+                  onClick={async () => {
+                     await onSave(config);
+                     onClose();
+                  }}
                   className="w-full py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primaryDark transition-all flex items-center justify-center gap-2"
                >
                   <Check size={18} />

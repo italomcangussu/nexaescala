@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Clock, Users, ArrowRightLeft, Trash2, Sun, Moon, CloudSun, Sparkles, Megaphone, Repeat } from 'lucide-react';
-import { Shift, ShiftAssignment, AppRole, Profile, Group, ShiftExchangeRequest } from '../types';
+import { X, Clock, Users, ArrowRightLeft, Trash2, Sun, Moon, CloudSun, Sparkles, Megaphone, Repeat, Search, UserPlus } from 'lucide-react';
+import { Shift, ShiftAssignment, AppRole, Profile, Group, ShiftExchangeRequest, GroupMember } from '../types';
 import ShiftExchangeRequestModal from './ShiftExchangeRequestModal';
 import RepasseModal from './RepasseModal'; // Import RepasseModal
-import { getRelatedShiftsForDay, cancelShiftExchange, cancelExchangeRequest } from '../services/api';
+import { getRelatedShiftsForDay, cancelShiftExchange, cancelExchangeRequest, getGroupMembers, createAssignment } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import Portal from './Portal';
 
@@ -18,6 +18,7 @@ interface DayDetailSheetProps {
   groupId?: string;
   exchanges?: any[]; // Pass exchanges
   pendingSwapRequests?: ShiftExchangeRequest[];
+  onRefresh?: () => void;
 }
 
 const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
@@ -30,7 +31,8 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
   currentUserRole,
   groupId,
   exchanges = [],
-  pendingSwapRequests = []
+  pendingSwapRequests = [],
+  onRefresh
 }) => {
   const { showToast } = useToast();
   const [exchangeAssignment, setExchangeAssignment] = useState<any | null>(null);
@@ -38,6 +40,13 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
   const [selectedAssignment, setSelectedAssignment] = useState<ShiftAssignment | null>(null);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [exchangeToCancel, setExchangeToCancel] = useState<any | null>(null);
+
+  // Add Member State
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [members, setMembers] = useState<GroupMember[]>([]);
+  const [targetShiftId, setTargetShiftId] = useState<string | null>(null);
+  const [memberSearchTerm, setMemberSearchTerm] = useState('');
+  const [isAddingMember, setIsAddingMember] = useState(false);
 
   const [relatedShifts, setRelatedShifts] = useState<{
     group: Group;
@@ -65,6 +74,47 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
     }
   };
 
+  const handleOpenAddMemberConfig = async (shiftId: string) => {
+    setTargetShiftId(shiftId);
+    setIsAddMemberModalOpen(true);
+    if (groupId && members.length === 0) {
+      try {
+        const data = await getGroupMembers(groupId);
+        setMembers(data);
+      } catch (error) {
+        console.error("Failed to load members", error);
+        showToast("Erro ao carregar lista de membros", "error");
+      }
+    }
+  };
+
+  const handleAddMemberToShift = async (profileId: string) => {
+    if (!targetShiftId) return;
+    setIsAddingMember(true);
+    try {
+      await createAssignment({
+        shift_id: targetShiftId,
+        profile_id: profileId,
+        is_confirmed: true
+      });
+      showToast("Membro adicionado com sucesso!", "success");
+      setIsAddMemberModalOpen(false);
+      if (onRefresh) onRefresh();
+      // Optional: Force reload if no refresh prop (temporary fix for responsiveness)
+      else if (typeof window !== 'undefined') window.location.reload();
+    } catch (error) {
+      console.error("Error adding member:", error);
+      showToast("Erro ao adicionar membro.", "error");
+    } finally {
+      setIsAddingMember(false);
+    }
+  };
+
+  const filteredMembers = members.filter(m =>
+    m.profile.full_name.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
+    m.profile.crm?.includes(memberSearchTerm)
+  );
+
   if (!isOpen || !date) return null;
 
   const formatDate = (dateStr: string) => {
@@ -88,7 +138,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
         onClick={onClose}
       />
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 rounded-t-[2.5rem] z-50 max-h-[85vh] overflow-y-auto shadow-2xl animate-slide-up transition-colors duration-300 ring-1 ring-black/5 dark:ring-white/10">
+      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 rounded-t-3xl z-50 max-h-[85vh] overflow-y-auto shadow-2xl animate-slide-up transition-colors duration-300 ring-1 ring-black/5 dark:ring-white/10">
 
         <div className="w-full flex justify-center pt-3 pb-2" onClick={onClose}>
           <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full"></div>
@@ -159,10 +209,10 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
 
               return (
                 <div key={shift.id} className="group relative w-full mb-4 animate-fade-in-up">
-                  <div className={`relative overflow-hidden rounded-[2rem] border transition-all duration-500 ${cardStyles.container} ${isUserAssigned ? 'ring-2 ring-primary/20' : ''}`}>
+                  <div className={`relative overflow-hidden rounded-3xl border transition-all duration-500 ${cardStyles.container} ${isUserAssigned ? 'ring-2 ring-primary/20' : ''}`}>
 
                     {/* Animated Decorative Background Orbs */}
-                    <div className={`absolute -right-10 -top-10 w-40 h-40 bg-gradient-to-br rounded-full blur-3xl transition-all duration-700 group-hover:scale-125 ${cardStyles.orb1}`}></div>
+                    <div className={`absolute -right-10 -top-10 w-40 h-40 bg-linear-to-br rounded-full blur-3xl transition-all duration-700 group-hover:scale-125 ${cardStyles.orb1}`}></div>
                     <div className={`absolute -left-6 bottom-0 w-24 h-24 rounded-full blur-2xl transition-all duration-700 group-hover:scale-110 ${cardStyles.orb2}`}></div>
 
                     <div className="relative z-10 p-5">
@@ -209,7 +259,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
 
                         {/* Animated Icon */}
                         <div className="relative w-14 h-14 flex items-center justify-center">
-                          <div className={`absolute inset-0 bg-gradient-to-tr ${isNightShift ? 'from-indigo-500/20 to-purple-500/10' : 'from-emerald-100 to-green-50 dark:from-emerald-900/30 dark:to-green-900/20'} rounded-full opacity-50 animate-pulse-slow`}></div>
+                          <div className={`absolute inset-0 bg-linear-to-tr ${isNightShift ? 'from-indigo-500/20 to-purple-500/10' : 'from-emerald-100 to-green-50 dark:from-emerald-900/30 dark:to-green-900/20'} rounded-full opacity-50 animate-pulse-slow`}></div>
                           <TimeIcon size={28} className={`relative z-10 drop-shadow-sm animate-float ${isNightShift ? cardStyles.iconColor : 'text-amber-500'}`} strokeWidth={2.5} />
                           <Sparkles size={12} className={`absolute top-0 right-0 animate-pulse ${isNightShift ? 'text-indigo-300' : 'text-emerald-400'}`} />
                         </div>
@@ -304,7 +354,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                                               setExchangeToCancel(pendingEx);
                                               setIsCancelModalOpen(true);
                                             }}
-                                            className="relative overflow-hidden flex items-center justify-center min-w-[90px] px-3 py-1.5 rounded-lg text-white shadow-md active:scale-95 transition-all bg-amber-500 hover:bg-amber-600"
+                                            className="relative overflow-hidden flex items-center justify-center min-w-24 px-3 py-1.5 rounded-lg text-white shadow-md active:scale-95 transition-all bg-amber-500 hover:bg-amber-600"
                                           >
                                             <div className="absolute inset-0 w-full h-full bg-white/20 animate-pulse-slow"></div>
                                             <span className="relative text-[10px] font-black uppercase tracking-wider">Repassando...</span>
@@ -315,7 +365,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                                               setExchangeToCancel({ ...pendingSwap, isSwap: true }); // Mark as swap for cancel modal
                                               setIsCancelModalOpen(true);
                                             }}
-                                            className="relative overflow-hidden flex items-center justify-center min-w-[90px] px-3 py-1.5 rounded-lg text-white shadow-md active:scale-95 transition-all bg-emerald-500 hover:bg-emerald-600"
+                                            className="relative overflow-hidden flex items-center justify-center min-w-24 px-3 py-1.5 rounded-lg text-white shadow-md active:scale-95 transition-all bg-emerald-500 hover:bg-emerald-600"
                                           >
                                             <div className="absolute inset-0 w-full h-full bg-white/20 animate-pulse-slow"></div>
                                             <span className="relative text-[10px] font-black uppercase tracking-wider">Em Troca...</span>
@@ -326,9 +376,9 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                                               setRepasseShift(shift);
                                               setSelectedAssignment(assign);
                                             }}
-                                            className="relative overflow-hidden group/btn flex items-center justify-center min-w-[90px] px-3 py-1.5 rounded-lg text-white shadow-md active:scale-95 transition-all bg-blue-500 hover:bg-blue-600"
+                                            className="relative overflow-hidden group/btn flex items-center justify-center min-w-24 px-3 py-1.5 rounded-lg text-white shadow-md active:scale-95 transition-all bg-blue-500 hover:bg-blue-600"
                                           >
-                                            <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer"></div>
+                                            <div className="absolute inset-0 w-full h-full bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer"></div>
                                             <Megaphone size={12} className="mr-1.5" />
                                             <span className="text-[10px] font-black uppercase tracking-wider">Repassar</span>
                                           </button>
@@ -336,9 +386,9 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
 
                                         <button
                                           onClick={() => setExchangeAssignment({ ...assign, shift })}
-                                          className={`relative overflow-hidden group/btn flex items-center justify-center min-w-[90px] px-3 py-1.5 rounded-lg text-white shadow-md active:scale-95 transition-all ${cardStyles.buttonBg}`}
+                                          className={`relative overflow-hidden group/btn flex items-center justify-center min-w-24 px-3 py-1.5 rounded-lg text-white shadow-md active:scale-95 transition-all ${cardStyles.buttonBg}`}
                                         >
-                                          <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer delay-75"></div>
+                                          <div className="absolute inset-0 w-full h-full bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer delay-75"></div>
                                           <ArrowRightLeft size={12} className="mr-1.5" />
                                           <span className="text-[10px] font-black uppercase tracking-wider">Trocar</span>
                                         </button>
@@ -368,7 +418,12 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                                   </span>
                                 </div>
                                 {currentUserRole === AppRole.GESTOR && (
-                                  <button className="text-[10px] font-black text-primary uppercase hover:bg-primary/10 px-3 py-1 rounded-lg transition-colors border border-primary/20">+ Add</button>
+                                  <button
+                                    onClick={() => handleOpenAddMemberConfig(shift.id)}
+                                    className="text-[10px] font-black text-primary uppercase hover:bg-primary/10 px-3 py-1 rounded-lg transition-colors border border-primary/20"
+                                  >
+                                    + Add
+                                  </button>
                                 )}
                               </div>
                             </div>
@@ -386,7 +441,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
 
         {relatedShifts.length > 0 && (
           <div className="px-8 pb-10 bg-white dark:bg-slate-950">
-            <div className="h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent mb-6" />
+            <div className="h-px bg-linear-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent mb-6" />
             <h3 className="text-xs font-black uppercase tracking-wider mb-4 text-slate-400 dark:text-slate-500 flex items-center gap-2">
               <Sparkles size={12} />
               Em outros serviços
@@ -468,9 +523,9 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
       {/* Cancel Exchange Modal */}
       {isCancelModalOpen && exchangeToCancel && (
         <Portal>
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm animate-fade-in" onClick={() => setIsCancelModalOpen(false)}></div>
-            <div className="relative bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-2xl w-full max-w-sm animate-zoom-in border border-slate-100 dark:border-slate-800">
+            <div className="relative bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl w-full max-w-sm animate-zoom-in border border-slate-100 dark:border-slate-800">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-500 mb-2">
                   <Megaphone size={32} />
@@ -508,6 +563,103 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                     Cancelar
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </Portal>
+      )}
+
+      {/* ADD MEMBER MODAL */}
+      {isAddMemberModalOpen && (
+        <Portal>
+          <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-950/50 backdrop-blur-sm animate-fade-in" onClick={() => setIsAddMemberModalOpen(false)}></div>
+            <div className="relative bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md animate-zoom-in border border-slate-100 dark:border-slate-800 flex flex-col max-h-[80vh] shadow-2xl">
+
+              <div className="p-6 pb-2 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-black text-slate-800 dark:text-white">Adicionar Plantonista</h3>
+                  <button onClick={() => setIsAddMemberModalOpen(false)} className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500 hover:bg-slate-200 transition-colors">
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <input
+                    type="text"
+                    placeholder="Buscar médico..."
+                    value={memberSearchTerm}
+                    onChange={(e) => setMemberSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-sm font-medium border border-slate-100 dark:border-slate-700 focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                {isAddingMember && (
+                  <div className="absolute inset-0 bg-white/50 dark:bg-slate-900/50 z-10 flex items-center justify-center backdrop-blur-sm rounded-3xl">
+                    <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                  </div>
+                )}
+
+                {filteredMembers.length === 0 ? (
+                  <div className="text-center py-10 text-slate-400">
+                    Nenhum membro encontrado.
+                  </div>
+                ) : (
+                  filteredMembers.map(member => {
+                    // Check if already assigned
+                    const isAssigned = targetShiftId
+                      ? assignments.some(a => a.shift_id === targetShiftId && a.profile_id === member.profile.id)
+                      : false;
+
+                    return (
+                      <button
+                        key={member.id}
+                        onClick={() => !isAssigned && handleAddMemberToShift(member.profile.id)}
+                        disabled={isAssigned || isAddingMember}
+                        className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left
+                          ${isAssigned
+                            ? 'bg-slate-50 dark:bg-slate-800/50 border-transparent opacity-50 cursor-not-allowed'
+                            : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-primary/50 hover:shadow-md active:scale-95'
+                          }
+                        `}
+                      >
+                        <div className="relative shrink-0">
+                          <img
+                            src={member.profile.avatar_url}
+                            alt=""
+                            className="w-10 h-10 rounded-full object-cover bg-slate-200"
+                          />
+                          {isAssigned && (
+                            <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white rounded-full p-0.5 border-2 border-white dark:border-slate-900">
+                              <UserPlus size={10} />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-sm text-slate-700 dark:text-slate-200 truncate">
+                            {member.profile.full_name}
+                          </h4>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-500 font-medium">
+                              CRM {member.profile.crm || '---'}
+                            </span>
+                            <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">
+                              {member.service_role}
+                            </span>
+                          </div>
+                        </div>
+                        {!isAssigned && (
+                          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            <UserPlus size={16} />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>

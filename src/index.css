@@ -1,37 +1,113 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-  :root {
-    --color-primary: 5 150 105;
-    /* Emerald 600 */
-    --color-surface: 248 250 252;
-    /* Slate 50 */
-    --color-surface-dark: 15 23 42;
-    /* Slate 900 */
+@theme {
+  /* Core Brand Colors - Emerald */
+  --color-primary: #059669;
+  /* emerald-600 */
+  --color-primaryDark: #047857;
+  /* emerald-700 */
+  --color-primaryLight: #34d399;
+  /* emerald-400 */
+
+  /* Semantic Colors */
+  --color-surface: #f8fafc;
+  /* slate-50 */
+  --color-surface-dark: #0f172a;
+  /* slate-900 */
+  --color-secondary: #0f172a;
+  /* slate-900 */
+  --color-textSecondary: #64748b;
+  /* slate-500 */
+  --color-error: #ef4444;
+  /* red-500 */
+  --color-success: #10b981;
+  /* emerald-500 */
+
+  /* Retaining animations from previous file */
+  --animate-fade-in: fadeIn 0.4s ease-out forwards;
+  --animate-fade-in-up: fadeInUp 0.5s ease-out forwards;
+  --animate-scale-in: scaleIn 0.3s ease-out forwards;
+  --animate-ping-slow: ping 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-shimmer: shimmer 2s linear infinite;
+  --animate-strong-pulse: strongPulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-bounce-subtle: bounceSubtle 2s infinite;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
 
-  html,
-  body {
-    height: 100%;
-    width: 100%;
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes strongPulse {
+
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    50% {
+      opacity: 0.3;
+      transform: scale(0.9);
+    }
+  }
+
+  @keyframes bounceSubtle {
+
+    0%,
+    100% {
+      transform: translateY(-5%);
+      animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+    }
+
+    50% {
+      transform: translateY(0);
+      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
   }
 }
 
+/* Utilities */
 @layer utilities {
-  .animate-fade-in {
-    animation: fadeIn 0.4s ease-out forwards;
-  }
-
-  .animate-fade-in-up {
-    animation: fadeInUp 0.5s ease-out forwards;
-  }
-
-  .animate-scale-in {
-    animation: scaleIn 0.3s ease-out forwards;
-  }
-
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -40,100 +116,39 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-}
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
+  /* iOS Safe Area Utilities */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
   }
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .h-safe {
+    height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+
+  .min-h-safe {
+    min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   }
 }
 
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+/* Base Resets & iOS Optimizations */
+html,
+body {
+  height: 100%;
+  width: 100%;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+  /* Prevent bounce effect on body */
 }
 
-@layer utilities {
-  .animate-ping-slow {
-    animation: ping 3s cubic-bezier(0, 0, 0.2, 1) infinite;
-  }
-
-  .animate-pulse-slow {
-    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-
-  .animate-shimmer {
-    animation: shimmer 2s linear infinite;
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-@keyframes strongPulse {
-
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.3;
-    transform: scale(0.9);
-  }
-}
-
-@layer utilities {
-  .animate-strong-pulse {
-    animation: strongPulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-
-  .animate-bounce-subtle {
-    animation: bounceSubtle 2s infinite;
-  }
-}
-
-@keyframes bounceSubtle {
-
-  0%,
-  100% {
-    transform: translateY(-5%);
-    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
-  }
-
-  50% {
-    transform: translateY(0);
-    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
-  }
+/* Better touch targets for buttons on mobile */
+button,
+a,
+input {
+  touch-action: manipulation;
 }

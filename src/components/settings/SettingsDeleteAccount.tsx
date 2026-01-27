@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { AlertTriangle, ArrowLeft } from 'lucide-react';
+import { deleteUserAccount } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
+import { supabase } from '../../lib/supabase';
 
 interface SettingsDeleteAccountProps {
     onBack: () => void;
@@ -8,6 +11,29 @@ interface SettingsDeleteAccountProps {
 
 const SettingsDeleteAccount: React.FC<SettingsDeleteAccountProps> = ({ onBack, onCloseMenu }) => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const { showToast } = useToast();
+
+    const handleDelete = async () => {
+        setIsDeleting(true);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (session?.user) {
+                await deleteUserAccount(session.user.id);
+                // Auth listener will likely handle redirection, but we force close and reload just in case
+                onCloseMenu();
+                window.location.reload();
+            } else {
+                showToast('Erro: Sessão não encontrada.', 'error');
+                setIsDeleting(false);
+            }
+        } catch (error) {
+            console.error("Delete account error:", error);
+            showToast('Falha ao excluir conta. Tente novamente.', 'error');
+            setIsDeleting(false);
+        }
+    };
 
     return (
         <div className="px-6 animate-fade-in-up w-full relative h-full">
@@ -50,15 +76,21 @@ const SettingsDeleteAccount: React.FC<SettingsDeleteAccountProps> = ({ onBack, o
 
                     <div className="w-full space-y-3">
                         <button
-                            onClick={() => {
-                                alert('Conta excluída (Simulação)');
-                                onCloseMenu();
-                            }}
-                            className="w-full bg-red-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-red-700 active:scale-95 transition-all"
+                            disabled={isDeleting}
+                            onClick={handleDelete}
+                            className="w-full bg-red-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-red-700 active:scale-95 transition-all flex items-center justify-center gap-2"
                         >
-                            Sim, excluir tudo
+                            {isDeleting ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    <span>Excluindo...</span>
+                                </>
+                            ) : (
+                                'Sim, excluir tudo'
+                            )}
                         </button>
                         <button
+                            disabled={isDeleting}
                             onClick={() => setShowDeleteConfirm(false)}
                             className="w-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-3.5 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 active:scale-95 transition-all"
                         >

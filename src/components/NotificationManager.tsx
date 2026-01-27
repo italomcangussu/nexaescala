@@ -2,16 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { Bell, X, Share, Smartphone } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { updatePushSubscription } from '../services/api';
+import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
+import { useNavigate } from 'react-router-dom';
 
 const NotificationManager: React.FC = () => {
-    const [permission, setPermission] = useState<NotificationPermission>('default');
+    const [permission, setPermission] = useState<any>('default');
     const [showBanner, setShowBanner] = useState(false);
     const [isIOS, setIsIOS] = useState(false);
     const [isStandalone, setIsStandalone] = useState(false);
     const { profile: currentUser } = useAuth();
+    const navigate = useNavigate();
 
     // VAPID Public Key - Placeholder (Needs to be generated for production)
-    // You can generate one with 'npx web-push generate-vapid-keys'
     const VAPID_PUBLIC_KEY = 'BGLk82NQyHgeqPW-SMaw8DM3P7HOvyM70oRulole1344JMggQIOCT6hglOZXnPvjBfs5k0wLToAO1EiGqrzSoOI';
 
     useEffect(() => {
@@ -23,14 +26,81 @@ const NotificationManager: React.FC = () => {
         const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
         setIsStandalone(!!isStandaloneMode);
 
-        if ('Notification' in window) {
-            setPermission(Notification.permission);
-            if (Notification.permission === 'default') {
-                const timer = setTimeout(() => setShowBanner(true), 2500);
-                return () => clearTimeout(timer);
+        const setupNotifications = async () => {
+            if (Capacitor.isNativePlatform()) {
+                // --- NATIVE (CAPACITOR) LOGIC ---
+
+                // Check current status
+                const permStatus = await PushNotifications.checkPermissions();
+                setPermission(permStatus.receive);
+
+                if (permStatus.receive === 'granted') {
+                    PushNotifications.register();
+                }
+
+                // Add Listeners
+                await PushNotifications.removeAllListeners();
+
+                PushNotifications.addListener('registration', async (token) => {
+                    console.log('Push registration success, token: ' + token.value);
+                    if (currentUser) {
+                        // Create a hybrid subscription object to store the native token
+                        // We map 'p256dh' to platform and 'auth' to token for retrieval on backend
+                        const nativeSub = {
+                            endpoint: 'native',
+                            expirationTime: null,
+                            keys: {
+                                p256dh: Capacitor.getPlatform(), // 'ios' or 'android'
+                                auth: token.value
+                            }
+                        } as any; // Cast to any to satisfy PushSubscription type signature
+
+                        await updatePushSubscription(currentUser.id, nativeSub);
+                    }
+                });
+
+                PushNotifications.addListener('registrationError', (error) => {
+                    console.error('Error on registration: ' + JSON.stringify(error));
+                });
+
+                PushNotifications.addListener('pushNotificationReceived', (notification) => {
+                    console.log('Push received: ', notification);
+                    // Optionally trigger a local toast/refresh here
+                });
+
+                PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+                    console.log('Push action performed:', notification.notification.data);
+                    const data = notification.notification.data;
+
+                    // Handle Navigation
+                    if (data?.url) {
+                        navigate(data.url);
+                    } else if (data?.group_id) {
+                        // Example: Navigate to specific group if ID is present
+                        // You might need a more complex routing logic here
+                    }
+                });
+
+            } else {
+                // --- WEB (PWA) LOGIC ---
+                if ('Notification' in window) {
+                    setPermission(Notification.permission);
+                    if (Notification.permission === 'default') {
+                        const timer = setTimeout(() => setShowBanner(true), 2500);
+                        return () => clearTimeout(timer);
+                    }
+                }
             }
-        }
-    }, []);
+        };
+
+        setupNotifications();
+
+        return () => {
+            if (Capacitor.isNativePlatform()) {
+                PushNotifications.removeAllListeners();
+            }
+        };
+    }, [currentUser, navigate]);
 
     const urlBase64ToUint8Array = (base64String: string) => {
         const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -45,11 +115,29 @@ const NotificationManager: React.FC = () => {
 
     const handleRequestPermission = async () => {
         try {
-            const result = await Notification.requestPermission();
-            setPermission(result);
-            if (result === 'granted') {
-                setShowBanner(false);
-                await subscribeUserToPush();
+            if (Capacitor.isNativePlatform()) {
+                // Native Request
+                let permStatus = await PushNotifications.checkPermissions();
+
+                if (permStatus.receive === 'prompt') {
+                    permStatus = await PushNotifications.requestPermissions();
+                }
+
+                if (permStatus.receive === 'granted') {
+                    setPermission('granted');
+                    setShowBanner(false);
+                    await PushNotifications.register();
+                } else {
+                    setPermission('denied');
+                }
+            } else {
+                // Web Request
+                const result = await Notification.requestPermission();
+                setPermission(result);
+                if (result === 'granted') {
+                    setShowBanner(false);
+                    await subscribeUserToPush();
+                }
             }
         } catch (error) {
             console.error('Error requesting permission:', error);
@@ -75,15 +163,19 @@ const NotificationManager: React.FC = () => {
 
     const handleDismiss = () => {
         setShowBanner(false);
-        // Could save 'dismissed' state to local storage to not show again immediately
     };
 
-    if (!showBanner || permission === 'granted' || permission === 'denied') return null;
+    // If permission already granted or denied (and not in native prompt state), hide banner
+    // Note: For Native, 'prompt' means we should ask. 'granted' means we are good.
+    const isGranted = permission === 'granted';
+    const isDenied = permission === 'denied';
 
-    // Custom UI for iOS requiring installation first
-    if (isIOS && !isStandalone) {
+    if (!showBanner || isGranted || isDenied) return null;
+
+    // Custom UI for iOS PWA requiring installation first (only relevant for Web)
+    if (!Capacitor.isNativePlatform() && isIOS && !isStandalone) {
         return (
-            <div className="fixed top-4 left-4 right-4 z-[100] animate-fade-in-down">
+            <div className="fixed top-4 left-4 right-4 z-50 animate-fade-in-down">
                 <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800 flex flex-col gap-3">
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
@@ -113,9 +205,9 @@ const NotificationManager: React.FC = () => {
         );
     }
 
-    // Standard Permission Request
+    // Standard Permission Request Banner
     return (
-        <div className="fixed top-4 left-4 right-4 z-[100] animate-fade-in-down">
+        <div className="fixed top-4 left-4 right-4 z-50 animate-fade-in-down">
             <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800 flex flex-col gap-3">
                 <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
