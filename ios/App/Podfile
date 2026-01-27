@@ -1,7 +1,7 @@
 require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
 platform :ios, '15.0'
-use_frameworks!
+use_frameworks! :linkage => :static
 
 # workaround to avoid Xcode caching of Pods that requires
 # Product -> Clean Build Folder after new Cordova plugins installed
@@ -11,6 +11,7 @@ install! 'cocoapods', :disable_input_output_paths => true
 def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorCommunityAppleSignIn', :path => '../../node_modules/@capacitor-community/apple-sign-in'
   pod 'CapacitorPushNotifications', :path => '../../node_modules/@capacitor/push-notifications'
 end
 
@@ -21,4 +22,20 @@ end
 
 post_install do |installer|
   assertDeploymentTarget(installer)
+  
+  # 1. Apply to the entire Pods project
+  installer.pods_project.build_configurations.each do |config|
+    config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
+  end
+
+  # 2. Apply to each target specifically
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
+      config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'
+      config.build_settings['STRIP_INSTALLED_PRODUCT'] = 'NO'
+      config.build_settings['COPY_PHASE_STRIP'] = 'NO'
+      config.build_settings['ENABLE_BITCODE'] = 'NO'
+    end
+  end
 end

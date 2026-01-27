@@ -36,6 +36,10 @@ const NotificationManager: React.FC = () => {
 
                 if (permStatus.receive === 'granted') {
                     PushNotifications.register();
+                } else if (permStatus.receive === 'prompt') {
+                    // Show banner for native on first run or if prompt is needed
+                    const timer = setTimeout(() => setShowBanner(true), 1500); // Shorter delay than web
+                    return () => clearTimeout(timer);
                 }
 
                 // Add Listeners

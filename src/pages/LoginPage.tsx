@@ -3,6 +3,8 @@ import { supabase } from '../lib/supabase';
 import { Lock, Mail, Loader, AlertCircle, Eye, EyeOff, CheckCircle, Circle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { SignInWithApple } from '@capacitor-community/apple-sign-in';
+import { Capacitor } from '@capacitor/core';
 
 // Local Assets
 const LOGO_LIGHT = '/assets/logo-1.png';
@@ -122,6 +124,42 @@ const LoginPage: React.FC = () => {
             if (error) throw error;
         } catch (err: any) {
             setError(getErrorMessage(err.message || 'Erro ao conectar com Google'));
+            setLoading(false);
+        }
+    };
+
+    const handleAppleLogin = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            if (Capacitor.isNativePlatform()) {
+                // Native iOS Flow
+                const result = await SignInWithApple.authorize({
+                    clientId: 'com.nexaescala.app', // Should match your Apple Services ID
+                    redirectUri: 'https://nexaescala.supabase.co/auth/v1/callback', // Supabase Callback
+                    scopes: 'name email',
+                });
+
+                if (result.response.identityToken) {
+                    const { error } = await supabase.auth.signInWithIdToken({
+                        provider: 'apple',
+                        token: result.response.identityToken,
+                    });
+                    if (error) throw error;
+                }
+            } else {
+                // Web Flow
+                const { error } = await supabase.auth.signInWithOAuth({
+                    provider: 'apple',
+                    options: {
+                        redirectTo: window.location.origin
+                    }
+                });
+                if (error) throw error;
+            }
+        } catch (err: any) {
+            console.error('Apple Login Error:', err);
+            setError(getErrorMessage(err.message || 'Erro ao conectar com Apple'));
             setLoading(false);
         }
     };
@@ -385,21 +423,36 @@ const LoginPage: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Google Login */}
+                    {/* OAuth Logins */}
                     {!forgotPassword && (
-                        <button
-                            onClick={handleGoogleLogin}
-                            disabled={loading}
-                            className="w-full py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-750 hover:border-slate-300 dark:hover:border-slate-600 transition-all flex items-center justify-center gap-3 shadow-sm hover:shadow"
-                        >
-                            <svg className="w-5 h-5" viewBox="0 0 24 24">
-                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                            </svg>
-                            Continuar com Google
-                        </button>
+                        <div className="space-y-3">
+                            {/* Google Login */}
+                            <button
+                                onClick={handleGoogleLogin}
+                                disabled={loading}
+                                className="w-full py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-750 hover:border-slate-300 dark:hover:border-slate-600 transition-all flex items-center justify-center gap-3 shadow-sm hover:shadow"
+                            >
+                                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                                </svg>
+                                Continuar com Google
+                            </button>
+
+                            {/* Apple Login */}
+                            <button
+                                onClick={handleAppleLogin}
+                                disabled={loading}
+                                className="w-full py-3.5 bg-black text-white font-semibold rounded-xl hover:bg-slate-900 transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg"
+                            >
+                                <svg className="w-5 h-5 fill-current" viewBox="0 0 384 512">
+                                    <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 21.8-88.5 21.8-11.4 0-51.1-20.8-83.6-20.8-44.1 0-93.7 32.7-115.1 76-24.8 49.3-15.6 131.7 19.5 204.6 15.6 32.5 40.5 68.3 75.2 68.3 31.4 0 46.5-21.7 89.2-21.7 41.6 0 54.4 21.7 89.2 21.7 35.5 0 57.6-31.1 77.2-61.9 22-31.7 31-62.4 31.3-63.9-.8-.4-60.6-23.3-60.6-94.8zm-51.1-131c3.8-31.5-13.8-63.8-40.7-80.1-5.1-3-11.1-5.3-16.7-6.5-2.8-5.3-6.5-10.4-11.1-14.9-20.2-19.8-51.9-20.7-72.1-12.7-2.6 1.1-4.9 2.4-7.1 3.9 33.7 33.7 26.5 83.9 2.4 115 28.5 3.3 58.7-10.8 77.7-33.8 11.5-13.9 17.6-31.5 17.6-50.9z" />
+                                </svg>
+                                Continuar com Apple
+                            </button>
+                        </div>
                     )}
 
                     {/* Toggle Sign Up / Sign In */}

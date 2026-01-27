@@ -9,7 +9,6 @@ interface SettingsMainProps {
 
 const SettingsMain: React.FC<SettingsMainProps> = ({ onNavigate, onSignOut }) => {
     const menuItems = [
-        { icon: Settings, label: 'Configurações', sub: 'Geral', view: 'main' }, // view 'main' is circular but here for structure if needed
         { icon: Lock, label: 'Privacidade', sub: 'Senhas e dados', view: 'privacy' },
         { icon: Bell, label: 'Notificações', sub: 'Sons e alertas', view: 'notifications' },
         { icon: HelpCircle, label: 'Ajuda', sub: 'FAQ e Suporte', view: 'help' }, // Placeholder view
