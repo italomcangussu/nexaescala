@@ -4,6 +4,7 @@ import { Profile, Notification } from '../types';
 import { getNotifications, markNotificationAsRead } from '../services/api';
 import Logo from './Logo';
 import SettingsMenu from './SettingsMenu';
+import SkipToMain from './SkipToMain';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -64,8 +65,15 @@ const Layout: React.FC<LayoutProps> = ({
   return (
     <div className="flex flex-col h-screen bg-surface dark:bg-slate-900 overflow-hidden relative font-sans transition-colors duration-300 pt-[env(safe-area-inset-top)]">
 
+      {/* Skip to Main Content - Accessibility */}
+      <SkipToMain />
+
       {/* Top Header - Modernized with Logo */}
-      <header className="bg-surface dark:bg-slate-900 px-5 pb-3 pt-3 flex items-center justify-between sticky top-0 z-30 border-b border-gray-50/50 dark:border-slate-800/50 shadow-sm transition-colors duration-300">
+      <header
+        className="bg-surface dark:bg-slate-900 px-5 pb-3 pt-3 flex items-center justify-between sticky top-0 z-30 border-b border-gray-50/50 dark:border-slate-800/50 shadow-sm transition-colors duration-300"
+        role="banner"
+        aria-label="Cabeçalho principal do NexaEscala"
+      >
         <div
           className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity"
           onClick={onProfileClick}
@@ -157,13 +165,23 @@ const Layout: React.FC<LayoutProps> = ({
       </header>
 
       {/* Main Content */}
-      <main className={`flex-1 overflow-y-auto no-scrollbar bg-background dark:bg-slate-950 transition-colors duration-300 ${activeTab === 'editor' ? 'pb-0' : 'pb-24'}`}>
+      <main
+        id="main-content"
+        role="main"
+        tabIndex={-1}
+        className={`flex-1 overflow-y-auto no-scrollbar bg-background dark:bg-slate-950 transition-colors duration-300 ${activeTab === 'editor' ? 'pb-0' : 'pb-24'}`}
+        aria-label="Conteúdo principal"
+      >
         {children}
       </main>
 
       {/* Bottom Navigation - Glassmorphism hint (Hidden in Editor) */}
       {activeTab !== 'editor' && (
-        <nav className="fixed bottom-0 w-full z-40 bg-surface/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-gray-100 dark:border-slate-800 pb-[env(safe-area-inset-bottom)] transition-colors duration-300">
+        <nav
+          className="fixed bottom-0 w-full z-40 bg-surface/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-gray-100 dark:border-slate-800 pb-[env(safe-area-inset-bottom)] transition-colors duration-300"
+          role="navigation"
+          aria-label="Navegação principal"
+        >
           <div className="flex justify-around items-center h-[72px] px-2">
 
             <NavButton

@@ -152,3 +152,151 @@ a,
 input {
   touch-action: manipulation;
 }
+
+/* ============================================
+   ACCESSIBILITY ENHANCEMENTS
+   ============================================ */
+
+/* 1. Screen Reader Only Content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* 2. Focus Visible - Enhanced for Accessibility */
+*:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* 3. Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 4. High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  * {
+    border-color: currentColor;
+  }
+
+  button,
+  a {
+    text-decoration: underline;
+  }
+
+  .bg-primary,
+  .bg-emerald-600 {
+    background-color: #047857 !important; /* Darker emerald for better contrast */
+  }
+}
+
+/* 5. Minimum Touch Target Size (44x44pt) */
+button,
+a,
+[role="button"],
+[role="link"] {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Exception for icon-only buttons */
+button.icon-only,
+a.icon-only {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 12px;
+}
+
+/* 6. Skip to Main Content Link (for keyboard users) */
+.skip-to-main {
+  position: fixed;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  background: var(--color-primary);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: top 0.2s;
+}
+
+.skip-to-main:focus {
+  top: 16px;
+}
+
+/* 7. Dark Mode High Contrast Adjustments */
+.dark {
+  --color-text-high-contrast: #ffffff;
+  --color-bg-high-contrast: #000000;
+}
+
+@media (prefers-contrast: high) {
+  .dark {
+    --color-primary: #6ee7b7; /* Lighter emerald for dark high contrast */
+  }
+}
+
+/* 8. Text Selection Accessibility */
+::selection {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.dark ::selection {
+  background-color: var(--color-primaryLight);
+  color: black;
+}
+
+/* 9. Loading State Accessibility */
+[aria-busy="true"] {
+  cursor: wait;
+}
+
+/* 10. Disabled State Clear Indication */
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@media (prefers-contrast: high) {
+  button:disabled,
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    opacity: 1;
+    text-decoration: line-through;
+  }
+}

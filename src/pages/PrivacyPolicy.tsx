@@ -7,7 +7,7 @@ const PrivacyPolicy: React.FC = () => {
     const lastUpdate = '31 de Janeiro de 2026';
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-slate-50 dark:from-slate-950 dark:via-emerald-950/10 dark:to-slate-950 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-linear-to-br from-slate-50 via-emerald-50/30 to-slate-50 dark:from-slate-950 dark:via-emerald-950/10 dark:to-slate-950 py-12 px-4 sm:px-6 lg:px-8">
             {/* Header with Back Button */}
             <div className="max-w-4xl mx-auto mb-8">
                 <button
@@ -23,7 +23,7 @@ const PrivacyPolicy: React.FC = () => {
             <div className="max-w-4xl mx-auto bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
 
                 {/* Header Section */}
-                <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-8 py-12 text-white relative overflow-hidden">
+                <div className="bg-linear-to-r from-emerald-600 to-teal-600 px-8 py-12 text-white relative overflow-hidden">
                     <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yIDItNCA0LTRzNCwyIDQsNHYyYzAgMi0yIDQtNCA0cy00LTItNC00di0yem0wLTMwYzAtMiAyLTQgNC00czQgMiA0IDR2MmMwIDItMiA0LTQgNC00IDItNC0yLTR2LTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
                     <div className="relative z-10">
                         <div className="flex items-center gap-3 mb-4">
