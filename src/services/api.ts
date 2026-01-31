@@ -337,7 +337,7 @@ export const getMemberAssignmentsForPeriod = async (memberIds: string[], startDa
     return result || [];
 };
 
-export const getShifts = async (groupId: string): Promise<Shift[]> => {
+export const getShifts = async (groupId: string, forceRefresh = false): Promise<Shift[]> => {
     return fetchWithCache(`shifts_${groupId}`, async () => {
         const { data, error } = await supabase
             .from('shifts')
@@ -360,19 +360,21 @@ export const getShifts = async (groupId: string): Promise<Shift[]> => {
         }));
 
         return shifts as Shift[];
-    });
+    }, forceRefresh);
 };
 
-export const getAssignments = async (shiftIds: string[]): Promise<ShiftAssignment[]> => {
+export const getAssignments = async (shiftIds: string[], forceRefresh = false): Promise<ShiftAssignment[]> => {
     if (shiftIds.length === 0) return [];
 
-    const { data, error } = await supabase
-        .from('shift_assignments')
-        .select('*, profile:profiles(*)')
-        .in('shift_id', shiftIds);
+    return fetchWithCache(`assignments_${shiftIds.slice(0, 5).join('_')}_count${shiftIds.length}`, async () => {
+        const { data, error } = await supabase
+            .from('shift_assignments')
+            .select('*, profile:profiles(*)')
+            .in('shift_id', shiftIds);
 
-    if (error) throw error;
-    return data as ShiftAssignment[];
+        if (error) throw error;
+        return data as ShiftAssignment[];
+    }, forceRefresh);
 };
 
 // --- FINANCIAL RECORDS ---

@@ -4,13 +4,33 @@ import DesktopScaleEditor from '../components/DesktopScaleEditor';
 import { useAuth } from '../context/AuthContext';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { Group } from '../types';
-import { Calendar, Users, FileEdit, Wallet, Loader2 } from 'lucide-react';
+import { Calendar, Users, FileEdit, Wallet, Loader2, ArrowLeft } from 'lucide-react';
+import CalendarView from '../components/CalendarView';
+import FinanceDashboard from '../components/FinanceDashboard';
+import ProfileView from '../components/ProfileView';
+import EditProfileModal from '../components/EditProfileModal';
+import SettingsMain from '../components/settings/SettingsMain';
+import SettingsPrivacy from '../components/settings/SettingsPrivacy';
+import SettingsNotifications from '../components/settings/SettingsNotifications';
+import SettingsHelp from '../components/settings/SettingsHelp';
+import SettingsAbout from '../components/settings/SettingsAbout';
+import SettingsPassword from '../components/settings/SettingsPassword';
+import { getFinancialConfig, saveFinancialConfig } from '../services/api';
+import FinancialConfigModal from '../components/FinancialConfigModal';
+import { AppRole, FinancialConfig } from '../types';
 
 const DesktopMainApp: React.FC = () => {
-    const { profile: currentUser, signOut } = useAuth();
-    const { userGroups, shifts, assignments, isLoading } = useDashboardData(currentUser);
+    const { profile: currentUser, signOut, refetchProfile } = useAuth();
+    const { userGroups, shifts, assignments, isLoading, profiles, setProfiles, userRole } = useDashboardData(currentUser);
 
-    const [activeTab, setActiveTab] = useState('editor');
+    const [activeTab, setActiveTab] = useState('home');
+    const [activeSettingsView, setActiveSettingsView] = useState('main');
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+
+    // Finance States
+    const [isFinConfigOpen, setIsFinConfigOpen] = useState(false);
+    const [finConfigGroup, setFinConfigGroup] = useState<Group | null>(null);
+    const [finConfig, setFinConfig] = useState<FinancialConfig | null>(null);
     const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
     const [showEditor, setShowEditor] = useState(false);
 
@@ -158,25 +178,91 @@ const DesktopMainApp: React.FC = () => {
         </div>
     );
 
-    // Render Calendar placeholder
+    const handleSaveProfile = async (updatedProfile: any) => {
+        setProfiles(prev => prev.map(p => p.id === updatedProfile.id ? updatedProfile : p));
+        if (currentUser && updatedProfile.id === currentUser.id) {
+            await refetchProfile();
+        }
+        setIsEditingProfile(false);
+    };
+
+    const handleSaveFinConfig = async (config: FinancialConfig) => {
+        if (!currentUser) return;
+        try {
+            await saveFinancialConfig(currentUser.id, config);
+        } catch (error) {
+            console.error("Error saving config:", error);
+        }
+    };
+
+    // Render Calendar
     const renderCalendar = () => (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-12 border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-            <Calendar size={48} className="text-slate-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">
-                Calendário
-            </h3>
-            <p className="text-slate-500">Em breve: visualização de calendário integrada</p>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden min-h-[600px]">
+            <CalendarView
+                shifts={shifts}
+                assignments={assignments.map(a => ({ ...a, profile: profiles.find(p => p.id === a.profile_id) }))}
+                currentUser={currentUser!}
+                currentUserRole={userRole || AppRole.MEDICO}
+                userGroups={userGroups}
+            />
         </div>
     );
 
-    // Render Finance placeholder
+    // Render Finance
     const renderFinance = () => (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-12 border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-            <Wallet size={48} className="text-slate-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">
-                Financeiro
-            </h3>
-            <p className="text-slate-500">Em breve: relatórios financeiros e controle de pagamentos</p>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden min-h-[600px]">
+            <FinanceDashboard
+                currentUser={currentUser!}
+                userGroups={userGroups}
+                onSimulateCheckout={() => { alert("Simulação de checkout disponível em breve no Desktop") }}
+                onConfigureService={async (group) => {
+                    setFinConfigGroup(group);
+                    const config = await getFinancialConfig(currentUser!.id, group.id);
+                    setFinConfig(config);
+                    setIsFinConfigOpen(true);
+                }}
+            />
+        </div>
+    );
+
+    // Render Settings
+    const renderSettings = () => {
+        const renderSettingsContent = () => {
+            switch (activeSettingsView) {
+                case 'privacy': return <SettingsPrivacy onBack={() => setActiveSettingsView('main')} onNavigate={setActiveSettingsView} />;
+                case 'notifications': return <SettingsNotifications onBack={() => setActiveSettingsView('main')} />;
+                case 'password': return <SettingsPassword onBack={() => setActiveSettingsView('main')} />;
+                case 'help': return <SettingsHelp onBack={() => setActiveSettingsView('main')} />;
+                case 'about': return <SettingsAbout onBack={() => setActiveSettingsView('main')} />;
+                default: return <SettingsMain onNavigate={setActiveSettingsView} onSignOut={signOut} />;
+            }
+        };
+
+        return (
+            <div className="max-w-4xl mx-auto bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden p-8">
+                {activeSettingsView !== 'main' && (
+                    <button
+                        onClick={() => setActiveSettingsView('main')}
+                        className="mb-6 flex items-center gap-2 text-slate-500 hover:text-primary transition-colors font-bold"
+                    >
+                        <ArrowLeft size={18} />
+                        Voltar para Configurações
+                    </button>
+                )}
+                {renderSettingsContent()}
+            </div>
+        );
+    };
+
+    // Render Profile
+    const renderProfile = () => (
+        <div className="max-w-4xl mx-auto">
+            <ProfileView
+                profile={currentUser!}
+                currentUser={currentUser!}
+                onBack={() => setActiveTab('home')}
+                onEdit={() => setIsEditingProfile(true)}
+            />
         </div>
     );
 
@@ -209,6 +295,10 @@ const DesktopMainApp: React.FC = () => {
                 return renderDashboard();
             case 'finance':
                 return renderFinance();
+            case 'settings':
+                return renderSettings();
+            case 'profile':
+                return renderProfile();
             default:
                 return renderDashboard();
         }
@@ -220,9 +310,26 @@ const DesktopMainApp: React.FC = () => {
             activeTab={activeTab}
             onTabChange={setActiveTab}
             onSignOut={signOut}
-            onProfileClick={() => { }}
         >
             {renderContent()}
+            {isEditingProfile && (
+                <EditProfileModal
+                    profile={currentUser!}
+                    onClose={() => setIsEditingProfile(false)}
+                    onSave={handleSaveProfile}
+                />
+            )}
+            {isFinConfigOpen && finConfigGroup && (
+                <FinancialConfigModal
+                    group={finConfigGroup}
+                    onClose={() => {
+                        setIsFinConfigOpen(false);
+                        setFinConfig(null);
+                    }}
+                    onSave={handleSaveFinConfig}
+                    initialConfig={finConfig || undefined}
+                />
+            )}
         </DesktopLayout>
     );
 };

@@ -4,11 +4,11 @@ import {
     Calendar,
     Settings,
     LogOut,
-    Menu,
     Bell,
     ChevronRight,
     Wallet,
-    FileEdit
+    FileEdit,
+    Menu
 } from 'lucide-react';
 import Logo from './Logo';
 import { Profile } from '../types';
@@ -19,7 +19,6 @@ interface DesktopLayoutProps {
     activeTab: string;
     onTabChange: (tab: string) => void;
     onSignOut: () => void;
-    onProfileClick: () => void;
     notificationCount?: number;
     onNotificationClick?: () => void;
 }
@@ -30,7 +29,6 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     activeTab,
     onTabChange,
     onSignOut,
-    onProfileClick,
     notificationCount = 0,
     onNotificationClick
 }) => {
@@ -124,39 +122,44 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                 <div className="p-3 border-t border-slate-100 dark:border-slate-800">
                     {/* Settings */}
                     <button
-                        onClick={() => { }}
+                        onClick={() => onTabChange('settings')}
                         className={`
               w-full flex items-center gap-3 px-3 py-2.5 rounded-xl
-              text-slate-500 dark:text-slate-400 
-              hover:bg-slate-100 dark:hover:bg-slate-800 
-              transition-colors mb-2
+              transition-all duration-200 mb-2
+              ${activeTab === 'settings'
+                                ? 'bg-primary/10 text-primary shadow-sm'
+                                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            }
               ${isSidebarCollapsed ? 'justify-center' : ''}
             `}
                         title={isSidebarCollapsed ? 'Configurações' : undefined}
                     >
-                        <Settings size={18} />
-                        {!isSidebarCollapsed && <span className="text-sm font-medium">Configurações</span>}
+                        <Settings size={18} className={activeTab === 'settings' ? 'text-primary' : ''} />
+                        {!isSidebarCollapsed && <span className="text-sm font-semibold">Configurações</span>}
                     </button>
 
                     {/* User Profile */}
                     <button
-                        onClick={onProfileClick}
+                        onClick={() => onTabChange('profile')}
                         className={`
               w-full flex items-center gap-3 px-3 py-2.5 rounded-xl
-              hover:bg-slate-100 dark:hover:bg-slate-800 
-              transition-colors
+              transition-all duration-200
+              ${activeTab === 'profile'
+                                ? 'bg-primary/10 ring-1 ring-primary/20 shadow-sm'
+                                : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+                            }
               ${isSidebarCollapsed ? 'justify-center' : ''}
             `}
                     >
-                        <div className="w-9 h-9 rounded-full bg-linear-to-br from-primary to-emerald-400 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                        <div className="w-9 h-9 rounded-full bg-linear-to-br from-primary to-emerald-400 flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm">
                             {currentUser?.full_name?.charAt(0) || 'U'}
                         </div>
                         {!isSidebarCollapsed && (
                             <div className="flex flex-col items-start min-w-0">
-                                <span className="text-sm font-semibold text-slate-800 dark:text-white truncate max-w-[140px]">
+                                <span className={`text-sm font-bold truncate max-w-[140px] ${activeTab === 'profile' ? 'text-primary' : 'text-slate-800 dark:text-white'}`}>
                                     {currentUser?.full_name || 'Usuário'}
                                 </span>
-                                <span className="text-[10px] text-slate-400 truncate max-w-[140px]">
+                                <span className="text-[10px] text-slate-400 font-medium truncate max-w-[140px]">
                                     {currentUser?.email}
                                 </span>
                             </div>
