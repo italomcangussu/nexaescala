@@ -2367,3 +2367,147 @@ export const getTradeHistory = async (userId: string): Promise<any[]> => {
     return history;
 };
 
+// --- REPLICATE SCHEDULE ---
+
+export interface ReplicateScheduleOptions {
+    includeAssignments: boolean;
+    adjustDates: boolean;
+}
+
+export const replicateScheduleToMonth = async (
+    groupId: string,
+    sourceMonth: Date,
+    targetMonth: Date,
+    options: ReplicateScheduleOptions
+): Promise<void> => {
+    const { includeAssignments, adjustDates } = options;
+
+    // 1. Get source month boundaries
+    const sourceYear = sourceMonth.getFullYear();
+    const sourceMonthIndex = sourceMonth.getMonth();
+    const sourceStartDate = `${sourceYear}-${String(sourceMonthIndex + 1).padStart(2, '0')}-01`;
+    const sourceDaysInMonth = new Date(sourceYear, sourceMonthIndex + 1, 0).getDate();
+    const sourceEndDate = `${sourceYear}-${String(sourceMonthIndex + 1).padStart(2, '0')}-${String(sourceDaysInMonth).padStart(2, '0')}`;
+
+    // 2. Get target month boundaries
+    const targetYear = targetMonth.getFullYear();
+    const targetMonthIndex = targetMonth.getMonth();
+    const targetDaysInMonth = new Date(targetYear, targetMonthIndex + 1, 0).getDate();
+
+    // 3. Fetch source shifts with assignments
+    const { data: sourceShifts, error: fetchError } = await supabase
+        .from('shifts')
+        .select(`
+      *,
+      shift_assignments(*)
+    `)
+        .eq('group_id', groupId)
+        .gte('date', sourceStartDate)
+        .lte('date', sourceEndDate);
+
+    if (fetchError) throw fetchError;
+    if (!sourceShifts || sourceShifts.length === 0) {
+        throw new Error('Nenhum turno encontrado no mês de origem.');
+    }
+
+    // 4. Delete existing shifts in target month (only non-published, no assignments)
+    const targetStartDate = `${targetYear}-${String(targetMonthIndex + 1).padStart(2, '0')}-01`;
+    const targetEndDate = `${targetYear}-${String(targetMonthIndex + 1).padStart(2, '0')}-${String(targetDaysInMonth).padStart(2, '0')}`;
+
+    const { data: existingTargetShifts } = await supabase
+        .from('shifts')
+        .select('id, is_published, shift_assignments(id)')
+        .eq('group_id', groupId)
+        .gte('date', targetStartDate)
+        .lte('date', targetEndDate);
+
+    // Only delete shifts without assignments and not published
+    const shiftsToDelete = (existingTargetShifts || [])
+        .filter((s: any) => !s.is_published && (!s.shift_assignments || s.shift_assignments.length === 0))
+        .map((s: any) => s.id);
+
+    if (shiftsToDelete.length > 0) {
+        await supabase.from('shifts').delete().in('id', shiftsToDelete);
+    }
+
+    // 5. Create new shifts in target month
+    const shiftsToCreate: any[] = [];
+    const assignmentsToCreate: any[] = [];
+
+    for (const sourceShift of sourceShifts) {
+        const sourceDate = new Date(sourceShift.date + 'T00:00:00');
+        const sourceDayOfMonth = sourceDate.getDate();
+        const sourceDayOfWeek = sourceDate.getDay();
+
+        let targetDayOfMonth: number;
+
+        if (adjustDates) {
+            // Find closest day in target month with same weekday
+            // Start from first occurrence of that weekday
+            const firstDayOfTargetMonth = new Date(targetYear, targetMonthIndex, 1);
+            const firstWeekdayOffset = (sourceDayOfWeek - firstDayOfTargetMonth.getDay() + 7) % 7;
+            const weekNumber = Math.floor((sourceDayOfMonth - 1) / 7);
+            targetDayOfMonth = 1 + firstWeekdayOffset + (weekNumber * 7);
+
+            // Ensure it's within the month
+            if (targetDayOfMonth > targetDaysInMonth) {
+                targetDayOfMonth = targetDayOfMonth - 7; // Go to previous week
+            }
+        } else {
+            // Keep same day of month
+            targetDayOfMonth = Math.min(sourceDayOfMonth, targetDaysInMonth);
+        }
+
+        const targetDateStr = `${targetYear}-${String(targetMonthIndex + 1).padStart(2, '0')}-${String(targetDayOfMonth).padStart(2, '0')}`;
+
+        // Create shift object
+        const newShift = {
+            group_id: groupId,
+            date: targetDateStr,
+            code: sourceShift.code,
+            start_time: sourceShift.start_time,
+            end_time: sourceShift.end_time,
+            quantity_needed: sourceShift.quantity_needed,
+            is_published: false,
+            is_individual: sourceShift.is_individual
+        };
+
+        shiftsToCreate.push({
+            shift: newShift,
+            sourceAssignments: includeAssignments ? sourceShift.shift_assignments : []
+        });
+    }
+
+    // Insert shifts and get their IDs
+    const { data: createdShifts, error: createError } = await supabase
+        .from('shifts')
+        .insert(shiftsToCreate.map(s => s.shift))
+        .select();
+
+    if (createError) throw createError;
+
+    // 6. Create assignments if option enabled
+    if (includeAssignments && createdShifts && createdShifts.length > 0) {
+        for (let i = 0; i < createdShifts.length; i++) {
+            const newShiftId = createdShifts[i].id;
+            const sourceAssignments = shiftsToCreate[i].sourceAssignments || [];
+
+            for (const assignment of sourceAssignments) {
+                assignmentsToCreate.push({
+                    shift_id: newShiftId,
+                    profile_id: assignment.profile_id,
+                    is_confirmed: false // Reset confirmation for new month
+                });
+            }
+        }
+
+        if (assignmentsToCreate.length > 0) {
+            const { error: assignError } = await supabase
+                .from('shift_assignments')
+                .insert(assignmentsToCreate);
+
+            if (assignError) throw assignError;
+        }
+    }
+};
+

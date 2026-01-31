@@ -2,9 +2,11 @@ import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
+import { useDeviceDetection } from './hooks/useDeviceDetection';
 
 // Lazy load pages for better performance
 const Dashboard = React.lazy(() => import('./pages/MainApp'));
+const DesktopMainApp = React.lazy(() => import('./pages/DesktopMainApp'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
 const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
 const SupportPage = React.lazy(() => import('./pages/SupportPage'));
@@ -25,6 +27,20 @@ const LoadingFallback = () => (
 
 import { ToastProvider } from './context/ToastContext';
 
+// Component to handle main app routing based on device/subdomain
+const MainAppRouter: React.FC = () => {
+    const { isWebSubdomain, isDesktop } = useDeviceDetection();
+
+    // Use desktop version if on web.nexaescala.com OR if on desktop with large screen
+    const shouldUseDesktop = isWebSubdomain || (isDesktop && window.innerWidth >= 1280);
+
+    if (shouldUseDesktop) {
+        return <DesktopMainApp />;
+    }
+
+    return <Dashboard />;
+};
+
 const App: React.FC = () => {
     console.log("DEBUG: App.tsx - Rendering...");
     return (
@@ -44,7 +60,7 @@ const App: React.FC = () => {
                             element={
                                 <ProtectedRoute>
                                     <ErrorBoundary>
-                                        <Dashboard />
+                                        <MainAppRouter />
                                     </ErrorBoundary>
                                 </ProtectedRoute>
                             }
@@ -65,3 +81,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+
