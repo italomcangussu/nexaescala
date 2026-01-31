@@ -136,7 +136,7 @@ const LoginPage: React.FC = () => {
                 // Native iOS Flow
                 const result = await SignInWithApple.authorize({
                     clientId: 'com.nexaescala.app', // Should match your Apple Services ID
-                    redirectUri: 'https://nexaescala.supabase.co/auth/v1/callback', // Supabase Callback
+                    redirectURI: 'https://nexaescala.supabase.co/auth/v1/callback', // Supabase Callback
                     scopes: 'name email',
                 });
 

@@ -7,6 +7,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 const Dashboard = React.lazy(() => import('./pages/MainApp'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
 const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
+const SupportPage = React.lazy(() => import('./pages/SupportPage'));
+const SupportAdminPage = React.lazy(() => import('./pages/SupportAdminPage'));
 
 // Admin Pages
 const AdminLayout = React.lazy(() => import('./pages/admin/AdminLayout'));
@@ -32,6 +34,8 @@ const App: React.FC = () => {
                     <Routes>
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/politicas-de-privacidade" element={<PrivacyPolicy />} />
+                        <Route path="/suporte" element={<SupportPage />} />
+                        <Route path="/suporte-admin" element={<SupportAdminPage />} />
 
                         {/* Protected Routes */}
                         <Route
