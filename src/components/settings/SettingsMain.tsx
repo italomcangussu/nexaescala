@@ -1,5 +1,7 @@
 import React from 'react';
-import { Settings, Lock, Bell, HelpCircle, Info, ChevronRight, LogOut } from 'lucide-react';
+import { Lock, Bell, HelpCircle, Info, ChevronRight, LogOut, MessageSquare, ShieldCheck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import Logo from '../Logo';
 
 interface SettingsMainProps {
@@ -8,9 +10,17 @@ interface SettingsMainProps {
 }
 
 const SettingsMain: React.FC<SettingsMainProps> = ({ onNavigate, onSignOut }) => {
+    const navigate = useNavigate();
+    const { profile } = useAuth();
+
+    // Check if user is admin - using same logic as SupportAdminPage
+    const isAdmin = profile?.email && ['italomcangussu@icloud.com'].includes(profile.email || '');
+
     const menuItems = [
         { icon: Lock, label: 'Privacidade', sub: 'Senhas e dados', view: 'privacy' },
         { icon: Bell, label: 'Notificações', sub: 'Sons e alertas', view: 'notifications' },
+        { icon: MessageSquare, label: 'Suporte', sub: 'Ajuda e Sugestões', action: () => navigate('/suporte') },
+        ...(isAdmin ? [{ icon: ShieldCheck, label: 'Admin Suporte', sub: 'Gerenciar mensagens', action: () => navigate('/suporte-admin') }] : []),
         { icon: HelpCircle, label: 'Ajuda', sub: 'FAQ e Suporte', view: 'help' }, // Placeholder view
         { icon: Info, label: 'Sobre', sub: 'Versão 1.0.2', view: 'about' }, // Placeholder view
     ];
@@ -32,10 +42,16 @@ const SettingsMain: React.FC<SettingsMainProps> = ({ onNavigate, onSignOut }) =>
             </p>
 
             <div className="w-full space-y-2">
-                {menuItems.map((item, index) => (
+                {menuItems.map((item: any, index) => (
                     <div
                         key={item.label}
-                        onClick={() => item.view !== 'main' && onNavigate(item.view)}
+                        onClick={() => {
+                            if (item.action) {
+                                item.action();
+                            } else if (item.view && item.view !== 'main') {
+                                onNavigate(item.view);
+                            }
+                        }}
                         className="flex items-center justify-between p-3.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-98 transition-all duration-300 cursor-pointer group border border-transparent hover:border-slate-100 dark:hover:border-slate-700"
                         style={{ transitionDelay: `${400 + (index * 50)}ms` }}
                     >

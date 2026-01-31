@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Lock, Mail, Loader, AlertCircle, Eye, EyeOff, CheckCircle, Circle } from 'lucide-react';
+import { Lock, Mail, Loader, AlertCircle, Eye, EyeOff, CheckCircle, Circle, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { SignInWithApple } from '@capacitor-community/apple-sign-in';
@@ -476,6 +476,17 @@ const LoginPage: React.FC = () => {
 
                 {/* Decorative bottom bar */}
                 <div className="h-1.5 w-full bg-linear-to-r from-emerald-500 via-teal-500 to-emerald-500"></div>
+            </div>
+
+            {/* Support Link */}
+            <div className="absolute bottom-10 left-0 right-0 text-center z-10">
+                <button
+                    onClick={() => navigate('/suporte')}
+                    className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-emerald-500 dark:text-slate-500 dark:hover:text-emerald-400 transition-all uppercase tracking-widest bg-white/50 dark:bg-slate-900/50 px-6 py-2.5 rounded-full border border-white/50 dark:border-slate-800/50 backdrop-blur-sm shadow-sm"
+                >
+                    <MessageSquare size={14} />
+                    Precisa de ajuda? Fale conosco
+                </button>
             </div>
         </div>
     );
