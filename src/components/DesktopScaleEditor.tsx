@@ -42,6 +42,7 @@ import {
 } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import { useKeyboardShortcuts, createEditorShortcuts } from '../hooks/useKeyboardShortcuts';
+import DesktopScaleReview from './DesktopScaleReview';
 
 interface DesktopScaleEditorProps {
     currentUser: Profile;
@@ -80,6 +81,7 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
     const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
     const [isPresetsManagerOpen, setIsPresetsManagerOpen] = useState(false);
     const [selectionData] = useState<{ date: Date; shiftLabel: string; startTime: string } | null>(null);
+    const [showReviewPage, setShowReviewPage] = useState(false);
 
     // Months for dropdown
     const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -170,9 +172,16 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
         }
     };
 
+    // Check for admin permission
+    const isUserAdmin = selectedGroup?.user_role === ServiceRole.ADMIN || selectedGroup?.user_role === ServiceRole.ADMIN_AUX;
+
     // Handle save
     const handleSave = async () => {
         if (!selectedGroup) return;
+        if (!isUserAdmin) {
+            showToast("Você não possui permissão para salvar alterações nesta escala.", "error");
+            return;
+        }
 
         setIsLoading(true);
         try {
@@ -205,7 +214,17 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
         }
     };
 
-    // Handle publish
+    // Handle publish - open review page
+    const handlePublishClick = () => {
+        if (!selectedGroup?.id) return;
+        if (!isUserAdmin) {
+            showToast("Você não possui permissão para publicar esta escala.", "error");
+            return;
+        }
+        setShowReviewPage(true);
+    };
+
+    // Actual publish after review
     const handlePublish = async () => {
         if (!selectedGroup?.id) return;
 
@@ -227,6 +246,7 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
             }
 
             showToast("Escala publicada com sucesso!", "success");
+            setShowReviewPage(false);
             if (onBack) onBack();
         } catch (error) {
             console.error("Failed to publish:", error);
@@ -350,13 +370,13 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
 
                         <div className="flex flex-col">
                             <h1 className="text-xl font-black text-slate-800 dark:text-white flex items-center gap-2">
-                                Editor de Escala
+                                {isUserAdmin ? 'Editor de Escala' : 'Visualização da Escala'}
                                 {(isLoading && groupShifts.length > 0) && (
                                     <Loader2 className="w-4 h-4 text-primary animate-spin" />
                                 )}
                             </h1>
                             <span className="text-xs text-slate-500">
-                                {selectedGroup?.name} • {selectedGroup?.institution}
+                                {selectedGroup?.name} • {selectedGroup?.institution} {!isUserAdmin && '(Modo Visualização)'}
                             </span>
                         </div>
                     </div>
@@ -419,13 +439,15 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => setIsReplicateModalOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl text-slate-700 dark:text-slate-300 font-semibold text-sm transition-colors"
-                        >
-                            <Copy size={16} />
-                            Replicar
-                        </button>
+                        {isUserAdmin && (
+                            <button
+                                onClick={() => setIsReplicateModalOpen(true)}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl text-slate-700 dark:text-slate-300 font-semibold text-sm transition-colors"
+                            >
+                                <Copy size={16} />
+                                Replicar
+                            </button>
+                        )}
 
                         <button
                             onClick={() => window.print()}
@@ -435,30 +457,34 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
                             Imprimir
                         </button>
 
-                        <button
-                            onClick={() => setIsPresetsManagerOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 rounded-xl text-white font-semibold text-sm transition-colors"
-                        >
-                            <Settings size={16} />
-                            Turnos
-                        </button>
+                        {isUserAdmin && (
+                            <>
+                                <button
+                                    onClick={() => setIsPresetsManagerOpen(true)}
+                                    className="flex items-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 rounded-xl text-white font-semibold text-sm transition-colors"
+                                >
+                                    <Settings size={16} />
+                                    Turnos
+                                </button>
 
-                        <button
-                            onClick={handleSave}
-                            disabled={isLoading}
-                            className={`flex items-center gap-2 px-4 py-2.5 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 rounded-xl text-white font-semibold text-sm transition-colors ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                            {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                            {isLoading ? 'Salvando...' : 'Salvar'}
-                        </button>
+                                <button
+                                    onClick={handleSave}
+                                    disabled={isLoading}
+                                    className={`flex items-center gap-2 px-4 py-2.5 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 rounded-xl text-white font-semibold text-sm transition-colors ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                                    {isLoading ? 'Salvando...' : 'Salvar'}
+                                </button>
 
-                        <button
-                            onClick={handlePublish}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 rounded-xl text-white font-bold text-sm transition-colors shadow-lg shadow-emerald-500/20"
-                        >
-                            <CheckCircle size={16} />
-                            Publicar
-                        </button>
+                                <button
+                                    onClick={handlePublishClick}
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 rounded-xl text-white font-bold text-sm transition-colors shadow-lg shadow-emerald-500/20"
+                                >
+                                    <CheckCircle size={16} />
+                                    Publicar
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
 
@@ -477,13 +503,15 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
                             />
                         </div>
 
-                        <button
-                            onClick={() => setIsAddMemberModalOpen(true)}
-                            className="flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
-                        >
-                            <UserPlus size={16} />
-                            Adicionar Membro
-                        </button>
+                        {isUserAdmin && (
+                            <button
+                                onClick={() => setIsAddMemberModalOpen(true)}
+                                className="flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
+                            >
+                                <UserPlus size={16} />
+                                Adicionar Membro
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -583,10 +611,10 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
                                                     return (
                                                         <td
                                                             key={`${member.id}-${dateStr}-${shiftType.startTime}`}
-                                                            onClick={() => hasShift && handleCellClick(member, date, shiftType)}
+                                                            onClick={() => isUserAdmin && hasShift && handleCellClick(member, date, shiftType)}
                                                             className={`
                                                                 border-b border-r border-slate-100 dark:border-slate-800 p-1 text-center
-                                                                ${hasShift ? 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700' : 'bg-slate-50 dark:bg-slate-800/30 cursor-not-allowed'}
+                                                                ${(isUserAdmin && hasShift) ? 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700' : 'bg-slate-50 dark:bg-slate-800/30 cursor-not-allowed'}
                                                                 ${dayStyle.isWeekend && !assignment ? 'bg-slate-50/50 dark:bg-slate-800/30' : ''}
                                                                 transition-colors
                                                             `}
@@ -663,6 +691,18 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
                         setIsReplicateModalOpen(false);
                         refreshData(true);
                     }}
+                />
+            )}
+
+            {/* Review Page */}
+            {showReviewPage && selectedGroup && (
+                <DesktopScaleReview
+                    group={selectedGroup}
+                    shifts={groupShifts}
+                    assignments={localAssignments}
+                    currentDate={currentDate}
+                    onBack={() => setShowReviewPage(false)}
+                    onPublish={handlePublish}
                 />
             )}
         </div>

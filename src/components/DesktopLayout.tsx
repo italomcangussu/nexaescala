@@ -23,6 +23,7 @@ interface DesktopLayoutProps {
     notificationCount?: number;
     onNotificationClick?: () => void;
     isLoading?: boolean;
+    isAdmin?: boolean;
 }
 
 const DesktopLayout: React.FC<DesktopLayoutProps> = ({
@@ -33,14 +34,15 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     onSignOut,
     notificationCount = 0,
     onNotificationClick,
-    isLoading = false
+    isLoading = false,
+    isAdmin = false
 }) => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     const navItems = [
         { id: 'home', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'calendar', label: 'Calendário', icon: Calendar },
-        { id: 'editor', label: 'Editor de Escala', icon: FileEdit },
+        ...(isAdmin ? [{ id: 'editor', label: 'Editor de Escala', icon: FileEdit }] : []),
         { id: 'finance', label: 'Financeiro', icon: Wallet },
     ];
 

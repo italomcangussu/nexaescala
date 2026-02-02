@@ -17,7 +17,7 @@ import SettingsAbout from '../components/settings/SettingsAbout';
 import SettingsPassword from '../components/settings/SettingsPassword';
 import { getFinancialConfig, saveFinancialConfig } from '../services/api';
 import FinancialConfigModal from '../components/FinancialConfigModal';
-import { AppRole, FinancialConfig } from '../types';
+import { AppRole, FinancialConfig, ServiceRole } from '../types';
 
 const DesktopMainApp: React.FC = () => {
     const { profile: currentUser, signOut, refetchProfile } = useAuth();
@@ -34,12 +34,21 @@ const DesktopMainApp: React.FC = () => {
     const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
     const [showEditor, setShowEditor] = useState(false);
 
-    // Select first group on load
+    // Filter groups by admin privilege
+    const adminGroups = userGroups.filter(g =>
+        g.user_role === ServiceRole.ADMIN || g.user_role === ServiceRole.ADMIN_AUX
+    );
+
+    // Select first group on load (prioritize admin groups)
     useEffect(() => {
-        if (userGroups.length > 0 && !selectedGroup) {
-            setSelectedGroup(userGroups[0]);
+        if (!selectedGroup) {
+            if (adminGroups.length > 0) {
+                setSelectedGroup(adminGroups[0]);
+            } else if (userGroups.length > 0) {
+                setSelectedGroup(userGroups[0]);
+            }
         }
-    }, [userGroups, selectedGroup]);
+    }, [userGroups, adminGroups, selectedGroup]);
 
     if (!currentUser) {
         return (
@@ -115,14 +124,25 @@ const DesktopMainApp: React.FC = () => {
                     Ações Rápidas
                 </h3>
                 <div className="flex flex-wrap gap-3">
+                    {adminGroups.length > 0 && (
+                        <button
+                            onClick={() => {
+                                if (!selectedGroup || !(selectedGroup.user_role === ServiceRole.ADMIN || selectedGroup.user_role === ServiceRole.ADMIN_AUX)) {
+                                    setSelectedGroup(adminGroups[0]);
+                                }
+                                setActiveTab('editor');
+                                setShowEditor(true);
+                            }}
+                            className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 rounded-xl text-white font-semibold text-sm transition-colors"
+                        >
+                            <FileEdit size={18} />
+                            Abrir Editor de Escala
+                        </button>
+                    )}
                     <button
-                        onClick={() => { setActiveTab('editor'); setShowEditor(true); }}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 rounded-xl text-white font-semibold text-sm transition-colors"
+                        onClick={() => setActiveTab('calendar')}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl text-slate-700 dark:text-slate-300 font-semibold text-sm transition-colors"
                     >
-                        <FileEdit size={18} />
-                        Abrir Editor de Escala
-                    </button>
-                    <button className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl text-slate-700 dark:text-slate-300 font-semibold text-sm transition-colors">
                         <Calendar size={18} />
                         Ver Calendário
                     </button>
@@ -139,31 +159,61 @@ const DesktopMainApp: React.FC = () => {
                     <p className="text-slate-400 text-sm">Nenhum serviço encontrado</p>
                 ) : (
                     <div className="space-y-3">
-                        {userGroups.map(group => (
-                            <button
-                                key={group.id}
-                                onClick={() => { setSelectedGroup(group); setActiveTab('editor'); setShowEditor(true); }}
-                                className="w-full flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
-                            >
-                                <div
-                                    className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0"
-                                    style={{ backgroundColor: group.color || '#10b981' }}
+                        {userGroups.map(group => {
+                            const isGroupAdmin = group.user_role === ServiceRole.ADMIN || group.user_role === ServiceRole.ADMIN_AUX;
+                            return (
+                                <button
+                                    key={group.id}
+                                    onClick={() => {
+                                        setSelectedGroup(group);
+                                        if (isGroupAdmin) {
+                                            setActiveTab('editor');
+                                            setShowEditor(true);
+                                        } else {
+                                            setActiveTab('calendar');
+                                            setShowEditor(false);
+                                        }
+                                    }}
+                                    className="w-full flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left group"
                                 >
-                                    {group.name?.charAt(0) || 'S'}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <span className="text-sm font-semibold text-slate-800 dark:text-white block truncate">
-                                        {group.name}
-                                    </span>
-                                    <span className="text-xs text-slate-400 block truncate">
-                                        {group.institution}
-                                    </span>
-                                </div>
-                                <span className="text-xs text-slate-400 bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-md font-medium">
-                                    {group.user_role}
-                                </span>
-                            </button>
-                        ))}
+                                    <div
+                                        className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0"
+                                        style={{ backgroundColor: group.color || '#10b981' }}
+                                    >
+                                        {group.name?.charAt(0) || 'S'}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-semibold text-slate-800 dark:text-white block truncate">
+                                                {group.name}
+                                            </span>
+                                            {isGroupAdmin && (
+                                                <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" title="Administrador" />
+                                            )}
+                                        </div>
+                                        <span className="text-xs text-slate-400 block truncate">
+                                            {group.institution}
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-col items-end gap-1">
+                                        <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${isGroupAdmin
+                                            ? 'bg-primary/10 text-primary border border-primary/20'
+                                            : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+                                            }`}>
+                                            {group.user_role === ServiceRole.ADMIN ? 'Gestor' :
+                                                group.user_role === ServiceRole.ADMIN_AUX ? 'Auxiliar' :
+                                                    group.user_role === ServiceRole.PLANTONISTA ? 'Plantonista' : 'Visitante'}
+                                        </span>
+                                        {isGroupAdmin && (
+                                            <span className="text-[10px] text-primary font-bold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <FileEdit size={10} />
+                                                Editar Escala
+                                            </span>
+                                        )}
+                                    </div>
+                                </button>
+                            );
+                        })}
                     </div>
                 )}
             </div>
@@ -275,8 +325,29 @@ const DesktopMainApp: React.FC = () => {
                 return renderCalendar();
             case 'editor':
                 if (showEditor && selectedGroup) {
+                    const isGroupAdmin = selectedGroup.user_role === ServiceRole.ADMIN || selectedGroup.user_role === ServiceRole.ADMIN_AUX;
+
+                    if (!isGroupAdmin) {
+                        return (
+                            <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 shadow-sm">
+                                <FileEdit size={48} className="text-slate-300 mb-4" />
+                                <h3 className="text-lg font-bold text-slate-800 dark:text-white">Acesso Restrito</h3>
+                                <p className="text-slate-500 text-sm max-w-md text-center mt-2">
+                                    Você não tem permissão de administrador para editar a escala deste serviço.
+                                </p>
+                                <button
+                                    onClick={() => { setShowEditor(false); setActiveTab('home'); }}
+                                    className="mt-6 px-6 py-2 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20"
+                                >
+                                    Voltar ao Início
+                                </button>
+                            </div>
+                        );
+                    }
+
                     return (
                         <DesktopScaleEditor
+                            key={selectedGroup.id}
                             currentUser={currentUser}
                             userGroups={userGroups}
                             initialGroup={selectedGroup}
@@ -303,6 +374,7 @@ const DesktopMainApp: React.FC = () => {
             onTabChange={setActiveTab}
             onSignOut={signOut}
             isLoading={isLoading}
+            isAdmin={adminGroups.length > 0}
         >
             {renderContent()}
             {isEditingProfile && (

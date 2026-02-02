@@ -1,0 +1,2 @@
+# This file tells Capacitor to use Swift Package Manager instead of CocoaPods
+# When this file exists, Capacitor will skip pod install

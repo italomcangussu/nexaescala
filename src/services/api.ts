@@ -2604,3 +2604,40 @@ export const replicateScheduleToMonth = async (
     }
 };
 
+
+
+// Get all shift assignments for specific users across ALL groups
+// Used for conflict detection between different services
+export const getAllUserAssignmentsAcrossGroups = async (profileIds: string[]): Promise<any[]> => {
+    if (profileIds.length === 0) return [];
+
+    const { data, error } = await supabase
+        .from('shift_assignments')
+        .select(`
+            id,
+            profile_id,
+            shift_id,
+            is_confirmed,
+            shift:shifts!inner (
+                id,
+                date,
+                start_time,
+                end_time,
+                code,
+                group_id,
+                group:groups (
+                    id,
+                    name,
+                    institution
+                )
+            ),
+            profile:profiles (
+                id,
+                full_name
+            )
+        `)
+        .in('profile_id', profileIds);
+
+    if (error) throw error;
+    return data || [];
+};
