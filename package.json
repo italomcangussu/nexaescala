@@ -8,7 +8,11 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "vite preview --host --port ${PORT:-3000}",
-    "start:prod": "serve -s dist -l tcp://0.0.0.0:80"
+    "start:prod": "serve -s dist -l tcp://00.0.0.0:80",
+    "ios:build": "./ios-helper.sh build",
+    "ios:copy": "./ios-helper.sh copy",
+    "ios:open": "./ios-helper.sh open",
+    "ios:sync": "./ios-helper.sh sync"
   },
   "dependencies": {
     "@capacitor-community/apple-sign-in": "^7.1.0",
