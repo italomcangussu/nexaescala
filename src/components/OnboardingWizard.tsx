@@ -304,13 +304,13 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-gradient-to-br from-slate-50 via-emerald-50/30 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-linear-to-br from-slate-50 via-emerald-50/30 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center p-4">
             <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
 
                 {/* Progress Bar */}
                 <div className="h-1.5 bg-slate-100 dark:bg-slate-700">
                     <div
-                        className="h-full bg-gradient-to-r from-primary to-emerald-500 transition-all duration-500"
+                        className="h-full bg-linear-to-r from-primary to-emerald-500 transition-all duration-500"
                         style={{ width: `${((step + 1) / steps.length) * 100}%` }}
                     />
                 </div>

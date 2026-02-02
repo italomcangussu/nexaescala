@@ -268,14 +268,6 @@ const DesktopMainApp: React.FC = () => {
 
     // Render content based on active tab
     const renderContent = () => {
-        if (isLoading) {
-            return (
-                <div className="flex items-center justify-center h-64">
-                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                </div>
-            );
-        }
-
         switch (activeTab) {
             case 'home':
                 return renderDashboard();
@@ -310,6 +302,7 @@ const DesktopMainApp: React.FC = () => {
             activeTab={activeTab}
             onTabChange={setActiveTab}
             onSignOut={signOut}
+            isLoading={isLoading}
         >
             {renderContent()}
             {isEditingProfile && (

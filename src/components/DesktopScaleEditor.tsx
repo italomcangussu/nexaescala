@@ -328,7 +328,7 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
 
     return (
         <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 overflow-hidden">
-            {isLoading && (
+            {(isLoading && groupShifts.length === 0) && (
                 <div className="absolute inset-0 bg-white/70 dark:bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
                     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-2xl flex items-center gap-4">
                         <Loader2 className="w-8 h-8 text-primary animate-spin" />
@@ -349,8 +349,11 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
                         </button>
 
                         <div className="flex flex-col">
-                            <h1 className="text-xl font-black text-slate-800 dark:text-white">
+                            <h1 className="text-xl font-black text-slate-800 dark:text-white flex items-center gap-2">
                                 Editor de Escala
+                                {(isLoading && groupShifts.length > 0) && (
+                                    <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                                )}
                             </h1>
                             <span className="text-xs text-slate-500">
                                 {selectedGroup?.name} • {selectedGroup?.institution}
@@ -442,10 +445,11 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
 
                         <button
                             onClick={handleSave}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 rounded-xl text-white font-semibold text-sm transition-colors"
+                            disabled={isLoading}
+                            className={`flex items-center gap-2 px-4 py-2.5 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 rounded-xl text-white font-semibold text-sm transition-colors ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                            <Save size={16} />
-                            Salvar
+                            {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                            {isLoading ? 'Salvando...' : 'Salvar'}
                         </button>
 
                         <button
@@ -630,6 +634,7 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
                 onClose={() => setIsPresetsManagerOpen(false)}
                 groupId={selectedGroup?.id || ''}
                 currentPresets={shiftPresets}
+                isLoading={isLoading}
                 onSave={async (presets) => {
                     if (!selectedGroup?.id) return;
                     setIsLoading(true);
@@ -638,9 +643,9 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
                         await refreshData(true);
                         setIsPresetsManagerOpen(false);
                         showToast('Turnos atualizados com sucesso!', 'success');
-                    } catch (error) {
+                    } catch (error: any) {
                         console.error('Error saving presets:', error);
-                        showToast('Erro ao atualizar turnos', 'error');
+                        showToast(`Erro ao atualizar turnos: ${error.message || 'Erro desconhecido'}`, 'error');
                     } finally {
                         setIsLoading(false);
                     }

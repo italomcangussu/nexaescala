@@ -8,7 +8,8 @@ import {
     ChevronRight,
     Wallet,
     FileEdit,
-    Menu
+    Menu,
+    Loader2
 } from 'lucide-react';
 import Logo from './Logo';
 import { Profile } from '../types';
@@ -21,6 +22,7 @@ interface DesktopLayoutProps {
     onSignOut: () => void;
     notificationCount?: number;
     onNotificationClick?: () => void;
+    isLoading?: boolean;
 }
 
 const DesktopLayout: React.FC<DesktopLayoutProps> = ({
@@ -30,7 +32,8 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     onTabChange,
     onSignOut,
     notificationCount = 0,
-    onNotificationClick
+    onNotificationClick,
+    isLoading = false
 }) => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -188,8 +191,11 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                 {/* Top Header */}
                 <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200/60 dark:border-slate-800 flex items-center justify-between px-6 shrink-0">
                     <div className="flex items-center gap-4">
-                        <h1 className="text-xl font-bold text-slate-800 dark:text-white">
+                        <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                             {navItems.find(n => n.id === activeTab)?.label || 'Dashboard'}
+                            {isLoading && (
+                                <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                            )}
                         </h1>
                     </div>
 

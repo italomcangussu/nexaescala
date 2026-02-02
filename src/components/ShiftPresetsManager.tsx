@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ShiftPreset } from '../types';
-import { X, Plus, Edit2, Trash2, Save, Moon, Sun } from 'lucide-react';
+import { X, Plus, Edit2, Trash2, Save, Moon, Sun, Loader2 } from 'lucide-react';
 import WeekDaySelector from './WeekDaySelector';
 
 interface ShiftPresetsManagerProps {
@@ -9,6 +9,7 @@ interface ShiftPresetsManagerProps {
     groupId: string;
     currentPresets: ShiftPreset[];
     onSave: (presets: ShiftPreset[]) => void;
+    isLoading?: boolean;
     isDailyMode?: boolean;
     onRevert?: () => void;
 }
@@ -19,6 +20,7 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
     groupId,
     currentPresets,
     onSave,
+    isLoading = false,
     isDailyMode = false,
     onRevert
 }) => {
@@ -381,10 +383,15 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
                     </div>
                     <button
                         onClick={handleSave}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors shadow-lg"
+                        disabled={isLoading}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 disabled:opacity-70 disabled:cursor-not-allowed transition-all shadow-lg"
                     >
-                        <Save size={18} />
-                        Salvar Alterações
+                        {isLoading ? (
+                            <Loader2 size={18} className="animate-spin" />
+                        ) : (
+                            <Save size={18} />
+                        )}
+                        {isLoading ? 'Salvando...' : 'Salvar Alterações'}
                     </button>
                 </div>
             </div>

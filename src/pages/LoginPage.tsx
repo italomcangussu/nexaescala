@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Lock, Mail, Loader, AlertCircle, Eye, EyeOff, CheckCircle, Circle, MessageSquare } from 'lucide-react';
+import { Lock, Mail, Loader, AlertCircle, Eye, EyeOff, CheckCircle, Circle, MessageSquare, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { SignInWithApple } from '@capacitor-community/apple-sign-in';
 import { Capacitor } from '@capacitor/core';
+import { useDeviceDetection } from '../hooks/useDeviceDetection';
+import Logo from '../components/Logo';
 
-// Local Assets
-const LOGO_LIGHT = '/assets/logo-1.png';
-const LOGO_DARK = '/assets/logo-2.png';
+
 
 // Error message translations
 const ERROR_MESSAGES: Record<string, string> = {
@@ -52,6 +52,10 @@ const LoginPage: React.FC = () => {
 
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { isDesktop } = useDeviceDetection();
+
+    // Re-check for desktop since we want the "fill the screen" experience
+    const shouldUseDesktopLayout = isDesktop && window.innerWidth >= 1024;
 
     React.useEffect(() => {
         if (user) {
@@ -68,12 +72,9 @@ const LoginPage: React.FC = () => {
 
         try {
             if (isSignUp) {
-                // Validation
                 if (!acceptedTerms) {
                     throw new Error('Você precisa aceitar os Termos de Uso e Política de Privacidade.');
                 }
-
-                // Validate password strength
                 if (!passwordStrength.hasMinLength || !passwordStrength.hasUppercase || !passwordStrength.hasLowercase || !passwordStrength.hasSpecialChar) {
                     throw new Error('A senha não atende aos requisitos mínimos');
                 }
@@ -88,7 +89,6 @@ const LoginPage: React.FC = () => {
                 });
                 if (error) throw error;
 
-                // Auto-login logic
                 if (data.user && data.session) {
                     window.location.href = '/';
                     return;
@@ -133,10 +133,9 @@ const LoginPage: React.FC = () => {
         setError(null);
         try {
             if (Capacitor.isNativePlatform()) {
-                // Native iOS Flow
                 const result = await SignInWithApple.authorize({
-                    clientId: 'com.nexaescala.app', // Should match your Apple Services ID
-                    redirectURI: 'https://nexaescala.supabase.co/auth/v1/callback', // Supabase Callback
+                    clientId: 'com.nexaescala.app',
+                    redirectURI: 'https://vjlcfkkyfeteljutwfet.supabase.co/auth/v1/callback',
                     scopes: 'name email',
                 });
 
@@ -148,7 +147,6 @@ const LoginPage: React.FC = () => {
                     if (error) throw error;
                 }
             } else {
-                // Web Flow
                 const { error } = await supabase.auth.signInWithOAuth({
                     provider: 'apple',
                     options: {
@@ -188,305 +186,333 @@ const LoginPage: React.FC = () => {
     };
 
     const PasswordRequirement = ({ met, text }: { met: boolean; text: string }) => (
-        <div className={`flex items-center gap-2 text-xs font-medium transition-colors ${met ? 'text-emerald-600' : 'text-red-500'}`}>
-            {met ? <CheckCircle size={14} /> : <Circle size={14} />}
+        <div className={`flex items-center gap-2 text-xs font-medium transition-colors ${met ? 'text-emerald-600' : 'text-slate-400'}`}>
+            {met ? <CheckCircle size={14} className="text-emerald-500" /> : <Circle size={14} />}
             <span>{text}</span>
         </div>
     );
 
+    const renderAuthForm = () => (
+        <div className="w-full max-w-sm mx-auto space-y-6 animate-fade-in-up">
+            <div className="text-center mb-8 lg:text-left">
+                <h2 className="text-2xl lg:text-3xl font-black text-slate-800 dark:text-white tracking-tight">
+                    {forgotPassword ? 'Recuperar Acesso' : (isSignUp ? 'Comece Agora' : 'Bem-vindo de volta')}
+                </h2>
+                <p className="text-slate-500 dark:text-slate-400 font-medium mt-2">
+                    {forgotPassword
+                        ? 'Enviaremos um link para resetar sua senha.'
+                        : (isSignUp ? 'Crie sua conta em poucos segundos.' : 'Insira seus dados para entrar na plataforma.')}
+                </p>
+            </div>
+
+            {/* Error Alert */}
+            {error && (
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/30 text-red-600 dark:text-red-400 text-sm rounded-2xl flex items-start gap-3 animate-shake">
+                    <AlertCircle size={20} className="shrink-0 mt-0.5" />
+                    <span>{error}</span>
+                </div>
+            )}
+
+            {/* Success Alert */}
+            {successMessage && (
+                <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 text-emerald-600 dark:text-emerald-400 text-sm rounded-2xl flex items-start gap-3 animate-fade-in">
+                    <CheckCircle size={20} className="shrink-0 mt-0.5" />
+                    <span>{successMessage}</span>
+                </div>
+            )}
+
+            {forgotPassword ? (
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-500 uppercase ml-1">Email Profissional</label>
+                        <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-primary">
+                                <Mail size={18} className="text-slate-400 group-focus-within:text-primary transition-colors" />
+                            </div>
+                            <input
+                                type="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full pl-12 pr-4 py-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-slate-800 dark:text-white font-medium"
+                                placeholder="seu@email.com"
+                            />
+                        </div>
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white font-bold rounded-2xl shadow-xl shadow-slate-900/10 dark:shadow-none hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                    >
+                        {loading ? <Loader className="animate-spin" size={20} /> : 'Enviar Recuperação'}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => { setForgotPassword(false); setError(null); setSuccessMessage(null); }}
+                        className="w-full text-center text-sm font-bold text-slate-400 hover:text-primary transition-colors pt-2"
+                    >
+                        Voltar ao Login
+                    </button>
+                </form>
+            ) : (
+                <form onSubmit={handleAuth} className="space-y-5">
+                    {isSignUp && (
+                        <div className="space-y-1.5 animate-fade-in-up">
+                            <label className="text-xs font-bold text-slate-500 uppercase ml-1">Nome Completo</label>
+                            <input
+                                type="text"
+                                required
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-slate-800 dark:text-white font-medium"
+                                placeholder="Como deseja ser chamado?"
+                            />
+                        </div>
+                    )}
+
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-500 uppercase ml-1">Email</label>
+                        <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-primary">
+                                <Mail size={18} className="text-slate-400 group-focus-within:text-primary transition-colors" />
+                            </div>
+                            <input
+                                type="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full pl-12 pr-4 py-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-slate-800 dark:text-white font-medium"
+                                placeholder="seu@email.com"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <div className="flex justify-between items-center ml-1">
+                            <label className="text-xs font-bold text-slate-500 uppercase">Senha</label>
+                            {!isSignUp && (
+                                <button
+                                    type="button"
+                                    onClick={() => setForgotPassword(true)}
+                                    className="text-[10px] font-black text-primary uppercase tracking-wider hover:opacity-80 transition-opacity"
+                                >
+                                    Esqueceu?
+                                </button>
+                            )}
+                        </div>
+                        <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-primary">
+                                <Lock size={18} className="text-slate-400 group-focus-within:text-primary transition-colors" />
+                            </div>
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                onFocus={() => isSignUp && setShowPasswordHints(true)}
+                                onBlur={() => setShowPasswordHints(false)}
+                                className="w-full pl-12 pr-12 py-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-slate-800 dark:text-white font-medium"
+                                placeholder="••••••••"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
+
+                        {isSignUp && showPasswordHints && (
+                            <div className="mt-3 p-3.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700 rounded-2xl space-y-2.5 animate-fade-in">
+                                <PasswordRequirement met={passwordStrength.hasMinLength} text="Pelo menos 8 caracteres" />
+                                <PasswordRequirement met={passwordStrength.hasUppercase} text="Uma letra maiúscula" />
+                                <PasswordRequirement met={passwordStrength.hasLowercase} text="Uma letra minúscula" />
+                                <PasswordRequirement met={passwordStrength.hasSpecialChar} text="Um caractere especial" />
+                            </div>
+                        )}
+                    </div>
+
+                    {isSignUp && (
+                        <div className="flex items-start gap-3 px-1 animate-fade-in">
+                            <input
+                                id="terms"
+                                type="checkbox"
+                                checked={acceptedTerms}
+                                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                                className="mt-1 w-5 h-5 rounded-lg border-slate-300 text-primary focus:ring-primary/20 transition-all accent-primary cursor-pointer"
+                            />
+                            <label htmlFor="terms" className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed cursor-pointer select-none">
+                                Li e aceito os <a href="/politicas" target="_blank" className="font-bold text-primary hover:underline">Termos de Uso</a> e <a href="/politicas" target="_blank" className="font-bold text-primary hover:underline">Políticas de Privacidade</a>.
+                            </label>
+                        </div>
+                    )}
+
+                    <button
+                        type="submit"
+                        disabled={loading || (isSignUp && !acceptedTerms)}
+                        className={`group w-full py-4 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-3 ${loading || (isSignUp && !acceptedTerms) ? 'opacity-50 grayscale cursor-not-allowed shadow-none' : ''}`}
+                    >
+                        {loading ? <Loader className="animate-spin" size={20} /> : (isSignUp ? 'Criar minha conta' : 'Acessar plataforma')}
+                        <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                    </button>
+                </form>
+            )}
+
+            {!forgotPassword && (
+                <>
+                    <div className="relative flex items-center py-2">
+                        <div className="flex-1 border-t border-slate-200 dark:border-slate-800"></div>
+                        <span className="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">ou entre com</span>
+                        <div className="flex-1 border-t border-slate-200 dark:border-slate-800"></div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <button
+                            onClick={handleGoogleLogin}
+                            className="flex items-center justify-center gap-2.5 p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm group"
+                        >
+                            <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
+                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                            </svg>
+                            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Google</span>
+                        </button>
+
+                        <button
+                            onClick={handleAppleLogin}
+                            className="flex items-center justify-center gap-2.5 p-3.5 bg-slate-900 dark:bg-white border border-slate-900 dark:border-white rounded-2xl hover:bg-black dark:hover:bg-slate-100 transition-all shadow-sm group"
+                        >
+                            <svg className="w-5 h-5 fill-white dark:fill-slate-900 group-hover:scale-110 transition-transform" viewBox="0 0 384 512">
+                                <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 21.8-88.5 21.8-11.4 0-51.1-20.8-83.6-20.8-44.1 0-93.7 32.7-115.1 76-24.8 49.3-15.6 131.7 19.5 204.6 15.6 32.5 40.5 68.3 75.2 68.3 31.4 0 46.5-21.7 89.2-21.7 41.6 0 54.4 21.7 89.2 21.7 35.5 0 57.6-31.1 77.2-61.9 22-31.7 31-62.4 31.3-63.9-.8-.4-60.6-23.3-60.6-94.8zm-51.1-131c3.8-31.5-13.8-63.8-40.7-80.1-5.1-3-11.1-5.3-16.7-6.5-2.8-5.3-6.5-10.4-11.1-14.9-20.2-19.8-51.9-20.7-72.1-12.7-2.6 1.1-4.9 2.4-7.1 3.9 33.7 33.7 26.5 83.9 2.4 115 28.5 3.3 58.7-10.8 77.7-33.8 11.5-13.9 17.6-31.5 17.6-50.9z" />
+                            </svg>
+                            <span className="text-sm font-bold text-white dark:text-slate-900">Apple</span>
+                        </button>
+                    </div>
+
+                    <div className="text-center pt-6">
+                        <button
+                            onClick={() => { setIsSignUp(!isSignUp); setError(null); }}
+                            className="text-sm font-bold text-slate-500 hover:text-primary transition-all underline underline-offset-4 decoration-primary/30"
+                        >
+                            {isSignUp ? 'Já possui conta? Faça Login' : 'Não tem conta? Crie uma agora'}
+                        </button>
+                    </div>
+                </>
+            )}
+        </div>
+    );
+
+    if (shouldUseDesktopLayout) {
+        return (
+            <div className="min-h-screen bg-white dark:bg-slate-950 flex overflow-hidden">
+                {/* Visual Left Side */}
+                <div className="hidden lg:flex w-7/12 relative bg-slate-900 overflow-hidden items-center justify-center p-12">
+                    {/* Dynamic Background */}
+                    <div className="absolute inset-0">
+                        <div className="absolute top-0 right-0 w-[80%] h-[80%] bg-primary/20 rounded-full blur-[120px] animate-pulse-slow"></div>
+                        <div className="absolute bottom-0 left-0 w-[60%] h-[60%] bg-blue-600/10 rounded-full blur-[100px] animate-pulse-slow delay-1000"></div>
+
+                        {/* Grid Pattern Overlay */}
+                        <div className="absolute inset-x-0 inset-y-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none"></div>
+                    </div>
+
+                    <div className="relative z-10 w-full max-w-2xl text-center">
+                        <div className="mb-10 inline-block p-8 bg-white/5 backdrop-blur-3xl rounded-[40px] border border-white/10 shadow-2xl animate-float">
+                            <Logo className="w-48 h-48 text-primary" />
+                        </div>
+
+                        <div className="space-y-6">
+                            <h1 className="text-6xl font-black text-white leading-[1.1] tracking-tight">
+                                Transforme sua <br />
+                                <span className="text-primary italic">gestão de escalas</span>
+                            </h1>
+                            <p className="text-xl text-slate-400 font-medium max-w-lg mx-auto leading-relaxed">
+                                A solução completa para plantões médicos, automação de trocas e controle financeiro integrado.
+                            </p>
+                        </div>
+
+                        <div className="mt-16 grid grid-cols-2 gap-8 text-left">
+                            <div className="flex items-start gap-4">
+                                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0 border border-primary/20">
+                                    <ShieldCheck className="text-primary" size={24} />
+                                </div>
+                                <div>
+                                    <h4 className="text-lg font-bold text-white">Segurança Total</h4>
+                                    <p className="text-sm text-slate-500">Dados criptografados e controle de acesso rigoroso.</p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-4">
+                                <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center shrink-0 border border-amber-500/20">
+                                    <Sparkles className="text-amber-500" size={24} />
+                                </div>
+                                <div>
+                                    <h4 className="text-lg font-bold text-white">Automático</h4>
+                                    <p className="text-sm text-slate-500">Regras de repasse e trocas validadas por IA.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Branding Watermark */}
+                    <div className="absolute bottom-10 left-12 flex items-center gap-2">
+                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                        </div>
+                        <span className="text-white/20 font-black tracking-widest text-sm uppercase">NexaEscala • 2024</span>
+                    </div>
+                </div>
+
+                {/* Form Right Side */}
+                <div className="w-full lg:w-5/12 flex items-center justify-center p-8 lg:p-16 relative bg-white dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800">
+                    <div className="w-full max-w-md h-full flex flex-col justify-center">
+                        {/* Mobile-only logo */}
+                        <div className="lg:hidden flex justify-center mb-10">
+                            <Logo className="w-20 h-20 text-primary" />
+                        </div>
+
+                        {renderAuthForm()}
+
+                        <div className="mt-auto pt-10 text-center">
+                            <button
+                                onClick={() => navigate('/suporte')}
+                                className="inline-flex items-center gap-2 text-xs font-black text-slate-400 hover:text-primary transition-all uppercase tracking-[0.2em]"
+                            >
+                                <MessageSquare size={14} />
+                                Suporte Especializado
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Default Mobile-Responsive Layout
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
             {/* Background Elements */}
-            <div className="absolute inset-0 z-0">
-                <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] bg-emerald-400/20 dark:bg-emerald-900/10 rounded-full blur-[120px] animate-pulse-slow"></div>
-                <div className="absolute top-[40%] -right-[10%] w-[60%] h-[60%] bg-blue-400/20 dark:bg-blue-900/10 rounded-full blur-[120px] animate-pulse-slow delay-1000"></div>
-                <div className="absolute -bottom-[20%] left-[20%] w-[50%] h-[50%] bg-teal-400/20 dark:bg-teal-900/10 rounded-full blur-[100px] animate-pulse-slow delay-2000"></div>
+            <div className="absolute inset-0 z-0 opacity-50">
+                <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] bg-emerald-400/20 rounded-full blur-[120px] animate-pulse-slow"></div>
+                <div className="absolute -bottom-[20%] right-[20%] w-[50%] h-[50%] bg-blue-400/20 rounded-full blur-[100px] animate-pulse-slow delay-2000"></div>
             </div>
 
-            <div className="max-w-md w-full backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border border-white/50 dark:border-slate-700/50 rounded-3xl shadow-2xl shadow-slate-200/50 dark:shadow-black/50 overflow-hidden relative z-10 animate-fade-in-up">
-
-                {/* Header */}
-                <div className="pt-10 pb-6 px-8 text-center">
-                    <div className="flex justify-center mb-6">
-                        <img
-                            src={LOGO_LIGHT}
-                            alt="NexaEscala"
-                            className="w-40 h-40 object-contain dark:hidden transform hover:scale-105 transition-transform duration-500"
-                        />
-                        <img
-                            src={LOGO_DARK}
-                            alt="NexaEscala"
-                            className="w-40 h-40 object-contain hidden dark:block transform hover:scale-105 transition-transform duration-500"
-                        />
-                    </div>
-
-                    <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-slate-900 via-emerald-800 to-slate-900 dark:from-white dark:via-emerald-400 dark:to-white tracking-tight mb-2">
-                        NexaEscala
-                    </h1>
-                    <p className="text-slate-500 dark:text-slate-400 font-medium">
-                        Gestão inteligente para sua equipe
-                    </p>
+            <div className="max-w-md w-full backdrop-blur-2xl bg-white/90 dark:bg-slate-900/90 border border-white/50 dark:border-slate-700/50 rounded-[2.5rem] shadow-2xl p-8 lg:p-12 relative z-10 animate-fade-in-up">
+                <div className="flex justify-center mb-8">
+                    <Logo className="w-24 h-24 text-primary" />
                 </div>
+                {renderAuthForm()}
 
-                {/* Form Section */}
-                <div className="p-8 pt-2">
-                    <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-6 text-center">
-                        {forgotPassword ? 'Recuperar Acesso' : (isSignUp ? 'Criar Nova Conta' : 'Acesse sua conta')}
-                    </h2>
-
-                    {/* Error Alert */}
-                    {error && (
-                        <div className="mb-4 p-4 bg-red-50/80 dark:bg-red-900/20 border border-red-100 dark:border-red-800/30 text-red-600 dark:text-red-400 text-sm rounded-xl flex items-start gap-3 animate-shake">
-                            <AlertCircle size={20} className="shrink-0 mt-0.5" />
-                            <span>{error}</span>
-                        </div>
-                    )}
-
-                    {/* Success Alert */}
-                    {successMessage && (
-                        <div className="mb-4 p-4 bg-emerald-50/80 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 text-emerald-600 dark:text-emerald-400 text-sm rounded-xl flex items-start gap-3 animate-fade-in">
-                            <CheckCircle size={20} className="shrink-0 mt-0.5" />
-                            <span>{successMessage}</span>
-                        </div>
-                    )}
-
-                    {/* Forgot Password Flow */}
-                    {forgotPassword ? (
-                        <form onSubmit={handleForgotPassword} className="space-y-4">
-                            <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-4 leading-relaxed">
-                                Digite seu email cadastrado para receber as instruções de recuperação de senha.
-                            </p>
-                            <div className="group">
-                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1.5 ml-1">Email</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors group-focus-within:text-emerald-500">
-                                        <Mail size={18} className="text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
-                                    </div>
-                                    <input
-                                        type="email"
-                                        required
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full pl-11 p-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 font-medium"
-                                        placeholder="seu@email.com"
-                                    />
-                                </div>
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2"
-                            >
-                                {loading ? <Loader className="animate-spin" size={20} /> : 'Enviar Link de Recuperação'}
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => { setForgotPassword(false); setError(null); setSuccessMessage(null); }}
-                                className="w-full py-3 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium transition-colors text-sm"
-                            >
-                                Voltar ao Login
-                            </button>
-                        </form>
-                    ) : (
-                        <form onSubmit={handleAuth} className="space-y-4">
-                            {/* Sign Up Name Field */}
-                            {isSignUp && (
-                                <div className="animate-fade-in-up group">
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1.5 ml-1">Nome Completo</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={fullName}
-                                        onChange={(e) => setFullName(e.target.value)}
-                                        className="w-full p-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 font-medium"
-                                        placeholder="Ex: Ana Silva"
-                                    />
-                                </div>
-                            )}
-
-                            {/* Email Field */}
-                            <div className="group">
-                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1.5 ml-1">Email</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                        <Mail size={18} className="text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
-                                    </div>
-                                    <input
-                                        type="email"
-                                        required
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full pl-11 p-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 font-medium"
-                                        placeholder="seu@email.com"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Password Field */}
-                            <div className="group">
-                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1.5 ml-1">Senha</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                        <Lock size={18} className="text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
-                                    </div>
-                                    <input
-                                        type={showPassword ? 'text' : 'password'}
-                                        required
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        onFocus={() => isSignUp && setShowPasswordHints(true)}
-                                        onBlur={() => setShowPasswordHints(false)}
-                                        className="w-full pl-11 pr-11 p-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 font-medium"
-                                        placeholder="••••••"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-                                    >
-                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                    </button>
-                                </div>
-
-                                {/* Password Strength Requirements */}
-                                {isSignUp && showPasswordHints && (
-                                    <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-xl space-y-2 animate-fade-in-up">
-                                        <PasswordRequirement met={passwordStrength.hasMinLength} text="Mínimo 8 caracteres" />
-                                        <PasswordRequirement met={passwordStrength.hasUppercase} text="Letra maiúscula" />
-                                        <PasswordRequirement met={passwordStrength.hasLowercase} text="Letra minúscula" />
-                                        <PasswordRequirement met={passwordStrength.hasSpecialChar} text="Caractere especial" />
-                                    </div>
-                                )}
-
-                                {/* EULA & Terms Checkbox (Only for Sign Up) */}
-                                {isSignUp && (
-                                    <div className="mt-4 flex items-start gap-3 animate-fade-in-up px-1">
-                                        <div className="flex h-5 items-center">
-                                            <input
-                                                id="terms-checkbox"
-                                                name="terms"
-                                                type="checkbox"
-                                                checked={acceptedTerms}
-                                                onChange={(e) => setAcceptedTerms(e.target.checked)}
-                                                className="h-5 w-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-800 dark:ring-offset-slate-900 cursor-pointer accent-emerald-600"
-                                            />
-                                        </div>
-                                        <div className="text-xs leading-5">
-                                            <label htmlFor="terms-checkbox" className="font-medium text-slate-600 dark:text-slate-400 select-none cursor-pointer">
-                                                Li e concordo com os{' '}
-                                                <a href="/privacy" target="_blank" className="font-bold text-emerald-600 hover:text-emerald-500 hover:underline transition-colors">Termos de Uso</a>
-                                                {' '}e{' '}
-                                                <a href="/privacy" target="_blank" className="font-bold text-emerald-600 hover:text-emerald-500 hover:underline transition-colors">Política de Privacidade</a>
-                                                .
-                                            </label>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Forgot Password Link */}
-                                {!isSignUp && !forgotPassword && (
-                                    <div className="flex justify-end mt-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => { setForgotPassword(true); setError(null); setSuccessMessage(null); }}
-                                            className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-500 dark:hover:text-emerald-400 transition-colors"
-                                        >
-                                            Esqueceu a senha?
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Main Action Button */}
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className={`w-full py-3.5 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 
-                                    ${loading || (isSignUp && !acceptedTerms)
-                                        ? 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed text-slate-500 dark:text-slate-400 shadow-none'
-                                        : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/30 hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:translate-y-0'
-                                    }`}
-                            >
-                                {loading ? <Loader className="animate-spin" size={20} /> : (isSignUp ? 'Criar Conta' : 'Entrar')}
-                            </button>
-                        </form>
-                    )}
-
-                    {/* Divider */}
-                    {!forgotPassword && (
-                        <div className="flex items-center my-6">
-                            <div className="flex-1 border-t border-slate-200 dark:border-slate-700"></div>
-                            <span className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wide">ou</span>
-                            <div className="flex-1 border-t border-slate-200 dark:border-slate-700"></div>
-                        </div>
-                    )}
-
-                    {/* OAuth Logins */}
-                    {!forgotPassword && (
-                        <div className="space-y-3">
-                            {/* Google Login */}
-                            <button
-                                onClick={handleGoogleLogin}
-                                disabled={loading}
-                                className="w-full py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-750 hover:border-slate-300 dark:hover:border-slate-600 transition-all flex items-center justify-center gap-3 shadow-sm hover:shadow"
-                            >
-                                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                                </svg>
-                                Continuar com Google
-                            </button>
-
-                            {/* Apple Login */}
-                            <button
-                                onClick={handleAppleLogin}
-                                disabled={loading}
-                                className="w-full py-3.5 bg-black text-white font-semibold rounded-xl hover:bg-slate-900 transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg"
-                            >
-                                <svg className="w-5 h-5 fill-current" viewBox="0 0 384 512">
-                                    <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 21.8-88.5 21.8-11.4 0-51.1-20.8-83.6-20.8-44.1 0-93.7 32.7-115.1 76-24.8 49.3-15.6 131.7 19.5 204.6 15.6 32.5 40.5 68.3 75.2 68.3 31.4 0 46.5-21.7 89.2-21.7 41.6 0 54.4 21.7 89.2 21.7 35.5 0 57.6-31.1 77.2-61.9 22-31.7 31-62.4 31.3-63.9-.8-.4-60.6-23.3-60.6-94.8zm-51.1-131c3.8-31.5-13.8-63.8-40.7-80.1-5.1-3-11.1-5.3-16.7-6.5-2.8-5.3-6.5-10.4-11.1-14.9-20.2-19.8-51.9-20.7-72.1-12.7-2.6 1.1-4.9 2.4-7.1 3.9 33.7 33.7 26.5 83.9 2.4 115 28.5 3.3 58.7-10.8 77.7-33.8 11.5-13.9 17.6-31.5 17.6-50.9z" />
-                                </svg>
-                                Continuar com Apple
-                            </button>
-                        </div>
-                    )}
-
-                    {/* Toggle Sign Up / Sign In */}
-                    {!forgotPassword && (
-                        <div className="mt-8 text-center">
-                            <button
-                                onClick={() => {
-                                    setIsSignUp(!isSignUp);
-                                    setError(null);
-                                }}
-                                className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
-                            >
-                                {isSignUp ? 'Já tem uma conta? ' : 'Ainda não tem conta? '}
-                                <span className="font-bold underline decoration-2 decoration-transparent hover:decoration-current transition-all">
-                                    {isSignUp ? 'Faça Login' : 'Cadastre-se'}
-                                </span>
-                            </button>
-                        </div>
-                    )}
+                <div className="mt-8 text-center pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button
+                        onClick={() => navigate('/suporte')}
+                        className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-primary transition-colors"
+                    >
+                        Precisa de Ajuda?
+                    </button>
                 </div>
-
-                {/* Decorative bottom bar */}
-                <div className="h-1.5 w-full bg-linear-to-r from-emerald-500 via-teal-500 to-emerald-500"></div>
-            </div>
-
-            {/* Support Link */}
-            <div className="absolute bottom-10 left-0 right-0 text-center z-10">
-                <button
-                    onClick={() => navigate('/suporte')}
-                    className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-emerald-500 dark:text-slate-500 dark:hover:text-emerald-400 transition-all uppercase tracking-widest bg-white/50 dark:bg-slate-900/50 px-6 py-2.5 rounded-full border border-white/50 dark:border-slate-800/50 backdrop-blur-sm shadow-sm"
-                >
-                    <MessageSquare size={14} />
-                    Precisa de ajuda? Fale conosco
-                </button>
             </div>
         </div>
     );

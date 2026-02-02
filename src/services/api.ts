@@ -871,95 +871,186 @@ export const createShiftPresetsBulk = async (groupId: string, presets: Omit<Shif
     return data as ShiftPreset[];
 };
 
+export const syncShiftPresets = async (groupId: string, presets: ShiftPreset[]): Promise<void> => {
+    // 1. Get current presets
+    const { data: currentPresets, error: fetchError } = await supabase
+        .from('shift_presets')
+        .select('*')
+        .eq('group_id', groupId);
+
+    if (fetchError) throw fetchError;
+
+    const incomingIds = new Set(presets.filter(p => p.id && typeof p.id === 'string' && !p.id.startsWith('temp-')).map(p => p.id));
+
+    // 2. Delete removed
+    const toDelete = currentPresets?.filter(p => !incomingIds.has(p.id)) || [];
+    if (toDelete.length > 0) {
+        const { error: deleteError } = await supabase.from('shift_presets').delete().in('id', toDelete.map(p => p.id));
+        if (deleteError) throw deleteError;
+    }
+
+    // 3. Separate into Inserts and Updates to avoid bulk-upsert key mismatch (null ID error)
+    const toInsert: any[] = [];
+    const toUpdate: any[] = [];
+
+    presets.forEach(p => {
+        const item: any = {
+            group_id: groupId,
+            code: p.code,
+            start_time: p.start_time,
+            end_time: p.end_time,
+            quantity_needed: Number(p.quantity_needed) || 1,
+            days_of_week: p.days_of_week || [0, 1, 2, 3, 4, 5, 6]
+        };
+
+        if (p.id && typeof p.id === 'string' && !p.id.startsWith('temp-')) {
+            item.id = p.id;
+            toUpdate.push(item);
+        } else {
+            toInsert.push(item);
+        }
+    });
+
+    // 4. Perform Insert
+    if (toInsert.length > 0) {
+        const { error: insertError } = await supabase
+            .from('shift_presets')
+            .insert(toInsert);
+        if (insertError) throw insertError;
+    }
+
+    // 5. Perform Update
+    if (toUpdate.length > 0) {
+        const { error: updateError } = await supabase
+            .from('shift_presets')
+            .upsert(toUpdate);
+        if (updateError) throw updateError;
+    }
+};
+
 // Regenerate shifts for a specific month based on current presets
 export const regenerateShiftsForMonth = async (
     groupId: string,
     date: Date,
-    presets?: ShiftPreset[] // Optimization: Allow passing presets if already fetched
+    presets?: ShiftPreset[]
 ): Promise<void> => {
     const year = date.getFullYear();
     const month = date.getMonth();
 
-    // 1. Get current presets (if not provided)
-    const currentPresets = presets || await getShiftPresets(groupId);
-
-    if (currentPresets.length === 0) {
-        // If no presets, we might need to clear shifts that are purely generated?
-        // But for safety, let's just return.
-        console.warn('No presets found for group', groupId);
-        return;
+    // 1. Ensure presets are synced if provided
+    if (presets) {
+        await syncShiftPresets(groupId, presets);
     }
 
-    // 2. Calculate month range
+    const currentPresets = presets || await getShiftPresets(groupId);
+    if (currentPresets.length === 0) return;
+
+    // 2. Range
     const startDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
     const lastDay = new Date(year, month + 1, 0).getDate();
     const endDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 
-    // 3. Get existing shifts for this month efficienty (including check for assignments)
-    // We only need to delete shifts that:
-    // a) Are NOT individual scales
-    // b) Have NO assignments
-    // c) (Implicitly) Assuming we want to rebuild the schedule.
-
+    // 3. Fetch ALL shifts for this month
     const { data: existingShifts, error: fetchError } = await supabase
         .from('shifts')
-        .select(`
-            id, 
-            date, 
-            is_individual,
-            shift_assignments(id) 
-        `)
+        .select(`*, shift_assignments(id)`)
         .eq('group_id', groupId)
         .gte('date', startDate)
         .lte('date', endDate);
 
     if (fetchError) throw fetchError;
 
-    const existingDates = new Set<string>();
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    const handledShifts = new Set<string>();
     const shiftsToDelete: string[] = [];
+    const shiftsToUpdate: any[] = [];
 
-    if (existingShifts) {
-        existingShifts.forEach((s: any) => {
-            existingDates.add(s.date);
+    for (const shift of (existingShifts || [])) {
+        const preset = currentPresets.find(p => p.code === shift.code);
 
-            // Criteria to delete: Not individual AND No Assignments
-            if (!s.is_individual && (!s.shift_assignments || s.shift_assignments.length === 0)) {
-                shiftsToDelete.push(s.id);
-            } else {
-                // If we keep it, we shouldn't overwrite it later
-                // The generate function checks existing dates. 
-                // However, we just marked this date as having an existing shift.
-                // If we delete it, we should REMOVE it from existingDates set so it can be regenerated?
-                // YES.
+        if (!preset) {
+            // Preset no longer exists - delete if no assignments
+            if (!shift.shift_assignments || shift.shift_assignments.length === 0) {
+                shiftsToDelete.push(shift.id);
             }
-        });
+            continue;
+        }
 
-        // Remove deleted shifts from the "existingDates" set so they get regenerated
-        // Wait, existingDates logic in generateShiftsForGroup skips generation if date exists.
-        // So if we delete a shift on date X, we must ensure X is NOT in existingDates passed to generate.
+        // Check if day is valid for this preset
+        const d = new Date(shift.date + 'T12:00:00');
+        const dayOfWeek = d.getDay();
 
-        // Let's refine existingDates: it should contain dates of shifts that will REMAIN.
-        existingDates.clear();
-        existingShifts.forEach((s: any) => {
-            const willDelete = !s.is_individual && (!s.shift_assignments || s.shift_assignments.length === 0);
-            if (!willDelete) {
-                existingDates.add(s.date);
+        if (preset.days_of_week && !preset.days_of_week.includes(dayOfWeek)) {
+            // Shift shouldn't exist - delete if no assignments
+            if (!shift.shift_assignments || shift.shift_assignments.length === 0) {
+                shiftsToDelete.push(shift.id);
+                continue;
             }
-        });
+        }
+
+        // Update if in future/today
+        if (shift.date >= todayStr) {
+            shiftsToUpdate.push({
+                id: shift.id,
+                group_id: groupId,
+                date: shift.date,
+                code: preset.code,
+                start_time: preset.start_time,
+                end_time: preset.end_time,
+                quantity_needed: preset.quantity_needed || 1,
+                is_published: shift.is_published
+            });
+        }
+
+        handledShifts.add(`${shift.date}_${shift.code}`);
     }
 
-    // 4. Delete unused shifts in parallel with generation preparations
-    const deletePromise = shiftsToDelete.length > 0
-        ? supabase.from('shifts').delete().in('id', shiftsToDelete)
-        : Promise.resolve({ error: null });
+    // Execute batch delete
+    if (shiftsToDelete.length > 0) {
+        const { error: deleteError } = await supabase.from('shifts').delete().in('id', shiftsToDelete);
+        if (deleteError) throw deleteError;
+    }
 
-    // 5. Generate new shifts for the month
-    // We pass existingDates to avoid re-fetching them
-    const generatePromise = generateShiftsForGroup(groupId, [{ year, month }], currentPresets, 1, existingDates);
+    // Execute batch update via upsert
+    if (shiftsToUpdate.length > 0) {
+        const { error: updateError } = await supabase.from('shifts').upsert(shiftsToUpdate);
+        if (updateError) throw updateError;
+    }
 
-    const [{ error: deleteError }] = await Promise.all([deletePromise, generatePromise]);
+    // 4. Create missing shifts
+    const days = Array.from({ length: lastDay }, (_, i) => {
+        const d = new Date(year, month, i + 1);
+        return d.toISOString().split('T')[0];
+    });
 
-    if (deleteError) throw deleteError;
+    const newShifts = [];
+    for (const day of days) {
+        if (day < todayStr) continue;
+
+        for (const preset of currentPresets) {
+            if (handledShifts.has(`${day}_${preset.code}`)) continue;
+
+            const d = new Date(day + 'T12:00:00');
+            const dayOfWeek = d.getDay();
+            if (preset.days_of_week && !preset.days_of_week.includes(dayOfWeek)) continue;
+
+            newShifts.push({
+                group_id: groupId,
+                date: day,
+                code: preset.code,
+                start_time: preset.start_time,
+                end_time: preset.end_time,
+                quantity_needed: preset.quantity_needed || 1,
+                is_published: false
+            });
+        }
+    }
+
+    if (newShifts.length > 0) {
+        const { error: insertError } = await supabase.from('shifts').insert(newShifts);
+        if (insertError) throw insertError;
+    }
 };
 
 // --- SERVICE CREATION (Enhanced) ---
