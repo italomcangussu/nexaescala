@@ -16,6 +16,7 @@
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		8FFB44872F30D444009E5694 /* Capacitor in Frameworks */ = {isa = PBXBuildFile; productRef = 8FFB44862F30D444009E5694 /* Capacitor */; };
 		8FFB44892F30D444009E5694 /* Cordova in Frameworks */ = {isa = PBXBuildFile; productRef = 8FFB44882F30D444009E5694 /* Cordova */; };
+		8FFB448C2F30D555009E5694 /* CapacitorCommunityAppleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 8FFB448B2F30D555009E5694 /* CapacitorCommunityAppleSignIn */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -69,6 +70,7 @@
 			files = (
 				8FFB44872F30D444009E5694 /* Capacitor in Frameworks */,
 				8FFB44892F30D444009E5694 /* Cordova in Frameworks */,
+				8FFB448C2F30D555009E5694 /* CapacitorCommunityAppleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -146,6 +148,11 @@
 			dependencies = (
 			);
 			name = com.nexaescala.app;
+			packageProductDependencies = (
+				8FFB44862F30D444009E5694 /* Capacitor */,
+				8FFB44882F30D444009E5694 /* Cordova */,
+				8FFB448B2F30D555009E5694 /* CapacitorCommunityAppleSignIn */,
+			);
 			productName = App;
 			productReference = 504EC3041FED79650016851F /* com.nexaescala.app.app */;
 			productType = "com.apple.product-type.application";
@@ -178,6 +185,7 @@
 			mainGroup = 504EC2FB1FED79650016851F;
 			packageReferences = (
 				8FFB44852F30D444009E5694 /* XCRemoteSwiftPackageReference "capacitor-swift-pm" */,
+				8FFB448A2F30D555009E5694 /* XCRemoteSwiftPackageReference "apple-sign-in" */,
 			);
 			productRefGroup = 504EC3051FED79650016851F /* Products */;
 			projectDirPath = "";
@@ -438,6 +446,14 @@
 				minimumVersion = 8.0.0;
 			};
 		};
+		8FFB448A2F30D555009E5694 /* XCRemoteSwiftPackageReference "apple-sign-in" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/capacitor-community/apple-sign-in.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -450,6 +466,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 8FFB44852F30D444009E5694 /* XCRemoteSwiftPackageReference "capacitor-swift-pm" */;
 			productName = Cordova;
+		};
+		8FFB448B2F30D555009E5694 /* CapacitorCommunityAppleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8FFB448A2F30D555009E5694 /* XCRemoteSwiftPackageReference "apple-sign-in" */;
+			productName = CapacitorCommunityAppleSignIn;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
