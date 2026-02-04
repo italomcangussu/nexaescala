@@ -16,7 +16,7 @@
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		8FFB44872F30D444009E5694 /* Capacitor in Frameworks */ = {isa = PBXBuildFile; productRef = 8FFB44862F30D444009E5694 /* Capacitor */; };
 		8FFB44892F30D444009E5694 /* Cordova in Frameworks */ = {isa = PBXBuildFile; productRef = 8FFB44882F30D444009E5694 /* Cordova */; };
-		8FFB448C2F30D555009E5694 /* CapacitorCommunityAppleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 8FFB448B2F30D555009E5694 /* CapacitorCommunityAppleSignIn */; };
+		8FFB448D2F30D666009E5694 /* SignInWithApplePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FFB448E2F30D666009E5694 /* SignInWithApplePlugin.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -57,6 +57,7 @@
 		8F020D6B2F2940FF0061254E /* Podfile 3 */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Podfile 3"; sourceTree = "<group>"; };
 		8F7DB4E72F27D20800FEA6E3 /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
 		8F7DB4F82F27D7DD00FEA6E3 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
+		8FFB448E2F30D666009E5694 /* SignInWithApplePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInWithApplePlugin.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -70,7 +71,6 @@
 			files = (
 				8FFB44872F30D444009E5694 /* Capacitor in Frameworks */,
 				8FFB44892F30D444009E5694 /* Cordova in Frameworks */,
-				8FFB448C2F30D555009E5694 /* CapacitorCommunityAppleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -113,6 +113,7 @@
 				8F7DB4F82F27D7DD00FEA6E3 /* App.entitlements */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
+				8FFB448E2F30D666009E5694 /* SignInWithApplePlugin.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
@@ -151,7 +152,6 @@
 			packageProductDependencies = (
 				8FFB44862F30D444009E5694 /* Capacitor */,
 				8FFB44882F30D444009E5694 /* Cordova */,
-				8FFB448B2F30D555009E5694 /* CapacitorCommunityAppleSignIn */,
 			);
 			productName = App;
 			productReference = 504EC3041FED79650016851F /* com.nexaescala.app.app */;
@@ -185,7 +185,6 @@
 			mainGroup = 504EC2FB1FED79650016851F;
 			packageReferences = (
 				8FFB44852F30D444009E5694 /* XCRemoteSwiftPackageReference "capacitor-swift-pm" */,
-				8FFB448A2F30D555009E5694 /* XCRemoteSwiftPackageReference "apple-sign-in" */,
 			);
 			productRefGroup = 504EC3051FED79650016851F /* Products */;
 			projectDirPath = "";
@@ -218,6 +217,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
+				8FFB448D2F30D666009E5694 /* SignInWithApplePlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -446,14 +446,6 @@
 				minimumVersion = 8.0.0;
 			};
 		};
-		8FFB448A2F30D555009E5694 /* XCRemoteSwiftPackageReference "apple-sign-in" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/capacitor-community/apple-sign-in.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 7.0.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -466,11 +458,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 8FFB44852F30D444009E5694 /* XCRemoteSwiftPackageReference "capacitor-swift-pm" */;
 			productName = Cordova;
-		};
-		8FFB448B2F30D555009E5694 /* CapacitorCommunityAppleSignIn */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8FFB448A2F30D555009E5694 /* XCRemoteSwiftPackageReference "apple-sign-in" */;
-			productName = CapacitorCommunityAppleSignIn;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
