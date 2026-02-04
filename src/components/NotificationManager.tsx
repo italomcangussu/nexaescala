@@ -230,9 +230,9 @@ const NotificationManager: React.FC = () => {
 
                 <button
                     onClick={handleRequestPermission}
-                    className="w-full py-2.5 bg-primary text-white font-bold text-xs rounded-xl hover:bg-primaryDark transition-colors shadow-lg shadow-emerald-200/50 dark:shadow-none"
+                    className="w-full py-4 bg-primary text-white font-bold text-sm rounded-2xl hover:bg-primaryDark transition-all active:scale-[0.98] shadow-lg shadow-emerald-200/50 dark:shadow-none"
                 >
-                    Sim, permitir notificações
+                    Ativar Notificações
                 </button>
             </div>
         </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Profile } from '../types';
-import { X, Camera, Save } from 'lucide-react';
+import { X, Camera, Save, Image as ImageIcon } from 'lucide-react';
+import PermissionSoftPrompt from './PermissionSoftPrompt';
 
 const InputGroup = ({ label, value, onChange, textarea, icon }: any) => (
   <div>
@@ -37,6 +38,8 @@ interface EditProfileModalProps {
 
 const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, onSave }) => {
   const [formData, setFormData] = useState<Profile>(profile);
+  const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleChange = (field: keyof Profile, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -47,8 +50,38 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
     onSave(formData);
   };
 
+  const handlePhotoClick = () => {
+    const hasPermission = localStorage.getItem('nexa_photo_permission_granted');
+    if (!hasPermission) {
+      setShowPermissionPrompt(true);
+    } else {
+      fileInputRef.current?.click();
+    }
+  };
+
+  const handlePermissionConfirm = () => {
+    localStorage.setItem('nexa_photo_permission_granted', 'true');
+    setShowPermissionPrompt(false);
+    setTimeout(() => {
+      fileInputRef.current?.click();
+    }, 300);
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // In a real app, you would upload to Supabase here. 
+      // For now we'll just show the preview to stay within scope of the permission request task.
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, avatar_url: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4">
+    <div className="fixed inset-0 z-70 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4">
       <div className="bg-white dark:bg-slate-900 w-full max-w-lg h-[90vh] sm:h-auto sm:max-h-[85vh] sm:rounded-3xl rounded-t-3xl overflow-hidden flex flex-col shadow-2xl animate-fade-in-up transition-colors">
 
         {/* Header */}
@@ -62,9 +95,18 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
         {/* Scrollable Form */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/50 dark:bg-slate-950/50 transition-colors">
 
-          {/* Avatar Change */}
           <div className="flex flex-col items-center">
-            <div className="relative group cursor-pointer">
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/*"
+              onChange={handleFileChange}
+            />
+            <div
+              onClick={handlePhotoClick}
+              className="relative group cursor-pointer"
+            >
               <img src={formData.avatar_url} alt="Profile" className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-slate-800 shadow-sm transition-colors" />
               <div className="absolute inset-0 bg-black/30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Camera className="text-white" />
@@ -73,7 +115,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
                 <Edit2Icon size={12} />
               </div>
             </div>
-            <p className="text-xs text-primary dark:text-primaryLight font-bold mt-2">Alterar foto</p>
+            <p onClick={handlePhotoClick} className="text-xs text-primary dark:text-primaryLight font-bold mt-2 cursor-pointer">Alterar foto</p>
           </div>
 
           <form id="edit-profile-form" onSubmit={handleSubmit} className="space-y-4">
@@ -135,6 +177,15 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
         </div>
 
       </div>
+      <PermissionSoftPrompt
+        isOpen={showPermissionPrompt}
+        onClose={() => setShowPermissionPrompt(false)}
+        onConfirm={handlePermissionConfirm}
+        title="Acesso à Galeria e Câmera"
+        description="Para que você possa personalizar seu perfil com uma foto, o NexaEscala precisa de acesso à sua galeria ou câmera."
+        icon={ImageIcon}
+        confirmText="Permitir Acesso"
+      />
     </div>
   );
 };

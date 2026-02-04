@@ -10,15 +10,17 @@ import {
     Stethoscope,
     CheckCircle,
     Loader,
-    Sparkles
+    Sparkles,
+    Image as ImageIcon
 } from 'lucide-react';
+import PermissionSoftPrompt from './PermissionSoftPrompt';
 
 // Logo URLs from Supabase Storage
 const LOGO_LIGHT = 'https://vjlcfkkyfeteljutwfet.supabase.co/storage/v1/object/public/logo/logo1.PNG';
 const LOGO_DARK = 'https://vjlcfkkyfeteljutwfet.supabase.co/storage/v1/object/public/logo/logo2.PNG';
 
 interface OnboardingWizardProps {
-    user: { id: string; email?: string };
+    user: any;
     initialProfile?: Partial<Profile>;
     onComplete: () => void;
 }
@@ -73,6 +75,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
     const [specialty, setSpecialty] = useState(initialProfile?.specialty || '');
     const [avatarPreview, setAvatarPreview] = useState<string | null>(initialProfile?.avatar_url || null);
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
+    const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -102,6 +105,26 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
         } catch (err) {
             setError('Erro ao carregar imagem');
         }
+    };
+
+    const handlePhotoClick = () => {
+        // Check if we've already shown the prompt
+        const hasPermission = localStorage.getItem('nexa_photo_permission_granted');
+
+        if (!hasPermission) {
+            setShowPermissionPrompt(true);
+        } else {
+            fileInputRef.current?.click();
+        }
+    };
+
+    const handlePermissionConfirm = () => {
+        localStorage.setItem('nexa_photo_permission_granted', 'true');
+        setShowPermissionPrompt(false);
+        // Small delay to ensure modal close animation doesn't jitter with file picker open
+        setTimeout(() => {
+            fileInputRef.current?.click();
+        }, 300);
     };
 
     const handleNext = async () => {
@@ -259,7 +282,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
                         />
 
                         <div
-                            onClick={() => fileInputRef.current?.click()}
+                            onClick={handlePhotoClick}
                             className="relative mx-auto w-32 h-32 rounded-full bg-slate-100 dark:bg-slate-700 border-4 border-white dark:border-slate-600 shadow-lg cursor-pointer group overflow-hidden"
                         >
                             {avatarPreview ? (
@@ -275,7 +298,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
                         </div>
 
                         <button
-                            onClick={() => fileInputRef.current?.click()}
+                            onClick={handlePhotoClick}
                             className="mt-4 text-sm font-semibold text-primary hover:underline"
                         >
                             {avatarPreview ? 'Alterar foto' : 'Escolher foto'}
@@ -383,6 +406,16 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
                     )}
                 </div>
             </div>
+
+            <PermissionSoftPrompt
+                isOpen={showPermissionPrompt}
+                onClose={() => setShowPermissionPrompt(false)}
+                onConfirm={handlePermissionConfirm}
+                title="Acesso à Galeria e Câmera"
+                description="Para que você possa personalizar seu perfil com uma foto, o NexaEscala precisa de acesso à sua galeria ou câmera."
+                icon={ImageIcon}
+                confirmText="Permitir Acesso"
+            />
         </div>
     );
 };
