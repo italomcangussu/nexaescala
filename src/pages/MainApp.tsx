@@ -492,7 +492,7 @@ const Dashboard: React.FC = () => {
 
       {/* FAB Overlay (Animated) */}
       {isFabOpen && (
-        <div className="fixed inset-0 z-100 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl flex flex-col items-center justify-center animate-fade-in-up">
+        <div className="fixed inset-0 z-[100] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl flex flex-col items-center justify-center animate-fade-in-up">
           <button onClick={() => setIsFabOpen(false)} className="absolute top-6 left-6 p-2 bg-gray-100 dark:bg-slate-800 rounded-full">
             <X size={24} className="text-slate-500" />
           </button>

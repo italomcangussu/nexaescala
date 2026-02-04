@@ -53,24 +53,5 @@
 	<string>O NexaEscala precisa acessar sua câmera para tirar uma foto de perfil.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>O NexaEscala precisa acessar suas fotos para escolher uma foto de perfil.</string>
-	<key>UIApplicationSceneManifest</key>
-	<dict>
-		<key>UIApplicationSupportsMultipleScenes</key>
-		<false/>
-		<key>UISceneConfigurations</key>
-		<dict>
-			<key>UIWindowSceneSessionRoleApplication</key>
-			<array>
-				<dict>
-					<key>UISceneConfigurationName</key>
-					<string>Default Configuration</string>
-					<key>UISceneDelegateClassName</key>
-					<string>SceneDelegate</string>
-					<key>UISceneStoryboardFile</key>
-					<string>Main</string>
-				</dict>
-			</array>
-		</dict>
-	</dict>
 </dict>
 </plist>

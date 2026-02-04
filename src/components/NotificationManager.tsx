@@ -37,8 +37,15 @@ const NotificationManager: React.FC = () => {
                 if (permStatus.receive === 'granted') {
                     PushNotifications.register();
                 } else if (permStatus.receive === 'prompt') {
-                    // Show banner for native on first run or if prompt is needed
-                    const timer = setTimeout(() => setShowBanner(true), 1500); // Shorter delay than web
+                    // Apple HIG: Don't ask for notification permission on first app session.
+                    // Let the user experience the app's value first.
+                    const sessionKey = 'nexa_app_session_count';
+                    const count = parseInt(localStorage.getItem(sessionKey) || '0', 10) + 1;
+                    localStorage.setItem(sessionKey, String(count));
+
+                    if (count < 2) return; // Skip first session
+
+                    const timer = setTimeout(() => setShowBanner(true), 3000);
                     return () => clearTimeout(timer);
                 }
 
@@ -90,7 +97,14 @@ const NotificationManager: React.FC = () => {
                 if ('Notification' in window) {
                     setPermission(Notification.permission);
                     if (Notification.permission === 'default') {
-                        const timer = setTimeout(() => setShowBanner(true), 2500);
+                        // Same deferred approach for web
+                        const sessionKey = 'nexa_app_session_count';
+                        const count = parseInt(localStorage.getItem(sessionKey) || '0', 10) + 1;
+                        localStorage.setItem(sessionKey, String(count));
+
+                        if (count < 2) return;
+
+                        const timer = setTimeout(() => setShowBanner(true), 3000);
                         return () => clearTimeout(timer);
                     }
                 }

@@ -27,7 +27,7 @@ const PermissionSoftPrompt: React.FC<PermissionSoftPromptProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
             <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden animate-scale-in">
                 <div className="p-8 text-center">
                     <div className="flex justify-end -mt-4 -mr-4">
