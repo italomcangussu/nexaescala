@@ -57,8 +57,17 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Detect if user signed in with Apple
+    const isAppleUser = user?.app_metadata?.provider === 'apple'
+        || user?.identities?.some((id: any) => id.provider === 'apple');
+
+    // Resolve name from multiple sources: profile > user metadata
+    const resolvedName = initialProfile?.full_name
+        || user?.user_metadata?.full_name
+        || '';
+
     // Form State
-    const [fullName, setFullName] = useState(initialProfile?.full_name || '');
+    const [fullName, setFullName] = useState(resolvedName);
     const [crmNumber, setCrmNumber] = useState('');
     const [crmState, setCrmState] = useState('');
     const [specialty, setSpecialty] = useState(initialProfile?.specialty || '');
@@ -67,12 +76,13 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Sync fullName if initialProfile updates after mount (e.g. Apple Sign In race condition)
+    // Sync fullName if initialProfile or user metadata updates after mount (e.g. Apple Sign In race condition)
     React.useEffect(() => {
-        if (initialProfile?.full_name && !fullName) {
-            setFullName(initialProfile.full_name);
+        if (!fullName) {
+            const name = initialProfile?.full_name || user?.user_metadata?.full_name || '';
+            if (name) setFullName(name);
         }
-    }, [initialProfile?.full_name]);
+    }, [initialProfile?.full_name, user?.user_metadata?.full_name]);
 
     const steps = [
         { id: 'welcome', title: 'Bem-vindo' },
@@ -175,10 +185,12 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Nome Completo *</label>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">
+                                Nome Completo {!isAppleUser && '*'}
+                            </label>
                             <input
                                 type="text"
-                                required
+                                required={!isAppleUser}
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
                                 className="w-full p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 dark:text-slate-200"
@@ -306,7 +318,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
     };
 
     const canProceed = () => {
-        if (step === 1) return fullName.trim().length > 0;
+        if (step === 1) return isAppleUser || fullName.trim().length > 0;
         return true;
     };
 
