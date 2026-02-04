@@ -7,6 +7,7 @@ import { SignInWithApple } from '@capacitor-community/apple-sign-in';
 import { Capacitor } from '@capacitor/core';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import Logo from '../components/Logo';
+import LegalModal from '../components/LegalModal';
 
 
 
@@ -49,6 +50,10 @@ const LoginPage: React.FC = () => {
     const [forgotPassword, setForgotPassword] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [acceptedTerms, setAcceptedTerms] = useState(false);
+    const [legalModal, setLegalModal] = useState<{ isOpen: boolean; type: 'terms' | 'privacy' }>({
+        isOpen: false,
+        type: 'terms'
+    });
 
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -366,7 +371,7 @@ const LoginPage: React.FC = () => {
                                 className="mt-1 w-5 h-5 rounded-lg border-slate-300 text-primary focus:ring-primary/20 transition-all accent-primary cursor-pointer"
                             />
                             <label htmlFor="terms" className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed cursor-pointer select-none">
-                                Li e aceito os <a href="/politicas" target="_blank" className="font-bold text-primary hover:underline">Termos de Uso</a> e <a href="/politicas" target="_blank" className="font-bold text-primary hover:underline">Políticas de Privacidade</a>.
+                                Li e aceito os <button type="button" onClick={() => setLegalModal({ isOpen: true, type: 'terms' })} className="font-bold text-primary hover:underline bg-transparent border-none p-0 inline">Termos de Uso</button> e <button type="button" onClick={() => setLegalModal({ isOpen: true, type: 'privacy' })} className="font-bold text-primary hover:underline bg-transparent border-none p-0 inline">Políticas de Privacidade</button>.
                             </label>
                         </div>
                     )}
@@ -537,6 +542,12 @@ const LoginPage: React.FC = () => {
                     </button>
                 </div>
             </div>
+
+            <LegalModal
+                isOpen={legalModal.isOpen}
+                type={legalModal.type}
+                onClose={() => setLegalModal(prev => ({ ...prev, isOpen: false }))}
+            />
         </div>
     );
 };
