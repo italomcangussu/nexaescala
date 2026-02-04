@@ -159,7 +159,7 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-80 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
             <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col m-4">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
@@ -256,7 +256,7 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
 
                     {/* Form Modal */}
                     {(isAdding || editingPreset) && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in p-4">
+                        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in p-4">
                             <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col animate-scale-in">
                                 <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
                                     <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100">
