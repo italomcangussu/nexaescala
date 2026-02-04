@@ -197,7 +197,7 @@ const StepTeam: React.FC<StepTeamProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => handleAddWithRoles(profile)}
-                                    className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primaryDark transition-colors flex items-center gap-1.5"
+                                    className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-1.5"
                                 >
                                     <UserPlus size={14} />
                                     Adicionar
@@ -209,7 +209,7 @@ const StepTeam: React.FC<StepTeamProps> = ({
             )}
 
             {/* Tips */}
-            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700/50">
+            <div className="bg-surface dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700/50">
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                     <span className="font-bold text-primary">💡 Dica:</span> Cada membro pode ter múltiplas funções.
                     Clique nos badges para ativar/desativar funções. O criador sempre será ADM.

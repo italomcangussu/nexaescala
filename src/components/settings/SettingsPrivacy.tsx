@@ -22,7 +22,7 @@ const SettingsPrivacy: React.FC<SettingsPrivacyProps> = ({ onNavigate, onBack })
             <div className="space-y-3">
                 <button
                     onClick={() => onNavigate('change_password')}
-                    className="w-full bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-98 transition-all"
+                    className="w-full bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-between hover:bg-surface dark:hover:bg-slate-700 active:scale-98 transition-all"
                 >
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg"><Key size={20} /></div>
@@ -36,7 +36,7 @@ const SettingsPrivacy: React.FC<SettingsPrivacyProps> = ({ onNavigate, onBack })
 
                 <button
                     onClick={() => onNavigate('account_edit')}
-                    className="w-full bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-98 transition-all"
+                    className="w-full bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-between hover:bg-surface dark:hover:bg-slate-700 active:scale-98 transition-all"
                 >
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg"><User size={20} /></div>
@@ -50,7 +50,7 @@ const SettingsPrivacy: React.FC<SettingsPrivacyProps> = ({ onNavigate, onBack })
 
                 <button
                     onClick={() => onNavigate('privacy_policy')}
-                    className="w-full bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-98 transition-all"
+                    className="w-full bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-between hover:bg-surface dark:hover:bg-slate-700 active:scale-98 transition-all"
                 >
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg"><FileText size={20} /></div>

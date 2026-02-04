@@ -157,10 +157,10 @@ const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
 
 
     return (
-        <div className="fixed inset-0 z-[80] bg-slate-50 dark:bg-black flex flex-col animate-fade-in overflow-hidden">
+        <div className="fixed inset-0 z-80 bg-surface dark:bg-black flex flex-col animate-fade-in overflow-hidden">
 
             {/* HEADER */}
-            <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between shadow-sm z-20">
+            <div className="bg-white dark:bg-surface-dark border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between shadow-sm z-20">
                 <div>
                     <div className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase mb-1">
                         <span>Escalas</span>
@@ -194,7 +194,7 @@ const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
                         {/* Total Shifts Card */}
                         <div
                             onClick={() => setShowStatsModal(true)}
-                            className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all cursor-pointer group"
+                            className="bg-white dark:bg-surface-dark p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all cursor-pointer group"
                         >
                             <div className="flex justify-between items-start mb-4">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total de Plantões</p>
@@ -207,7 +207,7 @@ const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
                         </div>
 
                         {/* Conflicts Card */}
-                        <div className={`bg-white dark:bg-slate-900 p-6 rounded-3xl border ${conflictCount > 0 ? 'border-red-200 dark:border-red-900/50 bg-red-50/10' : 'border-slate-100 dark:border-slate-800'} shadow-sm transition-all`}>
+                        <div className={`bg-white dark:bg-surface-dark p-6 rounded-3xl border ${conflictCount > 0 ? 'border-red-200 dark:border-red-900/50 bg-red-50/10' : 'border-slate-100 dark:border-slate-800'} shadow-sm transition-all`}>
                             <div className="flex justify-between items-start mb-4">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Conflitos Encontrados</p>
                                 <div className={`p-2 rounded-xl ${conflictCount > 0 ? 'bg-red-100 text-red-500' : 'bg-slate-100 text-slate-400'}`}>
@@ -220,7 +220,7 @@ const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
                     </div>
 
                     {/* Calendar View (Centerpiece) */}
-                    <div className="md:col-span-2 lg:col-span-3 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm p-6 overflow-hidden">
+                    <div className="md:col-span-2 lg:col-span-3 bg-white dark:bg-surface-dark rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm p-6 overflow-hidden">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="font-bold text-slate-700 dark:text-slate-200">Visão Geral do Mês</h3>
                             <div className="flex gap-2">
@@ -251,7 +251,7 @@ const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
                                             aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all
                                             ${isSelected ? 'bg-slate-800 text-white shadow-lg scale-105 z-10' :
                                                 hasShifts
-                                                    ? 'bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer'
+                                                    ? 'bg-surface dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer'
                                                     : 'text-slate-300 dark:text-slate-700 cursor-default opacity-50'}
                                             ${hasConflict && !isSelected ? 'ring-2 ring-red-400 bg-red-50 dark:bg-red-900/20' : ''}
                                         `}
@@ -289,11 +289,11 @@ const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
                                 const hasConflict = conflictShiftIds.has(shift.id);
 
                                 return (
-                                    <div key={shift.id} className={`bg-white dark:bg-slate-900 rounded-3xl p-1 border transition-all ${hasConflict ? 'border-red-400 dark:border-red-500 shadow-red-100' : 'border-slate-100 dark:border-slate-800'}`}>
+                                    <div key={shift.id} className={`bg-white dark:bg-surface-dark rounded-3xl p-1 border transition-all ${hasConflict ? 'border-red-400 dark:border-red-500 shadow-red-100' : 'border-slate-100 dark:border-slate-800'}`}>
                                         {/* Shift Header */}
                                         <div className={`
                                             flex items-center justify-between p-3 rounded-2xl mb-1
-                                            ${isNight ? 'bg-slate-800 text-blue-100' : 'bg-slate-50 text-orange-600'}
+                                            ${isNight ? 'bg-slate-800 text-blue-100' : 'bg-surface text-orange-600'}
                                         `}>
                                             <div className="flex items-center gap-2">
                                                 <Icon size={14} />
@@ -345,8 +345,8 @@ const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
 
             {/* TOTAL SHIFTS DETAIL MODAL */}
             {showStatsModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
-                    <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+                <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
+                    <div className="bg-white dark:bg-surface-dark w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
                         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                             <h3 className="text-xl font-black text-slate-800 dark:text-white">Resumo de Escalação</h3>
                             <button onClick={() => setShowStatsModal(false)} className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500 hover:text-slate-800">
@@ -355,7 +355,7 @@ const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
                         </div>
                         <div className="flex-1 overflow-y-auto p-2">
                             <table className="w-full text-left border-collapse">
-                                <thead className="bg-slate-50 dark:bg-slate-800/50 sticky top-0 z-10">
+                                <thead className="bg-surface dark:bg-slate-800/50 sticky top-0 z-10">
                                     <tr>
                                         <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-wider">Profissional</th>
                                         <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-wider text-center">Manhã</th>
@@ -366,7 +366,7 @@ const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                                     {memberStats.map((stat) => (
-                                        <tr key={stat.profile.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                        <tr key={stat.profile.id} className="hover:bg-surface dark:hover:bg-slate-800/30 transition-colors">
                                             <td className="px-5 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">
@@ -412,7 +412,7 @@ const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
             )}
 
             {/* FOOTER */}
-            <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 p-4 flex justify-end gap-3 z-50">
+            <div className="bg-white/90 dark:bg-surface-dark/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 p-4 flex justify-end gap-3 z-50">
                 <button
                     onClick={onPublish}
                     className="flex items-center gap-3 px-8 py-4 bg-emerald-600 text-white rounded-2xl font-black text-sm shadow-xl shadow-emerald-200 dark:shadow-none hover:bg-emerald-500 hover:scale-[1.02] transition-all"

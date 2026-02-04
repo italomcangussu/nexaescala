@@ -193,7 +193,7 @@ const ServiceChat: React.FC<ServiceChatProps> = ({
     }
 
     return (
-        <div className="flex flex-col h-[500px] lg:h-[600px] border rounded-2xl bg-slate-50 dark:bg-slate-900 border-gray-200 dark:border-slate-800 overflow-hidden shadow-inner">
+        <div className="flex flex-col h-[500px] lg:h-[600px] border rounded-2xl bg-surface dark:bg-surface-dark border-gray-200 dark:border-slate-800 overflow-hidden shadow-inner">
 
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
@@ -230,7 +230,7 @@ const ServiceChat: React.FC<ServiceChatProps> = ({
             </div>
 
             {/* Input Area */}
-            <div className="p-3 bg-white dark:bg-slate-950 border-t border-gray-200 dark:border-slate-800 flex items-end gap-2">
+            <div className="p-3 bg-white dark:bg-background-dark border-t border-gray-200 dark:border-slate-800 flex items-end gap-2">
                 <button
                     // onClick={() => setIsOfferModalOpen(true)}
                     className="p-3 text-slate-500 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-all"
@@ -239,7 +239,7 @@ const ServiceChat: React.FC<ServiceChatProps> = ({
                     <Plus size={24} />
                 </button>
 
-                <div className="flex-1 bg-slate-100 dark:bg-slate-900 rounded-2xl flex items-center px-4 py-2 border border-transparent focus-within:border-primary/50 transition-colors">
+                <div className="flex-1 bg-slate-100 dark:bg-surface-dark rounded-2xl flex items-center px-4 py-2 border border-transparent focus-within:border-primary/50 transition-colors">
                     <textarea
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}

@@ -82,8 +82,8 @@ const ShiftInbox: React.FC<ShiftInboxProps> = ({ groupId, currentUser, groupColo
     };
 
     return (
-        <div className="flex flex-col bg-slate-50 dark:bg-slate-950">
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 sticky top-0 z-10">
+        <div className="flex flex-col bg-surface dark:bg-background-dark">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-surface-dark sticky top-0 z-10">
                 <div className="flex items-center gap-2">
                     <Bell className="text-primary" size={20} />
                     <h3 className="font-bold text-slate-800 dark:text-slate-100">Solicitações ({exchanges.length})</h3>
@@ -94,13 +94,13 @@ const ShiftInbox: React.FC<ShiftInboxProps> = ({ groupId, currentUser, groupColo
                 {loading ? (
                     <div className="text-center py-10 text-slate-400">Carregando...</div>
                 ) : exchanges.length === 0 ? (
-                    <div className="text-center py-10 text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+                    <div className="text-center py-10 text-slate-400 bg-white dark:bg-surface-dark rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
                         <Check size={40} className="mx-auto mb-2 opacity-50" />
                         <p>Tudo em dia! Nenhuma solicitação pendente.</p>
                     </div>
                 ) : (
                     exchanges.map(ex => (
-                        <div key={ex.id} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
+                        <div key={ex.id} className="bg-white dark:bg-surface-dark p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
                             {/* Type Indicator Strip */}
                             <div
                                 className={`absolute left-0 top-0 bottom-0 w-1 ${ex.type === TradeType.DIRECT_SWAP ? 'bg-blue-500' : ''}`}
@@ -130,7 +130,7 @@ const ShiftInbox: React.FC<ShiftInboxProps> = ({ groupId, currentUser, groupColo
                                 </span>
                             </div>
 
-                            <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg mb-4 text-sm space-y-2">
+                            <div className="bg-surface dark:bg-slate-800/50 p-3 rounded-lg mb-4 text-sm space-y-2">
                                 <div className="flex justify-between">
                                     <span className="text-slate-500">Oferece:</span>
                                     <span className="font-bold text-slate-700 dark:text-slate-300">
@@ -150,7 +150,7 @@ const ShiftInbox: React.FC<ShiftInboxProps> = ({ groupId, currentUser, groupColo
                             <div className="flex gap-2">
                                 <button
                                     onClick={() => handleReject(ex)}
-                                    className="flex-1 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold text-xs rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-1"
+                                    className="flex-1 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold text-xs rounded-lg hover:bg-surface dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-1"
                                 >
                                     <X size={14} /> Rejeitar
                                 </button>

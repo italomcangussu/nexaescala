@@ -244,7 +244,7 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                         ) : (
                             <div className="space-y-3">
                                 {members.map(member => (
-                                    <div key={member.id} className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center gap-4">
+                                    <div key={member.id} className="bg-white dark:bg-surface-dark p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center gap-4">
                                         {/* Avatar */}
                                         <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0">
                                             <img src={member.profile.avatar_url} alt={member.profile.full_name} className="w-full h-full object-cover" />
@@ -308,7 +308,7 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
                             <button
                                 onClick={handleOpenFinConfig}
                                 disabled={isLoadingFinConfig}
-                                className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-emerald-500/50 hover:shadow-md transition-all group"
+                                className="w-full flex items-center justify-between p-4 bg-surface dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl hover:border-emerald-500/50 hover:shadow-md transition-all group"
                             >
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
@@ -363,9 +363,9 @@ const PlantonistaServiceView: React.FC<PlantonistaServiceViewProps> = ({ group, 
     };
 
     return (
-        <div className="flex flex-col bg-slate-50 dark:bg-slate-950 min-h-full">
+        <div className="flex flex-col bg-surface dark:bg-background-dark min-h-full">
             {/* Toolbar */}
-            <div className="px-6 py-3 bg-white dark:bg-slate-900 border-b border-gray-50 dark:border-slate-800 flex items-center gap-4 overflow-x-auto no-scrollbar shrink-0 shadow-sm sticky top-0 z-30">
+            <div className="px-6 py-3 bg-white dark:bg-surface-dark border-b border-gray-50 dark:border-slate-800 flex items-center gap-4 overflow-x-auto no-scrollbar shrink-0 shadow-sm sticky top-0 z-30">
                 <button
                     onClick={() => setActiveTab('calendar')}
                     style={activeTab === 'calendar' ? { color: displayColor, backgroundColor: hexToRgba(displayColor, 0.05) } : undefined}

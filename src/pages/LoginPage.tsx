@@ -262,7 +262,7 @@ const LoginPage: React.FC = () => {
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-slate-800 dark:text-white font-medium"
+                                className="w-full pl-12 pr-4 py-3.5 bg-surface dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-slate-800 dark:text-white font-medium"
                                 placeholder="seu@email.com"
                             />
                         </div>
@@ -292,7 +292,7 @@ const LoginPage: React.FC = () => {
                                 required
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
-                                className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-slate-800 dark:text-white font-medium"
+                                className="w-full px-4 py-3.5 bg-surface dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-slate-800 dark:text-white font-medium"
                                 placeholder="Como deseja ser chamado?"
                             />
                         </div>
@@ -309,7 +309,7 @@ const LoginPage: React.FC = () => {
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-slate-800 dark:text-white font-medium"
+                                className="w-full pl-12 pr-4 py-3.5 bg-surface dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-slate-800 dark:text-white font-medium"
                                 placeholder="seu@email.com"
                             />
                         </div>
@@ -339,7 +339,7 @@ const LoginPage: React.FC = () => {
                                 onChange={(e) => setPassword(e.target.value)}
                                 onFocus={() => isSignUp && setShowPasswordHints(true)}
                                 onBlur={() => setShowPasswordHints(false)}
-                                className="w-full pl-12 pr-12 py-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-slate-800 dark:text-white font-medium"
+                                className="w-full pl-12 pr-12 py-3.5 bg-surface dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-slate-800 dark:text-white font-medium"
                                 placeholder="••••••••"
                             />
                             <button
@@ -352,7 +352,7 @@ const LoginPage: React.FC = () => {
                         </div>
 
                         {isSignUp && showPasswordHints && (
-                            <div className="mt-3 p-3.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700 rounded-2xl space-y-2.5 animate-fade-in">
+                            <div className="mt-3 p-3.5 bg-surface dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700 rounded-2xl space-y-2.5 animate-fade-in">
                                 <PasswordRequirement met={passwordStrength.hasMinLength} text="Pelo menos 8 caracteres" />
                                 <PasswordRequirement met={passwordStrength.hasUppercase} text="Uma letra maiúscula" />
                                 <PasswordRequirement met={passwordStrength.hasLowercase} text="Uma letra minúscula" />
@@ -398,7 +398,7 @@ const LoginPage: React.FC = () => {
                     <div className="grid grid-cols-2 gap-3">
                         <button
                             onClick={handleGoogleLogin}
-                            className="flex items-center justify-center gap-2.5 p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm group"
+                            className="flex items-center justify-center gap-2.5 p-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-2xl hover:bg-surface dark:hover:bg-slate-800 transition-all shadow-sm group"
                         >
                             <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
                                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -435,7 +435,7 @@ const LoginPage: React.FC = () => {
 
     if (shouldUseDesktopLayout) {
         return (
-            <div className="min-h-screen bg-white dark:bg-slate-950 flex overflow-hidden">
+            <div className="min-h-screen bg-white dark:bg-background-dark flex overflow-hidden">
                 {/* Visual Left Side */}
                 <div className="hidden lg:flex w-7/12 relative bg-slate-900 overflow-hidden items-center justify-center p-12">
                     {/* Dynamic Background */}
@@ -494,7 +494,7 @@ const LoginPage: React.FC = () => {
                 </div>
 
                 {/* Form Right Side */}
-                <div className="w-full lg:w-5/12 flex items-center justify-center p-8 lg:p-16 relative bg-white dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800">
+                <div className="w-full lg:w-5/12 flex items-center justify-center p-8 lg:p-16 relative bg-white dark:bg-surface-dark border-l border-slate-100 dark:border-slate-800">
                     <div className="w-full max-w-md h-full flex flex-col justify-center">
                         {/* Mobile-only logo */}
                         <div className="lg:hidden flex justify-center mb-10">
@@ -520,14 +520,14 @@ const LoginPage: React.FC = () => {
 
     // Default Mobile-Responsive Layout
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-surface dark:bg-background-dark flex items-center justify-center p-4 relative overflow-hidden">
             {/* Background Elements */}
             <div className="absolute inset-0 z-0 opacity-50">
                 <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] bg-emerald-400/20 rounded-full blur-[120px] animate-pulse-slow"></div>
                 <div className="absolute -bottom-[20%] right-[20%] w-[50%] h-[50%] bg-blue-400/20 rounded-full blur-[100px] animate-pulse-slow delay-2000"></div>
             </div>
 
-            <div className="max-w-md w-full backdrop-blur-2xl bg-white/90 dark:bg-slate-900/90 border border-white/50 dark:border-slate-700/50 rounded-[2.5rem] shadow-2xl p-8 lg:p-12 relative z-10 animate-fade-in-up">
+            <div className="max-w-md w-full backdrop-blur-2xl bg-white/90 dark:bg-surface-dark/90 border border-white/50 dark:border-slate-700/50 rounded-[2.5rem] shadow-2xl p-8 lg:p-12 relative z-10 animate-fade-in-up">
                 <div className="flex justify-center mb-8">
                     <Logo className="w-24 h-24 text-primary" />
                 </div>

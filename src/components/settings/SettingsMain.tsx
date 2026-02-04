@@ -34,7 +34,7 @@ const SettingsMain: React.FC<SettingsMainProps> = ({ onNavigate, onSignOut }) =>
                 </div>
             </div>
 
-            <h2 className="mt-4 text-xl font-bold text-primaryDark dark:text-emerald-100 transition-all duration-500 delay-200">
+            <h2 className="mt-4 text-xl font-bold text-primary-dark dark:text-emerald-100 transition-all duration-500 delay-200">
                 NexaEscala
             </h2>
             <p className="text-xs text-slate-400 font-medium tracking-widest uppercase mb-8 transition-all duration-500 delay-300">
@@ -52,11 +52,11 @@ const SettingsMain: React.FC<SettingsMainProps> = ({ onNavigate, onSignOut }) =>
                                 onNavigate(item.view);
                             }
                         }}
-                        className="flex items-center justify-between p-3.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-98 transition-all duration-300 cursor-pointer group border border-transparent hover:border-slate-100 dark:hover:border-slate-700"
+                        className="flex items-center justify-between p-3.5 rounded-2xl hover:bg-surface dark:hover:bg-slate-800 active:scale-98 transition-all duration-300 cursor-pointer group border border-transparent hover:border-slate-100 dark:hover:border-slate-700"
                         style={{ transitionDelay: `${400 + (index * 50)}ms` }}
                     >
                         <div className="flex items-center space-x-4">
-                            <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center group-hover:bg-primary/10 dark:group-hover:bg-primary/20 group-hover:text-primary dark:group-hover:text-primaryLight transition-colors shadow-sm">
+                            <div className="w-10 h-10 rounded-xl bg-surface dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center group-hover:bg-primary/10 dark:group-hover:bg-primary/20 group-hover:text-primary dark:group-hover:text-primary-light transition-colors shadow-sm">
                                 <item.icon size={20} strokeWidth={2} />
                             </div>
                             <div>
@@ -64,7 +64,7 @@ const SettingsMain: React.FC<SettingsMainProps> = ({ onNavigate, onSignOut }) =>
                                 <p className="text-[10px] text-slate-400 font-medium">{item.sub}</p>
                             </div>
                         </div>
-                        <ChevronRight size={16} className="text-slate-300 dark:text-slate-600 group-hover:text-primary dark:group-hover:text-primaryLight transition-colors" />
+                        <ChevronRight size={16} className="text-slate-300 dark:text-slate-600 group-hover:text-primary dark:group-hover:text-primary-light transition-colors" />
                     </div>
                 ))}
             </div>

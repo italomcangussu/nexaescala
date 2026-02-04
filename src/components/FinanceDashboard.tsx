@@ -73,10 +73,10 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ currentUser, userGr
    const currentMonth = new Date().toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
 
    return (
-      <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 relative">
+      <div className="flex flex-col h-full bg-surface dark:bg-background-dark relative">
 
          {/* Finance Header */}
-         <div className="px-6 py-6 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 flex justify-between items-start shrink-0">
+         <div className="px-6 py-6 bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-slate-800 flex justify-between items-start shrink-0">
             <div>
                <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Financeiro</h1>
                <p className="text-sm text-slate-500 dark:text-slate-400">Controle seus ganhos</p>
@@ -127,7 +127,7 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ currentUser, userGr
                   </div>
                </div>
 
-               <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-sm relative overflow-hidden">
+               <div className="bg-white dark:bg-surface-dark rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-sm relative overflow-hidden">
                   <div className="relative z-10">
                      <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase mb-1">A Receber</p>
                      <h3 className="text-2xl font-black text-slate-900 dark:text-slate-100">R$ {totalPending.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h3>
@@ -139,7 +139,7 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ currentUser, userGr
             </div>
 
             {/* Chart Section */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
+            <div className="bg-white dark:bg-surface-dark rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
                <div className="h-24 w-24 shrink-0 relative">
                   <PieChart width={96} height={96}>
                      <Pie
@@ -177,7 +177,7 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ currentUser, userGr
             <div>
                <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Extrato de Plantões</h3>
-                  <button className="text-primary dark:text-primaryLight text-xs font-bold flex items-center gap-1">
+                  <button className="text-primary dark:text-primary-light text-xs font-bold flex items-center gap-1">
                      <Filter size={14} /> Filtros
                   </button>
                </div>
@@ -195,7 +195,7 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ currentUser, userGr
                ) : (
                   <div className="space-y-3 pb-20">
                      {records.map(record => (
-                        <div key={record.id} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm flex items-center justify-between group transition-all hover:border-primary/30">
+                        <div key={record.id} className="bg-white dark:bg-surface-dark p-4 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm flex items-center justify-between group transition-all hover:border-primary/30">
                            <div className="flex items-center gap-4">
                               {/* Checkbox */}
                               <button
@@ -234,7 +234,7 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ currentUser, userGr
          {showServiceSelector && (
             <div className="absolute inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center animate-fade-in-up">
                <div
-                  className="bg-white dark:bg-slate-900 w-full sm:max-w-sm h-[70%] sm:h-auto rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden"
+                  className="bg-white dark:bg-surface-dark w-full sm:max-w-sm h-[70%] sm:h-auto rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden"
                   onClick={(e) => e.stopPropagation()}
                >
                   <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center">
@@ -276,7 +276,7 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ currentUser, userGr
                         ))
                      )}
 
-                     <button className="w-full py-3 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-slate-400 font-bold text-xs flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                     <button className="w-full py-3 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-slate-400 font-bold text-xs flex items-center justify-center gap-2 hover:bg-surface dark:hover:bg-slate-800 transition-colors">
                         <Plus size={16} /> Adicionar Novo Vínculo Externo
                      </button>
                   </div>

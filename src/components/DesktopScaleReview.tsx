@@ -261,9 +261,9 @@ const DesktopScaleReview: React.FC<DesktopScaleReviewProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-80 bg-slate-50 dark:bg-slate-950 flex flex-col animate-fade-in overflow-hidden">
+        <div className="fixed inset-0 z-80 bg-surface dark:bg-background-dark flex flex-col animate-fade-in overflow-hidden">
             {/* HEADER */}
-            <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between shadow-sm z-20 shrink-0">
+            <div className="bg-white dark:bg-surface-dark border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between shadow-sm z-20 shrink-0">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={onBack}
@@ -302,7 +302,7 @@ const DesktopScaleReview: React.FC<DesktopScaleReviewProps> = ({
                         {/* Total Shifts Card */}
                         <div
                             onClick={() => setShowStatsModal(true)}
-                            className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all cursor-pointer group"
+                            className="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all cursor-pointer group"
                         >
                             <div className="flex justify-between items-start mb-4">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total de Plantões</p>
@@ -315,7 +315,7 @@ const DesktopScaleReview: React.FC<DesktopScaleReviewProps> = ({
                         </div>
 
                         {/* Conflicts Card */}
-                        <div className={`bg-white dark:bg-slate-900 p-6 rounded-2xl border ${conflictCount > 0 ? 'border-red-300 dark:border-red-900/50 bg-red-50/30 dark:bg-red-950/20' : 'border-slate-200 dark:border-slate-800'} shadow-sm transition-all`}>
+                        <div className={`bg-white dark:bg-surface-dark p-6 rounded-2xl border ${conflictCount > 0 ? 'border-red-300 dark:border-red-900/50 bg-red-50/30 dark:bg-red-950/20' : 'border-slate-200 dark:border-slate-800'} shadow-sm transition-all`}>
                             <div className="flex justify-between items-start mb-4">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Conflitos Encontrados</p>
                                 <div className={`p-2 rounded-xl ${conflictCount > 0 ? 'bg-red-100 text-red-500' : 'bg-slate-100 text-slate-400'}`}>
@@ -330,7 +330,7 @@ const DesktopScaleReview: React.FC<DesktopScaleReviewProps> = ({
                     </div>
 
                     {/* Calendar View */}
-                    <div className="md:col-span-2 lg:col-span-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 overflow-hidden">
+                    <div className="md:col-span-2 lg:col-span-3 bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 overflow-hidden">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="font-bold text-slate-700 dark:text-slate-200">Visão Geral do Mês</h3>
                             <div className="flex gap-3">
@@ -367,7 +367,7 @@ const DesktopScaleReview: React.FC<DesktopScaleReviewProps> = ({
                                             aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all
                                             ${isSelected ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105 z-10' :
                                                 hasShifts
-                                                    ? 'bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer'
+                                                    ? 'bg-surface dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer'
                                                     : 'text-slate-300 dark:text-slate-700 cursor-default opacity-50'}
                                             ${hasConflict && !isSelected ? 'ring-2 ring-red-500 bg-red-50 dark:bg-red-900/20' : ''}
                                         `}
@@ -413,7 +413,7 @@ const DesktopScaleReview: React.FC<DesktopScaleReviewProps> = ({
                                         <h4 className="text-sm font-bold text-red-800 dark:text-red-300 mb-2">Conflitos Detectados neste Dia</h4>
                                         <div className="space-y-2">
                                             {selectedDateConflicts.map((conflict, idx) => (
-                                                <div key={idx} className="text-xs text-red-700 dark:text-red-400 bg-white dark:bg-slate-900/50 rounded-lg p-3 border border-red-200 dark:border-red-900/30">
+                                                <div key={idx} className="text-xs text-red-700 dark:text-red-400 bg-white dark:bg-surface-dark/50 rounded-lg p-3 border border-red-200 dark:border-red-900/30">
                                                     <p className="fontbold">
                                                         <User size={12} className="inline mr-1" />
                                                         {conflict.profileName}
@@ -438,11 +438,11 @@ const DesktopScaleReview: React.FC<DesktopScaleReviewProps> = ({
                                 const hasConflict = conflictShiftIds.has(shift.id);
 
                                 return (
-                                    <div key={shift.id} className={`bg-white dark:bg-slate-900 rounded-2xl p-1 border transition-all ${hasConflict ? 'border-red-400 dark:border-red-500 shadow-lg shadow-red-100 dark:shadow-red-950/50' : 'border-slate-200 dark:border-slate-800'}`}>
+                                    <div key={shift.id} className={`bg-white dark:bg-surface-dark rounded-2xl p-1 border transition-all ${hasConflict ? 'border-red-400 dark:border-red-500 shadow-lg shadow-red-100 dark:shadow-red-950/50' : 'border-slate-200 dark:border-slate-800'}`}>
                                         {/* Shift Header */}
                                         <div className={`
                                             flex items-center justify-between p-3 rounded-xl mb-1
-                                            ${isNight ? 'bg-slate-800 text-blue-100' : 'bg-slate-50 text-orange-600'}
+                                            ${isNight ? 'bg-slate-800 text-blue-100' : 'bg-surface text-orange-600'}
                                         `}>
                                             <div className="flex items-center gap-2">
                                                 <Icon size={14} />
@@ -501,7 +501,7 @@ const DesktopScaleReview: React.FC<DesktopScaleReviewProps> = ({
             {/* STATS MODAL */}
             {showStatsModal && (
                 <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
-                    <div className="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+                    <div className="bg-white dark:bg-surface-dark w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
                         <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                             <h3 className="text-xl font-black text-slate-800 dark:text-white">Resumo de Escalação</h3>
                             <button onClick={() => setShowStatsModal(false)} className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500 hover:text-slate-800">
@@ -510,7 +510,7 @@ const DesktopScaleReview: React.FC<DesktopScaleReviewProps> = ({
                         </div>
                         <div className="flex-1 overflow-y-auto p-2">
                             <table className="w-full text-left border-collapse">
-                                <thead className="bg-slate-50 dark:bg-slate-800/50 sticky top-0 z-10">
+                                <thead className="bg-surface dark:bg-slate-800/50 sticky top-0 z-10">
                                     <tr>
                                         <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-wider">Profissional</th>
                                         <th className="px-5 py-3 text-[10px] font-black text-slate-400 uppercase tracking-wider text-center">Manhã</th>
@@ -521,7 +521,7 @@ const DesktopScaleReview: React.FC<DesktopScaleReviewProps> = ({
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                                     {memberStats.map((stat) => (
-                                        <tr key={stat.profile.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                        <tr key={stat.profile.id} className="hover:bg-surface dark:hover:bg-slate-800/30 transition-colors">
                                             <td className="px-5 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">
@@ -567,7 +567,7 @@ const DesktopScaleReview: React.FC<DesktopScaleReviewProps> = ({
             )}
 
             {/* FOOTER */}
-            <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 p-4 flex justify-between items-center gap-3 z-50 shrink-0">
+            <div className="bg-white/90 dark:bg-surface-dark/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 p-4 flex justify-between items-center gap-3 z-50 shrink-0">
                 <div className="text-sm text-slate-500">
                     {conflictCount > 0 ? (
                         <span className="text-red-600 dark:text-red-400 font-bold">

@@ -239,23 +239,23 @@ const Dashboard: React.FC = () => {
   const renderHomeContent = () => {
     return (
       <div className="flex flex-col h-full">
-        <div className="px-4 py-4 bg-surface dark:bg-slate-900 sticky top-0 z-20 transition-colors">
+        <div className="px-4 py-4 bg-surface dark:bg-surface-dark sticky top-0 z-20 transition-colors">
           <div className="bg-gray-100 dark:bg-slate-800 p-1 rounded-lg flex shadow-inner transition-colors">
             <button
               onClick={() => setActiveHomeTab('shifts')}
-              className={`flex-1 py-1.5 text-sm font-semibold rounded-md transition-all ${activeHomeTab === 'shifts' ? 'bg-white dark:bg-slate-700 text-textPrimary dark:text-slate-100 shadow-sm' : 'text-textSecondary dark:text-slate-400 hover:text-textPrimary dark:hover:text-slate-200'}`}
+              className={`flex-1 py-1.5 text-sm font-semibold rounded-md transition-all ${activeHomeTab === 'shifts' ? 'bg-white dark:bg-slate-700 text-textPrimary dark:text-slate-100 shadow-sm' : 'text-text-secondary dark:text-slate-400 hover:text-textPrimary dark:hover:text-slate-200'}`}
             >
               Meus Plantões
             </button>
             <button
               onClick={() => setActiveHomeTab('groups')}
-              className={`flex-1 py-1.5 text-sm font-semibold rounded-md transition-all ${activeHomeTab === 'groups' ? 'bg-white dark:bg-slate-700 text-textPrimary dark:text-slate-100 shadow-sm' : 'text-textSecondary dark:text-slate-400 hover:text-textPrimary dark:hover:text-slate-200'}`}
+              className={`flex-1 py-1.5 text-sm font-semibold rounded-md transition-all ${activeHomeTab === 'groups' ? 'bg-white dark:bg-slate-700 text-textPrimary dark:text-slate-100 shadow-sm' : 'text-text-secondary dark:text-slate-400 hover:text-textPrimary dark:hover:text-slate-200'}`}
             >
               Serviços
             </button>
             <button
               onClick={() => setActiveHomeTab('requests')}
-              className={`flex-1 py-1.5 text-sm font-semibold rounded-md transition-all relative ${activeHomeTab === 'requests' ? 'bg-white dark:bg-slate-700 text-textPrimary dark:text-slate-100 shadow-sm' : 'text-textSecondary dark:text-slate-400 hover:text-textPrimary dark:hover:text-slate-200'}`}
+              className={`flex-1 py-1.5 text-sm font-semibold rounded-md transition-all relative ${activeHomeTab === 'requests' ? 'bg-white dark:bg-slate-700 text-textPrimary dark:text-slate-100 shadow-sm' : 'text-text-secondary dark:text-slate-400 hover:text-textPrimary dark:hover:text-slate-200'}`}
             >
               Solicitações
               {(pendingGiveaways.length + pendingSwaps.length) > 0 && (
@@ -336,7 +336,7 @@ const Dashboard: React.FC = () => {
                   if (groups.length === 0) return null;
                   return (
                     <div key={cat.title}>
-                      <h3 className="text-xs font-bold text-textSecondary dark:text-slate-500 uppercase tracking-wider mb-2">{cat.title}</h3>
+                      <h3 className="text-xs font-bold text-text-secondary dark:text-slate-500 uppercase tracking-wider mb-2">{cat.title}</h3>
                       <div>
                         {groups.map(group => (
                           <div key={group.id} onClick={() => setSelectedService(group)}>
@@ -378,7 +378,7 @@ const Dashboard: React.FC = () => {
                       </div>
 
                       {directedCount === 0 ? (
-                        <div className="bg-slate-50/50 dark:bg-slate-800/30 rounded-3xl p-6 border border-dashed border-slate-200 dark:border-slate-800 text-center">
+                        <div className="bg-surface/50 dark:bg-slate-800/30 rounded-3xl p-6 border border-dashed border-slate-200 dark:border-slate-800 text-center">
                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Nenhuma solicitação direcionada</p>
                         </div>
                       ) : (
@@ -417,7 +417,7 @@ const Dashboard: React.FC = () => {
                       </div>
 
                       {globalCount === 0 ? (
-                        <div className="bg-slate-50/50 dark:bg-slate-800/30 rounded-3xl p-6 border border-dashed border-slate-200 dark:border-slate-800 text-center">
+                        <div className="bg-surface/50 dark:bg-slate-800/30 rounded-3xl p-6 border border-dashed border-slate-200 dark:border-slate-800 text-center">
                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Nenhuma oferta global disponível</p>
                         </div>
                       ) : (
@@ -492,7 +492,7 @@ const Dashboard: React.FC = () => {
 
       {/* FAB Overlay (Animated) */}
       {isFabOpen && (
-        <div className="fixed inset-0 z-[100] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl flex flex-col items-center justify-center animate-fade-in-up">
+        <div className="fixed inset-0 z-100 bg-white/95 dark:bg-surface-dark/95 backdrop-blur-xl flex flex-col items-center justify-center animate-fade-in-up">
           <button onClick={() => setIsFabOpen(false)} className="absolute top-6 left-6 p-2 bg-gray-100 dark:bg-slate-800 rounded-full">
             <X size={24} className="text-slate-500" />
           </button>

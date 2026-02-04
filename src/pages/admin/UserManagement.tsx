@@ -49,7 +49,7 @@ const UserManagement: React.FC = () => {
             <div className="bg-white dark:bg-slate-800 shadow-sm rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm text-slate-600 dark:text-slate-400">
-                        <thead className="bg-slate-50 dark:bg-slate-700/50 text-slate-900 dark:text-slate-200 uppercase font-semibold">
+                        <thead className="bg-surface dark:bg-slate-700/50 text-slate-900 dark:text-slate-200 uppercase font-semibold">
                             <tr>
                                 <th className="px-6 py-4">Usuário</th>
                                 <th className="px-6 py-4">Email</th>
@@ -60,7 +60,7 @@ const UserManagement: React.FC = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                             {users.map((user) => (
-                                <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                                <tr key={user.id} className="hover:bg-surface dark:hover:bg-slate-700/30 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             {user.avatar_url ? (
@@ -94,13 +94,13 @@ const UserManagement: React.FC = () => {
                                             <div className="absolute right-0 mt-1 w-32 bg-white dark:bg-slate-800 rounded-md shadow-lg border border-slate-100 dark:border-slate-700 hidden group-hover:block z-10">
                                                 <button
                                                     onClick={() => handleRoleChange(user.id, 'admin')}
-                                                    className="block w-full text-left px-4 py-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                                                    className="block w-full text-left px-4 py-2 text-xs hover:bg-surface dark:hover:bg-slate-700"
                                                 >
                                                     Tornar Admin
                                                 </button>
                                                 <button
                                                     onClick={() => handleRoleChange(user.id, 'user')}
-                                                    className="block w-full text-left px-4 py-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                                                    className="block w-full text-left px-4 py-2 text-xs hover:bg-surface dark:hover:bg-slate-700"
                                                 >
                                                     Tornar Usuário
                                                 </button>

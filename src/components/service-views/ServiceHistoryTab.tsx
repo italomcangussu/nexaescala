@@ -76,7 +76,7 @@ const ServiceHistoryTab: React.FC<ServiceHistoryTabProps> = ({ groupId }) => {
                     return (
                         <div
                             key={item.id}
-                            className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-3 relative overflow-hidden"
+                            className="bg-white dark:bg-surface-dark p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-3 relative overflow-hidden"
                         >
                             {/* Decorative Activity Line */}
                             <div className={`absolute left-0 top-0 bottom-0 w-1 ${isSwap ? 'bg-indigo-500' : 'bg-sky-500'}`} />
@@ -152,7 +152,7 @@ const ServiceHistoryTab: React.FC<ServiceHistoryTabProps> = ({ groupId }) => {
                             </div>
 
                             {/* Shift Info Badge */}
-                            <div className="mt-1 flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                            <div className="mt-1 flex items-center gap-2 px-3 py-2 bg-surface dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
                                 <div className="p-1 bg-white dark:bg-slate-700 rounded-md shadow-sm">
                                     <Calendar size={12} className="text-primary" />
                                 </div>

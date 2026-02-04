@@ -53,10 +53,10 @@ const ShiftExchangeModal: React.FC<ShiftExchangeModalProps> = ({ assignment, gro
 
     return (
         <Portal>
-            <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div className="fixed inset-0 z-70 flex items-end sm:items-center justify-center p-0 sm:p-4">
                 <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={onClose} />
 
-                <div className="relative bg-white/90 dark:bg-slate-900/90 backdrop-blur-md w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl animate-fade-in-up border border-white/20 dark:border-slate-800/50 pb-safe">
+                <div className="relative bg-white/90 dark:bg-surface-dark/90 backdrop-blur-md w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl animate-fade-in-up border border-white/20 dark:border-slate-800/50 pb-safe">
                     {/* Mobile Pull Handle */}
                     <div className="sm:hidden w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mt-4 mb-2" />
 
@@ -83,7 +83,7 @@ const ShiftExchangeModal: React.FC<ShiftExchangeModalProps> = ({ assignment, gro
                         </div>
 
                         {/* Shift Info Badge */}
-                        <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-3xl p-4 sm:p-5 mb-6 sm:mb-8 flex items-center gap-4">
+                        <div className="bg-surface dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-3xl p-4 sm:p-5 mb-6 sm:mb-8 flex items-center gap-4">
                             <div className="flex flex-col items-center justify-center bg-white dark:bg-slate-800 shadow-sm rounded-2xl p-2 sm:p-3 min-w-[60px] sm:min-w-[70px] border border-slate-100 dark:border-slate-700">
                                 <span className="text-[9px] sm:text-[10px] font-bold uppercase text-primary tracking-widest leading-none mb-1">{weekday.split('-')[0].substring(0, 3)}</span>
                                 <span className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white leading-none">{dateObj.getDate()}</span>

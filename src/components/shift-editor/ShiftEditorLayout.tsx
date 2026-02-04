@@ -63,7 +63,7 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
     const monthName = currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
     return (
-        <div className="flex h-full bg-slate-50 dark:bg-slate-950 overflow-hidden relative">
+        <div className="flex h-full bg-surface dark:bg-background-dark overflow-hidden relative">
 
             {/* Sidebar (Desktop: Fixed, Mobile: Drawer) */}
             <div className={`
@@ -95,7 +95,7 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
 
                 {/* Instructions for Reverse Assignment / Swap */}
                 {(pendingShiftTarget || swappingAssignment) && (
-                    <div className="absolute top-20 left-0 right-0 bg-primary text-white p-3 text-xs font-bold z-[40] animate-bounce-slow flex items-center justify-between shadow-lg">
+                    <div className="absolute top-20 left-0 right-0 bg-primary text-white p-3 text-xs font-bold z-40 animate-bounce-slow flex items-center justify-between shadow-lg">
                         <span>{swappingAssignment ? 'Escolha o substituto' : 'Escolha um médico para escalar neste turno'}</span>
                         <button onClick={() => { setPendingShiftTarget(null); setSwappingAssignment(null); }} className="p-1 hover:bg-white/20 rounded">
                             <Save size={14} /> {/* X icon replacement */}
@@ -116,7 +116,7 @@ const ShiftEditorLayout: React.FC<ShiftEditorLayoutProps> = ({ group, onBack }) 
             <div className="flex-1 flex flex-col h-full min-w-0">
 
                 {/* Header */}
-                <header className="px-4 md:px-6 py-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm z-10 shrink-0 gap-2">
+                <header className="px-4 md:px-6 py-4 bg-white dark:bg-surface-dark border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm z-10 shrink-0 gap-2">
                     <div className="flex items-center gap-2 md:gap-4 overflow-hidden">
                         <button onClick={onBack} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-500 transition-colors shrink-0">
                             <ArrowLeft size={20} />

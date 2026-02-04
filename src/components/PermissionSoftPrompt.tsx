@@ -27,8 +27,8 @@ const PermissionSoftPrompt: React.FC<PermissionSoftPromptProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden animate-scale-in">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white dark:bg-surface-dark w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden animate-scale-in">
                 <div className="p-8 text-center">
                     <div className="flex justify-end -mt-4 -mr-4">
                         <button
@@ -54,7 +54,7 @@ const PermissionSoftPrompt: React.FC<PermissionSoftPromptProps> = ({
                     <nav className="space-y-3">
                         <button
                             onClick={onConfirm}
-                            className="w-full py-4 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primaryDark transition-all active:scale-[0.98]"
+                            className="w-full py-4 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primary-dark transition-all active:scale-[0.98]"
                         >
                             {confirmText}
                         </button>
@@ -69,7 +69,7 @@ const PermissionSoftPrompt: React.FC<PermissionSoftPromptProps> = ({
                 </div>
 
                 {/* Visual Hint for Apple Guidelines - Transparency */}
-                <div className="bg-slate-50 dark:bg-slate-800/50 py-3 px-6 border-t border-slate-100 dark:border-slate-800">
+                <div className="bg-surface dark:bg-slate-800/50 py-3 px-6 border-t border-slate-100 dark:border-slate-800">
                     <p className="text-[10px] text-slate-400 dark:text-slate-500 text-center font-medium uppercase tracking-widest">
                         Respeitamos sua privacidade
                     </p>

@@ -216,7 +216,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
                                 required={!isAppleUser}
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
-                                className="w-full p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 dark:text-slate-200"
+                                className="w-full p-3.5 bg-surface dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 dark:text-slate-200"
                                 placeholder="Dr. João Silva"
                             />
                         </div>
@@ -228,14 +228,14 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
                                     type="text"
                                     value={crmNumber}
                                     onChange={(e) => setCrmNumber(e.target.value.replace(/\D/g, ''))}
-                                    className="flex-1 p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 dark:text-slate-200"
+                                    className="flex-1 p-3.5 bg-surface dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 dark:text-slate-200"
                                     placeholder="12345"
                                     maxLength={10}
                                 />
                                 <select
                                     value={crmState}
                                     onChange={(e) => setCrmState(e.target.value)}
-                                    className="w-24 p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 dark:text-slate-200"
+                                    className="w-24 p-3.5 bg-surface dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 dark:text-slate-200"
                                 >
                                     <option value="">UF</option>
                                     {BRAZILIAN_STATES.map(state => (
@@ -252,7 +252,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
                                 <select
                                     value={specialty}
                                     onChange={(e) => setSpecialty(e.target.value)}
-                                    className="w-full pl-11 p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 dark:text-slate-200 appearance-none"
+                                    className="w-full pl-11 p-3.5 bg-surface dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 dark:text-slate-200 appearance-none"
                                 >
                                     <option value="">Selecione...</option>
                                     {SPECIALTIES.map(s => (
@@ -324,7 +324,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
                         </p>
 
                         {avatarPreview && (
-                            <div className="flex items-center justify-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl mb-6">
+                            <div className="flex items-center justify-center gap-3 p-4 bg-surface dark:bg-slate-800 rounded-xl mb-6">
                                 <img src={avatarPreview} alt="Profile" className="w-12 h-12 rounded-full object-cover" />
                                 <div className="text-left">
                                     <p className="font-bold text-slate-800 dark:text-slate-100">{fullName}</p>
@@ -373,7 +373,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
                     {step > 0 && step < steps.length - 1 && (
                         <button
                             onClick={handleBack}
-                            className="flex-1 py-3.5 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-2"
+                            className="flex-1 py-3.5 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-surface dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-2"
                         >
                             <ChevronLeft size={18} />
                             Voltar

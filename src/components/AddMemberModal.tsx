@@ -40,8 +40,8 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, onAddM
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl flex flex-col max-h-[80vh] border border-slate-100 dark:border-slate-800">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-surface-dark rounded-3xl w-full max-w-md shadow-2xl flex flex-col max-h-[80vh] border border-slate-100 dark:border-slate-800">
 
                 {/* Header */}
                 <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
@@ -58,7 +58,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, onAddM
                 </div>
 
                 {/* Search Input */}
-                <div className="p-4 bg-slate-50 dark:bg-slate-800/50">
+                <div className="p-4 bg-surface dark:bg-slate-800/50">
                     <div className="relative">
                         <Search size={20} className="absolute left-3 top-3.5 text-slate-400" />
                         <input
@@ -66,7 +66,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, onAddM
                             placeholder="Nome, CRM ou E-mail..."
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
-                            className="w-full bg-white dark:bg-slate-900 border-none rounded-xl py-3 pl-11 pr-4 shadow-sm text-sm focus:ring-2 focus:ring-primary/20 outline-none dark:text-slate-200 placeholder-slate-400"
+                            className="w-full bg-white dark:bg-surface-dark border-none rounded-xl py-3 pl-11 pr-4 shadow-sm text-sm focus:ring-2 focus:ring-primary/20 outline-none dark:text-slate-200 placeholder-slate-400"
                             autoFocus
                         />
                     </div>
@@ -82,7 +82,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, onAddM
                                 <button
                                     key={profile.id}
                                     onClick={() => onAddMember(profile)}
-                                    className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors text-left group"
+                                    className="w-full flex items-center gap-3 p-3 hover:bg-surface dark:hover:bg-slate-800/50 rounded-xl transition-colors text-left group"
                                 >
                                     <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shrink-0">
                                         {profile.avatar_url ? (

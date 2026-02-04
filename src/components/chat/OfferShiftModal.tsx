@@ -26,9 +26,9 @@ const OfferShiftModal: React.FC<OfferShiftModalProps> = ({ isOpen, onClose, onCo
     }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose}></div>
-            <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-2xl shadow-2xl z-10 overflow-hidden animate-fade-in-up">
+            <div className="bg-white dark:bg-surface-dark w-full max-w-sm rounded-2xl shadow-2xl z-10 overflow-hidden animate-fade-in-up">
 
                 <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
                     <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">Oferecer Plantão</h3>
@@ -53,7 +53,7 @@ const OfferShiftModal: React.FC<OfferShiftModalProps> = ({ isOpen, onClose, onCo
                                     className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center gap-3
                                 ${selectedShift?.id === shift.id
                                             ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 ring-1 ring-emerald-500'
-                                            : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                            : 'border-slate-200 dark:border-slate-800 hover:bg-surface dark:hover:bg-slate-800'
                                         }`}
                                 >
                                     <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xs flex-col leading-none">
@@ -85,7 +85,7 @@ const OfferShiftModal: React.FC<OfferShiftModalProps> = ({ isOpen, onClose, onCo
                     )}
                 </div>
 
-                <div className="p-4 border-t border-gray-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+                <div className="p-4 border-t border-gray-100 dark:border-slate-800 bg-surface dark:bg-background-dark">
                     <button
                         disabled={!selectedShift}
                         onClick={() => selectedShift && onConfirm(selectedShift)}

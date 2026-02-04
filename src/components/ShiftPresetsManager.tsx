@@ -160,7 +160,7 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
 
     return (
         <div className="fixed inset-0 z-80 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col m-4">
+            <div className="bg-white dark:bg-surface-dark rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col m-4">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
                     <div>
@@ -257,7 +257,7 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
                     {/* Form Modal */}
                     {(isAdding || editingPreset) && (
                         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in p-4">
-                            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col animate-scale-in">
+                            <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col animate-scale-in">
                                 <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
                                     <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100">
                                         {editingPreset ? 'Editar Turno' : 'Novo Turno'}
@@ -281,7 +281,7 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
                                                 value={formData.code}
                                                 onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                                                 placeholder="Ex: DT, NT, MT"
-                                                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                                                 maxLength={4}
                                                 required
                                             />
@@ -295,7 +295,7 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
                                                 value={formData.quantity_needed}
                                                 onChange={(e) => setFormData({ ...formData, quantity_needed: parseInt(e.target.value) || 1 })}
                                                 min="1"
-                                                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                                                 required
                                             />
                                         </div>
@@ -310,7 +310,7 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
                                                 type="time"
                                                 value={formData.start_time}
                                                 onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                                                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                                                 required
                                             />
                                         </div>
@@ -322,7 +322,7 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
                                                 type="time"
                                                 value={formData.end_time}
                                                 onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                                                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                                                 required
                                             />
                                         </div>
@@ -365,7 +365,7 @@ const ShiftPresetsManager: React.FC<ShiftPresetsManagerProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between p-6 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                <div className="flex items-center justify-between p-6 border-t border-slate-200 dark:border-slate-800 bg-surface dark:bg-slate-800/50">
                     <div className="flex flex-col gap-1">
                         <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                             {isDailyMode

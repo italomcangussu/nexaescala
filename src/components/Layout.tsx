@@ -63,14 +63,14 @@ const Layout: React.FC<LayoutProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-screen bg-surface dark:bg-slate-900 overflow-hidden relative font-sans transition-colors duration-300 pt-[env(safe-area-inset-top)]">
+    <div className="flex flex-col h-screen bg-surface dark:bg-surface-dark overflow-hidden relative font-sans transition-colors duration-300 pt-safe">
 
       {/* Skip to Main Content - Accessibility */}
       <SkipToMain />
 
       {/* Top Header - Modernized with Logo */}
       <header
-        className="bg-surface dark:bg-slate-900 px-5 pb-3 pt-3 flex items-center justify-between sticky top-0 z-30 border-b border-gray-50/50 dark:border-slate-800/50 shadow-sm transition-colors duration-300"
+        className="bg-surface dark:bg-surface-dark px-5 pb-3 pt-3 flex items-center justify-between sticky top-0 z-30 border-b border-gray-50/50 dark:border-slate-800/50 shadow-sm transition-colors duration-300"
         role="banner"
         aria-label="Cabeçalho principal do NexaEscala"
       >
@@ -87,14 +87,14 @@ const Layout: React.FC<LayoutProps> = ({
             <div className="absolute top-0 right-0 w-3 h-3 bg-secondary rounded-full border-2 border-white dark:border-slate-900"></div>
           </div>
           <div className="flex flex-col justify-center">
-            <span className="text-[11px] text-textSecondary dark:text-slate-400 font-medium leading-tight">Olá, {currentUser.full_name.split(' ')[0]} {currentUser.full_name.split(' ')[1]}</span>
+            <span className="text-[11px] text-text-secondary dark:text-slate-400 font-medium leading-tight">Olá, {currentUser.full_name.split(' ')[0]} {currentUser.full_name.split(' ')[1]}</span>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <Logo className="w-5 h-5 text-primaryDark dark:text-primaryLight" />
-              <span className="text-lg font-bold text-primaryDark dark:text-slate-100 leading-none tracking-tight">NexaEscala</span>
+              <Logo className="w-5 h-5 text-primary-dark dark:text-primary-light" />
+              <span className="text-lg font-bold text-primary-dark dark:text-slate-100 leading-none tracking-tight">NexaEscala</span>
             </div>
           </div>
         </div>
-        <div className="flex items-center space-x-1 text-textSecondary dark:text-slate-400">
+        <div className="flex items-center space-x-1 text-text-secondary dark:text-slate-400">
           <button className="p-2 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-full transition-colors hidden sm:block">
             <Search size={20} strokeWidth={2.5} />
           </button>
@@ -110,7 +110,7 @@ const Layout: React.FC<LayoutProps> = ({
 
           {/* Notifications Dropdown */}
           {showNotifications && (
-            <div className="absolute top-16 right-5 w-80 max-h-[400px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800 z-50 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="absolute top-16 right-5 w-80 max-h-[400px] bg-white dark:bg-surface-dark rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800 z-50 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="p-4 border-b border-gray-50 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
                 <h3 className="font-bold text-slate-800 dark:text-slate-100">Notificações</h3>
                 <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Recentes</span>
@@ -157,7 +157,7 @@ const Layout: React.FC<LayoutProps> = ({
 
           <button
             onClick={() => setIsSettingsOpen(true)}
-            className="p-2 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primaryLight active:scale-90 transform duration-200"
+            className="p-2 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary-light active:scale-90 transform duration-200"
           >
             <Settings size={20} strokeWidth={2.5} />
           </button>
@@ -169,7 +169,7 @@ const Layout: React.FC<LayoutProps> = ({
         id="main-content"
         role="main"
         tabIndex={-1}
-        className={`flex-1 overflow-y-auto no-scrollbar bg-background dark:bg-slate-950 transition-colors duration-300 ${activeTab === 'editor' ? 'pb-0' : 'pb-24'}`}
+        className={`flex-1 overflow-y-auto no-scrollbar bg-background dark:bg-background-dark transition-colors duration-300 ${activeTab === 'editor' ? 'pb-0' : 'pb-24'}`}
         aria-label="Conteúdo principal"
       >
         {children}
@@ -178,7 +178,7 @@ const Layout: React.FC<LayoutProps> = ({
       {/* Bottom Navigation - Glassmorphism hint (Hidden in Editor) */}
       {activeTab !== 'editor' && (
         <nav
-          className="fixed bottom-0 w-full z-40 bg-surface/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-gray-100 dark:border-slate-800 pb-[env(safe-area-inset-bottom)] transition-colors duration-300"
+          className="fixed bottom-0 w-full z-40 bg-surface/90 dark:bg-surface-dark/90 backdrop-blur-md border-t border-gray-100 dark:border-slate-800 pb-safe transition-colors duration-300"
           role="navigation"
           aria-label="Navegação principal"
         >
@@ -230,7 +230,7 @@ const NavButton: React.FC<NavButtonProps> = ({ active, onClick, icon, label }) =
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center justify-center w-20 py-2 transition-all duration-300 ${active ? 'text-primary dark:text-primaryLight' : 'text-textSecondary dark:text-slate-500 hover:text-gray-900 dark:hover:text-slate-300'}`}
+      className={`flex flex-col items-center justify-center w-20 py-2 transition-all duration-300 ${active ? 'text-primary dark:text-primary-light' : 'text-text-secondary dark:text-slate-500 hover:text-gray-900 dark:hover:text-slate-300'}`}
     >
       <div className={`${active ? 'scale-110 -translate-y-1' : 'scale-100'} transition-transform duration-300`}>
         {/* Fill the icon if active for solid look */}

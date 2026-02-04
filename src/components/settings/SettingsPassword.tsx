@@ -94,7 +94,7 @@ const SettingsPassword: React.FC<SettingsPasswordProps> = ({ onBack }) => {
                     />
                 </div>
 
-                <button className="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-200 hover:bg-primaryDark active:scale-95 transition-all mt-4">
+                <button className="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-200 hover:bg-primary-dark active:scale-95 transition-all mt-4">
                     Atualizar Senha
                 </button>
             </div>

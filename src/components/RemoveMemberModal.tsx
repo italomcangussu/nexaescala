@@ -41,7 +41,7 @@ const RemoveMemberModal: React.FC<RemoveMemberModalProps> = ({ members, isOpen, 
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="bg-white dark:bg-surface-dark w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
                 <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <h3 className="font-bold text-lg">Retirar Membro</h3>
                     <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
@@ -57,7 +57,7 @@ const RemoveMemberModal: React.FC<RemoveMemberModalProps> = ({ members, isOpen, 
                             placeholder="Buscar membro..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-red-500/50 text-base"
+                            className="w-full pl-10 pr-4 py-3 bg-surface dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-red-500/50 text-base"
                         />
                     </div>
 
@@ -65,7 +65,7 @@ const RemoveMemberModal: React.FC<RemoveMemberModalProps> = ({ members, isOpen, 
                         {filteredMembers.length > 0 ? (
                             <div className="space-y-2">
                                 {filteredMembers.map(member => (
-                                    <div key={member.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
+                                    <div key={member.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-surface dark:hover:bg-slate-800/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
                                         <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0">
                                             <img src={member.profile.avatar_url} alt={member.profile.full_name} className="w-full h-full object-cover" />
                                         </div>

@@ -69,13 +69,13 @@ const FinancialConfigModal: React.FC<FinancialConfigModalProps> = ({ group, init
    const { gross, net } = simulateNet();
 
    return (
-      <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-80 flex items-center justify-center p-4">
          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
 
-         <div className="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-fade-in-up">
+         <div className="relative bg-white dark:bg-surface-dark w-full max-w-md rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-fade-in-up">
 
             {/* Header */}
-            <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
+            <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-surface-dark">
                <div>
                   <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Configuração de Honorários</h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400">{group.name}</p>
@@ -94,14 +94,14 @@ const FinancialConfigModal: React.FC<FinancialConfigModalProps> = ({ group, init
                         <span>Salvo!</span>
                      </div>
                   )}
-                  <button onClick={onClose} className="p-2 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full">
+                  <button onClick={onClose} className="p-2 text-slate-400 hover:bg-surface dark:hover:bg-slate-800 rounded-full">
                      <X size={20} />
                   </button>
                </div>
             </div>
 
             {/* Form */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/50 dark:bg-slate-950/50">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-surface/50 dark:bg-background-dark/50">
 
                {/* Section 1: Vínculo */}
                <div className="space-y-3">
@@ -111,13 +111,13 @@ const FinancialConfigModal: React.FC<FinancialConfigModalProps> = ({ group, init
                   <div className="grid grid-cols-2 gap-3">
                      <button
                         onClick={() => handleChange('contract_type', ContractType.CLT_PUBLIC)}
-                        className={`p-3 rounded-xl border text-sm font-medium transition-all ${config.contract_type === ContractType.CLT_PUBLIC ? 'bg-primary/10 border-primary text-primary dark:text-primaryLight' : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}
+                        className={`p-3 rounded-xl border text-sm font-medium transition-all ${config.contract_type === ContractType.CLT_PUBLIC ? 'bg-primary/10 border-primary text-primary dark:text-primary-light' : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}
                      >
                         Público (CLT)
                      </button>
                      <button
                         onClick={() => handleChange('contract_type', ContractType.PJ_PRIVATE)}
-                        className={`p-3 rounded-xl border text-sm font-medium transition-all ${config.contract_type === ContractType.PJ_PRIVATE ? 'bg-primary/10 border-primary text-primary dark:text-primaryLight' : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}
+                        className={`p-3 rounded-xl border text-sm font-medium transition-all ${config.contract_type === ContractType.PJ_PRIVATE ? 'bg-primary/10 border-primary text-primary dark:text-primary-light' : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}
                      >
                         Privado (PJ)
                      </button>
@@ -185,7 +185,7 @@ const FinancialConfigModal: React.FC<FinancialConfigModalProps> = ({ group, init
                         value={config.tax_percent}
                         onChange={(e) => handleChange('tax_percent', Number(e.target.value))}
                         placeholder="Ex: 16.33"
-                        className="w-full p-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 outline-none focus:border-primary"
+                        className="w-full p-3 bg-white dark:bg-surface-dark border border-gray-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 outline-none focus:border-primary"
                      />
                      <p className="text-[10px] text-slate-400 mt-2">
                         Some ISS, Taxa Administrativa, IRRF estimado, etc.
@@ -213,13 +213,13 @@ const FinancialConfigModal: React.FC<FinancialConfigModalProps> = ({ group, init
             </div>
 
             {/* Footer - simplified since we auto-save */}
-            <div className="p-4 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+            <div className="p-4 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-surface-dark">
                <button
                   onClick={async () => {
                      await onSave(config);
                      onClose();
                   }}
-                  className="w-full py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primaryDark transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primary-dark transition-all flex items-center justify-center gap-2"
                >
                   <Check size={18} />
                   Concluído

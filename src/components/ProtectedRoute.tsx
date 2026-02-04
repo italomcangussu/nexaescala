@@ -10,7 +10,7 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
 
     if (loading) {
         return (
-            <div className="h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-900 text-primary">
+            <div className="h-screen w-full flex items-center justify-center bg-surface dark:bg-surface-dark text-primary">
                 <Loader className="animate-spin" size={40} />
             </div>
         );

@@ -134,7 +134,7 @@ const TradeHistory: React.FC<TradeHistoryProps> = ({ currentUser }) => {
                         onClick={() => setFilter(opt.id as FilterType)}
                         className={`text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap transition-all border ${filter === opt.id
                                 ? 'bg-slate-800 text-white border-slate-800 dark:bg-white dark:text-slate-900 dark:border-white shadow-md'
-                                : 'bg-white text-slate-500 border-slate-100 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 hover:bg-slate-50'
+                                : 'bg-white text-slate-500 border-slate-100 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 hover:bg-surface'
                             }`}
                     >
                         {opt.label}
@@ -148,7 +148,7 @@ const TradeHistory: React.FC<TradeHistoryProps> = ({ currentUser }) => {
                     <div className="w-6 h-6 border-2 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
                 </div>
             ) : filteredItems.length === 0 ? (
-                <div className="bg-slate-50/50 dark:bg-slate-800/30 rounded-3xl p-8 border border-dashed border-slate-200 dark:border-slate-800 text-center flex flex-col items-center">
+                <div className="bg-surface/50 dark:bg-slate-800/30 rounded-3xl p-8 border border-dashed border-slate-200 dark:border-slate-800 text-center flex flex-col items-center">
                     <Calendar className="text-slate-300 dark:text-slate-600 mb-2" size={32} />
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-tight">Nenhum histórico encontrado para este período</p>
                 </div>

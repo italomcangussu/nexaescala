@@ -755,7 +755,7 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
     }
 
     return (
-        <div className="fixed inset-0 z-[70] flex flex-col h-full bg-slate-100 dark:bg-black transition-colors duration-300 overflow-y-auto pb-10 transition-all animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="fixed inset-0 z-70 flex flex-col h-full bg-slate-100 dark:bg-black transition-colors duration-300 overflow-y-auto pb-10 transition-all animate-in fade-in slide-in-from-bottom-4 duration-500">
             {isLoading && (
                 <div className="absolute inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
                     <Loader2 className="w-10 h-10 text-primary animate-spin" />
@@ -763,7 +763,7 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
             )}
 
             {/* Header Section - Compact Liquid Glass */}
-            <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl py-3 px-4 shadow-sm border-b border-white/20 dark:border-slate-800/50 z-20 sticky top-0 flex items-center justify-between gap-3 transition-colors duration-300 supports-[backdrop-filter]:bg-white/60">
+            <div className="bg-white/70 dark:bg-surface-dark/70 backdrop-blur-xl py-3 px-4 shadow-sm border-b border-white/20 dark:border-slate-800/50 z-20 sticky top-0 flex items-center justify-between gap-3 transition-colors duration-300 supports-[backdrop-filter]:bg-white/60">
 
                 {/* Left: Back Btn + Title & Group Info */}
                 <div className="flex items-center gap-3 min-w-0">
@@ -879,10 +879,10 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
 
 
                     return (
-                        <div key={dateStr} className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl p-2 md:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-200 dark:border-slate-800 animate-in fade-in duration-700 slide-in-from-bottom-4">
+                        <div key={dateStr} className="bg-white dark:bg-surface-dark rounded-2xl md:rounded-3xl p-2 md:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-200 dark:border-slate-800 animate-in fade-in duration-700 slide-in-from-bottom-4">
 
                             {/* Date Header - Mobile Horizontal */}
-                            <div className="flex flex-row md:flex-col items-center md:items-start justify-between gap-3 mb-2 md:mb-4 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl md:bg-transparent md:p-0">
+                            <div className="flex flex-row md:flex-col items-center md:items-start justify-between gap-3 mb-2 md:mb-4 bg-surface dark:bg-slate-800/50 p-2 rounded-xl md:bg-transparent md:p-0">
                                 <div className="flex items-center gap-2 md:gap-3">
                                     <div className="flex flex-col items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-sm">
                                         <span className="text-[10px] md:text-xs font-bold text-slate-400 uppercase leading-none mt-1">
@@ -958,7 +958,7 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                                                             relative flex flex-col items-center justify-between p-1.5 md:p-4 rounded-xl md:rounded-2xl h-28 md:h-40 transition-all
                                                             ${isAssigned
                                                                 ? 'bg-emerald-600 border border-emerald-500 shadow-md shadow-emerald-200/50 dark:shadow-none'
-                                                                : 'bg-slate-50 dark:bg-slate-800/50 border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-slate-300'}
+                                                                : 'bg-surface dark:bg-slate-800/50 border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-slate-300'}
                                                         `}>
                                                             {/* Shift Label */}
                                                             <div className={`
@@ -1030,7 +1030,7 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
 
             {/* Floating Action Bar / Footer - Robust Centering */}
             <div className="fixed bottom-6 inset-x-0 z-40 flex justify-center pointer-events-none px-4">
-                <div className="pointer-events-auto flex items-center gap-3 bg-white/40 dark:bg-slate-900/60 backdrop-blur-xl p-2 rounded-2xl shadow-2xl border border-white/30 dark:border-slate-700/50 scale-95 md:scale-100 transition-transform ring-1 ring-white/40 dark:ring-white/10">
+                <div className="pointer-events-auto flex items-center gap-3 bg-white/40 dark:bg-surface-dark/60 backdrop-blur-xl p-2 rounded-2xl shadow-2xl border border-white/30 dark:border-slate-700/50 scale-95 md:scale-100 transition-transform ring-1 ring-white/40 dark:ring-white/10">
                     <button
                         onClick={() => setIsPresetsManagerOpen(true)}
                         className="flex items-center gap-3 bg-blue-600 text-white px-4 py-2 rounded-xl font-bold shadow-sm hover:bg-blue-500 border border-white/20 transition-all text-[10px] md:text-xs lg:text-sm leading-tight"
@@ -1105,7 +1105,7 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
 
             {/* BLOCKING LOADING OVERLAY */}
             {isLoading && (
-                <div className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-200 bg-black/50 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-2xl flex flex-col items-center gap-4 text-center mx-4">
                         <Loader2 className="w-10 h-10 text-primary animate-spin" />
                         <div>

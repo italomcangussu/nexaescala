@@ -327,7 +327,7 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
 
                             <div
                                 style={isCompleted ? { backgroundColor: hexToRgba(displayColor, 0.05), borderColor: hexToRgba(displayColor, 0.2) } : undefined}
-                                className={`p-5 rounded-3xl border transition-all ${isCompleted ? '' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 shadow-sm'}`}
+                                className={`p-5 rounded-3xl border transition-all ${isCompleted ? '' : 'bg-white dark:bg-surface-dark border-slate-100 dark:border-slate-800 shadow-sm'}`}
                             >
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="w-8 h-8 rounded-full border-2 border-white dark:border-slate-800 overflow-hidden">
@@ -339,7 +339,7 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                                     </p>
                                 </div>
 
-                                <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl flex items-center justify-between border border-slate-100 dark:border-slate-700/50">
+                                <div className="bg-surface dark:bg-slate-800/50 p-3 rounded-2xl flex items-center justify-between border border-slate-100 dark:border-slate-700/50">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 bg-white dark:bg-slate-700 rounded-xl flex flex-col items-center justify-center shadow-sm">
                                             <span className="text-[8px] font-black text-slate-400 uppercase leading-none">{new Date(exch.offered_shift?.shift?.date + 'T12:00:00').toLocaleDateString('pt-BR', { month: 'short' })}</span>
@@ -396,7 +396,7 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
     };
 
     return (
-        <div className="flex flex-col bg-slate-50 dark:bg-black w-full">
+        <div className="flex flex-col bg-surface dark:bg-black w-full">
 
             {/* Action Bar */}
             <div className="px-6 py-4 flex items-center justify-between shrink-0">
@@ -415,7 +415,7 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                     </div>
                 ) : feedItems.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
-                        <div className="w-16 h-16 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4">
+                        <div className="w-16 h-16 bg-slate-100 dark:bg-surface-dark rounded-full flex items-center justify-center mb-4">
                             <Clock size={32} className="text-slate-400" />
                         </div>
                         <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">Sem atividades no feed</p>
@@ -443,7 +443,7 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
             </div>
 
             {/* Input Footer */}
-            <div className="p-4 px-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 shrink-0 sticky bottom-0 z-20 pb-safe">
+            <div className="p-4 px-6 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 shrink-0 sticky bottom-0 z-20 pb-safe">
                 {/* Mention Suggester */}
                 {filteredMentionMembers.length > 0 && (
                     <div className="absolute bottom-full left-6 right-6 mb-2 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden animate-in slide-in-from-bottom-2 duration-200">
@@ -454,7 +454,7 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                                     onClick={() => selectMember(member)}
                                     className={`w-full flex items-center gap-3 p-2 rounded-xl transition-colors text-left ${selectedMentionIndex === idx
                                         ? 'bg-slate-100 dark:bg-slate-700'
-                                        : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                                        : 'hover:bg-surface dark:hover:bg-slate-700'
                                         }`}
                                 >
                                     <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-slate-100 dark:border-slate-600">
@@ -474,7 +474,7 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                         onChange={handleInputChange}
                         onKeyDown={handleKeyDown}
                         placeholder="Escreva um comentário ou informe uma troca..."
-                        className="w-full bg-slate-50 dark:bg-slate-800 rounded-2xl py-4 pl-6 pr-14 text-sm font-medium border border-transparent focus:border-primary/50 focus:bg-white dark:focus:bg-slate-700 outline-none transition-all shadow-inner"
+                        className="w-full bg-surface dark:bg-slate-800 rounded-2xl py-4 pl-6 pr-14 text-sm font-medium border border-transparent focus:border-primary/50 focus:bg-white dark:focus:bg-slate-700 outline-none transition-all shadow-inner"
                     />
                     <button
                         onClick={handleSendMessage}

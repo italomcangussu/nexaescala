@@ -49,7 +49,7 @@ const SettingsNotifications: React.FC<SettingsNotificationsProps> = ({ onBack })
                 <div className={`space-y-4 transition-all duration-300 ${notifSettings.enabled ? 'opacity-100' : 'opacity-50 pointer-events-none grayscale'}`}>
                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider pl-2">Preferências de Alerta</h3>
                     <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                        <div className="flex items-center justify-between p-3 rounded-xl hover:bg-surface dark:hover:bg-slate-800 transition-colors">
                             <div>
                                 <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Trocas e Repasses</h4>
                                 <p className="text-[11px] text-slate-400 mt-0.5">Alertas de solicitações de colegas.</p>
@@ -57,7 +57,7 @@ const SettingsNotifications: React.FC<SettingsNotificationsProps> = ({ onBack })
                             <Switch isOn={notifSettings.swaps} onToggle={() => toggleSwitch('swaps')} />
                         </div>
                         <div className="h-px bg-slate-100 dark:bg-slate-700 mx-3"></div>
-                        <div className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                        <div className="flex items-center justify-between p-3 rounded-xl hover:bg-surface dark:hover:bg-slate-800 transition-colors">
                             <div>
                                 <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Novos Plantões</h4>
                                 <p className="text-[11px] text-slate-400 mt-0.5">Quando surgirem vagas livres.</p>
@@ -65,7 +65,7 @@ const SettingsNotifications: React.FC<SettingsNotificationsProps> = ({ onBack })
                             <Switch isOn={notifSettings.newShifts} onToggle={() => toggleSwitch('newShifts')} />
                         </div>
                         <div className="h-px bg-slate-100 dark:bg-slate-700 mx-3"></div>
-                        <div className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                        <div className="flex items-center justify-between p-3 rounded-xl hover:bg-surface dark:hover:bg-slate-800 transition-colors">
                             <div>
                                 <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Meus Serviços</h4>
                                 <p className="text-[11px] text-slate-400 mt-0.5">Entradas, saídas e avisos do gestor.</p>

@@ -16,7 +16,7 @@ const RecurrenceModal: React.FC<RecurrenceModalProps> = ({ isOpen, onClose, onSa
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
 
-            <div className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl animate-fade-in-up">
+            <div className="relative w-full max-w-sm bg-white dark:bg-surface-dark rounded-3xl p-6 shadow-2xl animate-fade-in-up">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">Repetição de Escala</h3>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400">

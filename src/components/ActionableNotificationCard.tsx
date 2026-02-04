@@ -45,7 +45,7 @@ const ActionableNotificationCard: React.FC<ActionableNotificationCardProps> = ({
     };
 
     return (
-        <div className="relative overflow-hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-[2.5rem] p-6 shadow-xl border border-white/40 dark:border-slate-800/50 group animate-fade-in-up mb-4">
+        <div className="relative overflow-hidden bg-white/80 dark:bg-surface-dark/80 backdrop-blur-md rounded-[2.5rem] p-6 shadow-xl border border-white/40 dark:border-slate-800/50 group animate-fade-in-up mb-4">
             {/* Decorative Background Glow */}
             <div className={`absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 group-hover:opacity-30 transition-opacity duration-700 ${isSwap ? 'bg-indigo-500' : 'bg-sky-500'}`} />
 
@@ -75,7 +75,7 @@ const ActionableNotificationCard: React.FC<ActionableNotificationCardProps> = ({
                     </div>
 
                     {/* Date Badge */}
-                    <div className="flex flex-col items-center px-4 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <div className="flex flex-col items-center px-4 py-2 bg-surface dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
                         <span className="text-[10px] font-black text-slate-400 uppercase leading-none mb-1">DATA</span>
                         <span className="text-sm font-black text-slate-800 dark:text-white leading-none">
                             {formatDate(shiftDate)}
@@ -85,7 +85,7 @@ const ActionableNotificationCard: React.FC<ActionableNotificationCardProps> = ({
 
                 {/* Shift Details Content */}
                 <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-3 px-4 py-3 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl border border-slate-100/50 dark:border-slate-800/50">
+                    <div className="flex items-center gap-3 px-4 py-3 bg-surface/50 dark:bg-slate-800/30 rounded-2xl border border-slate-100/50 dark:border-slate-800/50">
                         <div className="hidden sm:flex flex-col items-center gap-0.5 min-w-[60px] pr-3 border-r border-slate-200 dark:border-slate-700">
                             <Clock size={16} className="text-slate-400 mb-1" />
                             <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">HORÁRIO</span>

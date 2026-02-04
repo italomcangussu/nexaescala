@@ -67,7 +67,7 @@ const ReplicateScheduleModal: React.FC<ReplicateScheduleModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+            <div className="bg-white dark:bg-surface-dark rounded-3xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-3">
@@ -95,7 +95,7 @@ const ReplicateScheduleModal: React.FC<ReplicateScheduleModalProps> = ({
                 {/* Content */}
                 <div className="p-6 space-y-6">
                     {/* Source Month */}
-                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex items-center gap-4">
+                    <div className="bg-surface dark:bg-slate-800/50 rounded-2xl p-4 flex items-center gap-4">
                         <div className="w-14 h-14 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center shadow-sm">
                             <span className="text-[10px] font-bold text-slate-400 uppercase">
                                 {sourceMonthName.substring(0, 3)}
@@ -160,7 +160,7 @@ const ReplicateScheduleModal: React.FC<ReplicateScheduleModalProps> = ({
                         </label>
 
                         {/* Include Assignments */}
-                        <label className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <label className="flex items-center justify-between p-4 bg-surface dark:bg-slate-800/50 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                             <div className="flex items-center gap-3">
                                 <CheckCircle size={18} className={includeAssignments ? 'text-emerald-500' : 'text-slate-300'} />
                                 <div>
@@ -181,7 +181,7 @@ const ReplicateScheduleModal: React.FC<ReplicateScheduleModalProps> = ({
                         </label>
 
                         {/* Adjust Dates */}
-                        <label className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <label className="flex items-center justify-between p-4 bg-surface dark:bg-slate-800/50 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                             <div className="flex items-center gap-3">
                                 <Calendar size={18} className={adjustDates ? 'text-blue-500' : 'text-slate-300'} />
                                 <div>

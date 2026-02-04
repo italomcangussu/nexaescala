@@ -31,7 +31,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({ shift, onClose, onSave,
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+            <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
                 <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800">
                     <h3 className="text-lg font-bold text-slate-800 dark:text-white">Editar Turno</h3>
                     <button onClick={onClose} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full">
@@ -47,7 +47,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({ shift, onClose, onSave,
                                 type="time"
                                 value={formData.start_time}
                                 onChange={e => setFormData({ ...formData, start_time: e.target.value })}
-                                className="w-full p-3 bg-slate-50 dark:bg-slate-800 rounded-xl font-medium text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-primary/20"
+                                className="w-full p-3 bg-surface dark:bg-slate-800 rounded-xl font-medium text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-primary/20"
                             />
                         </div>
                         <div>
@@ -56,7 +56,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({ shift, onClose, onSave,
                                 type="time"
                                 value={formData.end_time}
                                 onChange={e => setFormData({ ...formData, end_time: e.target.value })}
-                                className="w-full p-3 bg-slate-50 dark:bg-slate-800 rounded-xl font-medium text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-primary/20"
+                                className="w-full p-3 bg-surface dark:bg-slate-800 rounded-xl font-medium text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-primary/20"
                             />
                         </div>
                     </div>
@@ -79,7 +79,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({ shift, onClose, onSave,
                     </div>
                 </div>
 
-                <div className="p-4 bg-slate-50 dark:bg-slate-950 flex gap-3">
+                <div className="p-4 bg-surface dark:bg-background-dark flex gap-3">
                     {onDelete && (
                         <button
                             onClick={() => {
@@ -95,7 +95,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({ shift, onClose, onSave,
                     )}
                     <button
                         onClick={handleSave}
-                        className="flex-1 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primaryDark transition-colors shadow-lg shadow-primary/20"
+                        className="flex-1 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20"
                     >
                         Salvar Alterações
                     </button>

@@ -52,7 +52,7 @@ const DesktopMainApp: React.FC = () => {
 
     if (!currentUser) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+            <div className="min-h-screen flex items-center justify-center bg-surface dark:bg-background-dark">
                 <Loader2 className="w-8 h-8 text-primary animate-spin" />
             </div>
         );
@@ -62,7 +62,7 @@ const DesktopMainApp: React.FC = () => {
     const renderDashboard = () => (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Summary Cards */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="bg-white dark:bg-surface-dark rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                         <Calendar size={24} className="text-primary" />
@@ -76,7 +76,7 @@ const DesktopMainApp: React.FC = () => {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="bg-white dark:bg-surface-dark rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                         <FileEdit size={24} className="text-emerald-500" />
@@ -90,7 +90,7 @@ const DesktopMainApp: React.FC = () => {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="bg-white dark:bg-surface-dark rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
                         <Users size={24} className="text-blue-500" />
@@ -104,7 +104,7 @@ const DesktopMainApp: React.FC = () => {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="bg-white dark:bg-surface-dark rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
                         <Wallet size={24} className="text-amber-500" />
@@ -119,7 +119,7 @@ const DesktopMainApp: React.FC = () => {
             </div>
 
             {/* Quick Actions */}
-            <div className="col-span-full bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="col-span-full bg-white dark:bg-surface-dark rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">
                     Ações Rápidas
                 </h3>
@@ -150,7 +150,7 @@ const DesktopMainApp: React.FC = () => {
             </div>
 
             {/* Services List */}
-            <div className="col-span-full lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="col-span-full lg:col-span-2 bg-white dark:bg-surface-dark rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">
                     Meus Serviços
                 </h3>
@@ -174,7 +174,7 @@ const DesktopMainApp: React.FC = () => {
                                             setShowEditor(false);
                                         }
                                     }}
-                                    className="w-full flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left group"
+                                    className="w-full flex items-center gap-4 p-4 bg-surface dark:bg-slate-800/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left group"
                                 >
                                     <div
                                         className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0"
@@ -219,7 +219,7 @@ const DesktopMainApp: React.FC = () => {
             </div>
 
             {/* Recent Activity */}
-            <div className="col-span-full lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="col-span-full lg:col-span-2 bg-white dark:bg-surface-dark rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">
                     Atividades Recentes
                 </h3>
@@ -247,7 +247,7 @@ const DesktopMainApp: React.FC = () => {
 
     // Render Calendar
     const renderCalendar = () => (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden min-h-[600px]">
+        <div className="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden min-h-[600px]">
             <CalendarView
                 shifts={shifts}
                 assignments={assignments.map(a => ({ ...a, profile: profiles.find(p => p.id === a.profile_id) }))}
@@ -260,7 +260,7 @@ const DesktopMainApp: React.FC = () => {
 
     // Render Finance
     const renderFinance = () => (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden min-h-[600px]">
+        <div className="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden min-h-[600px]">
             <FinanceDashboard
                 currentUser={currentUser!}
                 userGroups={userGroups}
@@ -289,7 +289,7 @@ const DesktopMainApp: React.FC = () => {
         };
 
         return (
-            <div className="max-w-4xl mx-auto bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden p-8">
+            <div className="max-w-4xl mx-auto bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden p-8">
                 {activeSettingsView !== 'main' && (
                     <button
                         onClick={() => setActiveSettingsView('main')}
@@ -329,7 +329,7 @@ const DesktopMainApp: React.FC = () => {
 
                     if (!isGroupAdmin) {
                         return (
-                            <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 shadow-sm">
+                            <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-surface-dark rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 shadow-sm">
                                 <FileEdit size={48} className="text-slate-300 mb-4" />
                                 <h3 className="text-lg font-bold text-slate-800 dark:text-white">Acesso Restrito</h3>
                                 <p className="text-slate-500 text-sm max-w-md text-center mt-2">

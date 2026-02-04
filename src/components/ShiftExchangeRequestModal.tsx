@@ -140,10 +140,10 @@ const ShiftExchangeRequestModal: React.FC<ShiftExchangeRequestModalProps> = ({
 
     return (
         <Portal>
-            <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div className="fixed inset-0 z-70 flex items-end sm:items-center justify-center p-0 sm:p-4">
                 <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={onClose} />
 
-                <div className="relative bg-white/95 dark:bg-slate-900/95 backdrop-blur-md w-full max-w-2xl rounded-t-[2.5rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl animate-fade-in-up border border-white/20 dark:border-slate-800/50 flex flex-col max-h-[92vh]">
+                <div className="relative bg-white/95 dark:bg-surface-dark/95 backdrop-blur-md w-full max-w-2xl rounded-t-[2.5rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl animate-fade-in-up border border-white/20 dark:border-slate-800/50 flex flex-col max-h-[92vh]">
                     {/* Mobile Pull Handle */}
                     <div className="sm:hidden w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mt-4 mb-1 shrink-0" />
 
@@ -198,7 +198,7 @@ const ShiftExchangeRequestModal: React.FC<ShiftExchangeRequestModalProps> = ({
                                         placeholder="Buscar por nome ou especialidade..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-4 border-2 border-slate-100 dark:border-slate-800 rounded-3xl bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-white focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none"
+                                        className="w-full pl-12 pr-4 py-4 border-2 border-slate-100 dark:border-slate-800 rounded-3xl bg-surface dark:bg-slate-800/50 text-slate-800 dark:text-white focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none"
                                     />
                                 </div>
 
@@ -226,7 +226,7 @@ const ShiftExchangeRequestModal: React.FC<ShiftExchangeRequestModalProps> = ({
                                                     {member.specialty || 'Plantonista'} {member.crm && `• CRM ${member.crm}`}
                                                 </p>
                                             </div>
-                                            <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-700/50 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all">
+                                            <div className="w-10 h-10 rounded-xl bg-surface dark:bg-slate-700/50 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all">
                                                 <ChevronRight size={20} />
                                             </div>
                                         </button>
@@ -253,7 +253,7 @@ const ShiftExchangeRequestModal: React.FC<ShiftExchangeRequestModalProps> = ({
                                         <p className="text-sm font-bold text-slate-400 animate-pulse">Buscando plantões compatíveis...</p>
                                     </div>
                                 ) : availableShifts.length === 0 ? (
-                                    <div className="text-center py-12 px-6 bg-slate-50 dark:bg-slate-800/50 rounded-[2.5rem] border-2 border-dashed border-slate-200 dark:border-slate-800">
+                                    <div className="text-center py-12 px-6 bg-surface dark:bg-slate-800/50 rounded-[2.5rem] border-2 border-dashed border-slate-200 dark:border-slate-800">
                                         <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400">
                                             <Calendar size={32} />
                                         </div>
@@ -276,7 +276,7 @@ const ShiftExchangeRequestModal: React.FC<ShiftExchangeRequestModalProps> = ({
                                             >
                                                 <div className="flex items-center justify-between relative z-10">
                                                     <div className="flex items-center gap-4">
-                                                        <div className={`p-3 rounded-2xl transition-colors ${selectedShiftIds.includes(shift.id) ? 'bg-primary text-white scale-110' : 'bg-slate-50 dark:bg-slate-700 text-slate-400'}`}>
+                                                        <div className={`p-3 rounded-2xl transition-colors ${selectedShiftIds.includes(shift.id) ? 'bg-primary text-white scale-110' : 'bg-surface dark:bg-slate-700 text-slate-400'}`}>
                                                             <Calendar size={20} />
                                                         </div>
                                                         <div>
@@ -327,7 +327,7 @@ const ShiftExchangeRequestModal: React.FC<ShiftExchangeRequestModalProps> = ({
                             onClick={handleSubmit}
                             disabled={step === 1 ? !selectedMember : (selectedShiftIds.length === 0 || isLoading)}
                             className={`flex-1 h-14 font-black rounded-2xl shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-3 relative overflow-hidden ${(step === 1 ? selectedMember : selectedShiftIds.length > 0)
-                                ? 'bg-primary text-white shadow-primary/30 hover:bg-primaryDark'
+                                ? 'bg-primary text-white shadow-primary/30 hover:bg-primary-dark'
                                 : 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none'
                                 }`}
                         >

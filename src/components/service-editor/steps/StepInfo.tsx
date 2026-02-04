@@ -130,7 +130,7 @@ const StepInfo: React.FC<StepInfoProps> = ({
             </div>
 
             {/* Tips */}
-            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700/50">
+            <div className="bg-surface dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700/50">
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                     <span className="font-bold text-primary">💡 Dica:</span> O nome do serviço deve ser descritivo e único.
                     A cor ajuda a identificar rapidamente o serviço em sua lista.

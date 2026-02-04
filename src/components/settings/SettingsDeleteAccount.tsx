@@ -70,7 +70,7 @@ const SettingsDeleteAccount: React.FC<SettingsDeleteAccountProps> = ({ onBack, o
 
             {/* DELETE CONFIRMATION OVERLAY */}
             {showDeleteConfirm && (
-                <div className="absolute inset-0 z-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md flex flex-col items-center justify-center p-6 animate-fade-in-up rounded-[2.5rem]">
+                <div className="absolute inset-0 z-20 bg-white/90 dark:bg-surface-dark/90 backdrop-blur-md flex flex-col items-center justify-center p-6 animate-fade-in-up rounded-[2.5rem]">
                     <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Decisão Final</h3>
                     <p className="text-slate-500 dark:text-slate-400 text-sm mb-8 text-center">Todos os seus dados serão apagados agora.</p>
 

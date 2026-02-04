@@ -24,11 +24,11 @@ const Logo: React.FC<LogoProps> = ({ className = "w-10 h-10", size }) => {
         strokeWidth="6"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="text-primaryDark"
+        className="text-primary-dark"
       />
 
       {/* Clock Face (Inset in the cross intersection) */}
-      <circle cx="60" cy="50" r="22" className="fill-surface stroke-primaryDark" strokeWidth="4" />
+      <circle cx="60" cy="50" r="22" className="fill-surface stroke-primary-dark" strokeWidth="4" />
 
       {/* Clock Hands (Time aspect) */}
       <path d="M60 50V38" stroke="#F59E0B" strokeWidth="4" strokeLinecap="round" />

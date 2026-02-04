@@ -74,7 +74,7 @@ const ScaleMonthSelector: React.FC<ScaleMonthSelectorProps> = ({ group, onSelect
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-full bg-slate-50/50 dark:bg-slate-950">
+            <div className="flex items-center justify-center h-full bg-surface/50 dark:bg-background-dark">
                 <div className="flex flex-col items-center gap-3">
                     <Loader2 className="animate-spin text-primary/60" size={32} />
                     <span className="text-xs font-medium text-slate-400 animate-pulse text-center">Carregando painel...</span>
@@ -86,13 +86,13 @@ const ScaleMonthSelector: React.FC<ScaleMonthSelectorProps> = ({ group, onSelect
     const currentIndex = years.indexOf(selectedYear);
 
     return (
-        <div className="fixed inset-0 z-[70] flex flex-col h-full bg-white dark:bg-slate-950 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="fixed inset-0 z-70 flex flex-col h-full bg-white dark:bg-background-dark overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Minimalist Header */}
             <div className="px-5 pt-8 pb-4 flex items-center justify-between shrink-0 max-w-[1600px] mx-auto w-full">
                 <div className="flex items-center gap-6">
                     <button
                         onClick={onBack}
-                        className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all duration-200 shadow-sm"
+                        className="w-10 h-10 flex items-center justify-center bg-white dark:bg-surface-dark border border-slate-200/60 dark:border-slate-800 rounded-xl hover:bg-surface dark:hover:bg-slate-800/80 transition-all duration-200 shadow-sm"
                     >
                         <ChevronLeft className="text-slate-600 dark:text-slate-300" size={18} />
                     </button>
@@ -107,7 +107,7 @@ const ScaleMonthSelector: React.FC<ScaleMonthSelectorProps> = ({ group, onSelect
                 </div>
 
                 {/* Visual Accent */}
-                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white/60 dark:bg-slate-900/40 border border-white dark:border-slate-800 rounded-xl backdrop-blur-sm shadow-sm">
+                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white/60 dark:bg-surface-dark/40 border border-white dark:border-slate-800 rounded-xl backdrop-blur-sm shadow-sm">
                     <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                     <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.15em] leading-none">
                         Editor Live
@@ -117,11 +117,11 @@ const ScaleMonthSelector: React.FC<ScaleMonthSelectorProps> = ({ group, onSelect
 
             {/* Premium Year Selector */}
             <div className="px-5 py-4 flex justify-center">
-                <div className="flex items-center gap-6 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-1.5 px-4 rounded-2xl shadow-sm animate-in fade-in slide-in-from-top-2 duration-500">
+                <div className="flex items-center gap-6 bg-white dark:bg-surface-dark border border-slate-200/60 dark:border-slate-800 p-1.5 px-4 rounded-2xl shadow-sm animate-in fade-in slide-in-from-top-2 duration-500">
                     <button
                         onClick={handlePrevYear}
                         disabled={currentIndex <= 0}
-                        className={`p-1.5 rounded-lg transition-all ${currentIndex <= 0 ? 'opacity-20 cursor-not-allowed' : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300'}`}
+                        className={`p-1.5 rounded-lg transition-all ${currentIndex <= 0 ? 'opacity-20 cursor-not-allowed' : 'hover:bg-surface dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300'}`}
                     >
                         <ChevronLeft size={18} />
                     </button>
@@ -136,7 +136,7 @@ const ScaleMonthSelector: React.FC<ScaleMonthSelectorProps> = ({ group, onSelect
                     <button
                         onClick={handleNextYear}
                         disabled={currentIndex >= years.length - 1}
-                        className={`p-1.5 rounded-lg transition-all ${currentIndex >= years.length - 1 ? 'opacity-20 cursor-not-allowed' : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300'}`}
+                        className={`p-1.5 rounded-lg transition-all ${currentIndex >= years.length - 1 ? 'opacity-20 cursor-not-allowed' : 'hover:bg-surface dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300'}`}
                     >
                         <ChevronLeft className="rotate-180" size={18} />
                     </button>
@@ -154,10 +154,10 @@ const ScaleMonthSelector: React.FC<ScaleMonthSelectorProps> = ({ group, onSelect
                                 <button
                                     key={month}
                                     onClick={() => onSelectMonth(new Date(selectedYear, index, 1))}
-                                    className="group relative flex items-center justify-between p-5 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/50 rounded-2xl hover:shadow-[0_15px_40px_rgba(0,0,0,0.03)] dark:hover:shadow-[0_15px_40px_rgba(0,0,0,0.2)] hover:border-primary/30 dark:hover:border-primary/40 transition-all duration-300 text-left h-[88px]"
+                                    className="group relative flex items-center justify-between p-5 bg-white dark:bg-surface-dark border border-slate-200/60 dark:border-slate-800/50 rounded-2xl hover:shadow-[0_15px_40px_rgba(0,0,0,0.03)] dark:hover:shadow-[0_15px_40px_rgba(0,0,0,0.2)] hover:border-primary/30 dark:hover:border-primary/40 transition-all duration-300 text-left h-[88px]"
                                 >
                                     <div className="flex items-center gap-5">
-                                        <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700/50 group-hover:bg-primary/5 group-hover:border-primary/20 transition-all duration-300 shadow-sm shrink-0">
+                                        <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-surface dark:bg-slate-800 border border-slate-100 dark:border-slate-700/50 group-hover:bg-primary/5 group-hover:border-primary/20 transition-all duration-300 shadow-sm shrink-0">
                                             <CalendarIcon size={20} className="text-slate-400 dark:text-slate-500 group-hover:text-primary transition-colors" />
                                         </div>
 

@@ -81,19 +81,19 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-lg h-[90vh] sm:h-auto sm:max-h-[85vh] sm:rounded-3xl rounded-t-3xl overflow-hidden flex flex-col shadow-2xl animate-fade-in-up transition-colors">
+    <div className="fixed inset-0 z-70 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4">
+      <div className="bg-white dark:bg-surface-dark w-full max-w-lg h-[90vh] sm:h-auto sm:max-h-[85vh] sm:rounded-3xl rounded-t-3xl overflow-hidden flex flex-col shadow-2xl animate-fade-in-up transition-colors">
 
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900 z-10 transition-colors">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-surface-dark z-10 transition-colors">
           <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Editar Perfil</h2>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full transition-colors">
+          <button onClick={onClose} className="p-2 text-slate-400 hover:bg-surface dark:hover:bg-slate-800 rounded-full transition-colors">
             <X size={20} />
           </button>
         </div>
 
         {/* Scrollable Form */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/50 dark:bg-slate-950/50 transition-colors">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-surface/50 dark:bg-background-dark/50 transition-colors">
 
           <div className="flex flex-col items-center">
             <input
@@ -115,7 +115,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
                 <Edit2Icon size={12} />
               </div>
             </div>
-            <p onClick={handlePhotoClick} className="text-xs text-primary dark:text-primaryLight font-bold mt-2 cursor-pointer">Alterar foto</p>
+            <p onClick={handlePhotoClick} className="text-xs text-primary dark:text-primary-light font-bold mt-2 cursor-pointer">Alterar foto</p>
           </div>
 
           <form id="edit-profile-form" onSubmit={handleSubmit} className="space-y-4">
@@ -165,11 +165,11 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors">
+        <div className="p-4 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-surface-dark transition-colors">
           <button
             type="submit"
             form="edit-profile-form"
-            className="w-full bg-primary text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primaryDark transition-colors flex items-center justify-center space-x-2"
+            className="w-full bg-primary text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primary-dark transition-colors flex items-center justify-center space-x-2"
           >
             <Save size={18} />
             <span>Salvar Alterações</span>

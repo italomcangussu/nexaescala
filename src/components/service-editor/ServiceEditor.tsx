@@ -38,7 +38,7 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({
 
     // Wizard Step Indicator
     const WizardProgress = () => (
-        <div className="px-6 py-3 bg-slate-50/50 dark:bg-slate-950/50 border-b border-gray-100 dark:border-slate-800">
+        <div className="px-6 py-3 bg-surface/50 dark:bg-background-dark/50 border-b border-gray-100 dark:border-slate-800">
             <div className="flex items-center justify-between max-w-lg mx-auto">
                 {[1, 2, 3].map(step => {
                     const isActive = state.step === step;
@@ -123,7 +123,7 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center pointer-events-none">
+        <div className="fixed inset-0 z-70 flex items-end sm:items-center justify-center pointer-events-none">
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity z-10 pointer-events-auto"
@@ -135,14 +135,14 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({
                 onClick={e => e.stopPropagation()}
                 className={`
           relative w-full mx-4 rounded-3xl shadow-2xl flex flex-col transition-all duration-300 animate-fade-in-up z-20 pointer-events-auto
-          bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 overflow-hidden
+          bg-white/95 dark:bg-surface-dark/95 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 overflow-hidden
           ${isSuccessState ? 'max-w-md h-auto' : 'max-w-2xl h-[650px] max-h-[85vh]'}
         `}
             >
                 {!isSuccessState ? (
                     <>
                         {/* Header */}
-                        <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
+                        <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-surface-dark">
                             <div>
                                 <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">
                                     {mode === 'edit' ? 'Editar Serviço' : 'Novo Serviço'}
@@ -154,7 +154,7 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="p-2 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full transition-colors"
+                                className="p-2 text-slate-400 hover:bg-surface dark:hover:bg-slate-800 rounded-full transition-colors"
                             >
                                 <X size={20} />
                             </button>
@@ -164,12 +164,12 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({
                         <WizardProgress />
 
                         {/* Content */}
-                        <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50 dark:bg-slate-950/50">
+                        <div className="flex-1 overflow-y-auto p-6 bg-surface/50 dark:bg-background-dark/50">
                             {renderStep()}
                         </div>
 
                         {/* Footer */}
-                        <div className="p-4 border-t border-gray-100 dark:border-slate-800 flex justify-between bg-white dark:bg-slate-900">
+                        <div className="p-4 border-t border-gray-100 dark:border-slate-800 flex justify-between bg-white dark:bg-surface-dark">
                             {state.step > 1 ? (
                                 <button
                                     type="button"
@@ -188,7 +188,7 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({
                                     type="button"
                                     onClick={actions.nextStep}
                                     disabled={!canAdvance}
-                                    className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primaryDark disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                                    className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
                                 >
                                     Prosseguir
                                     <ChevronRight size={18} />
@@ -198,7 +198,7 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({
                                     type="button"
                                     onClick={actions.save}
                                     disabled={state.isSaving}
-                                    className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primaryDark transition-all flex items-center gap-2 disabled:opacity-50"
+                                    className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primary-dark transition-all flex items-center gap-2 disabled:opacity-50"
                                 >
                                     {state.isSaving ? (
                                         <>

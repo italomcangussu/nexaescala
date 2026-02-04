@@ -26,7 +26,7 @@ const SettingsAbout: React.FC<SettingsAboutProps> = ({ onBack }) => {
                 <p className="text-sm text-slate-400 font-medium">Versão 1.0.2 (Build 2405)</p>
             </div>
 
-            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 mb-8">
+            <div className="bg-surface dark:bg-slate-800/50 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 mb-8">
                 <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed italic">
                     "A tecnologia que liberta o médico para focar no que realmente importa: a vida."
                 </p>

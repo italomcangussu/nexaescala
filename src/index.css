@@ -4,9 +4,9 @@
   /* Core Brand Colors - Emerald */
   --color-primary: #059669;
   /* emerald-600 */
-  --color-primaryDark: #047857;
+  --color-primary-dark: #047857;
   /* emerald-700 */
-  --color-primaryLight: #34d399;
+  --color-primary-light: #34d399;
   /* emerald-400 */
 
   /* Semantic Colors */
@@ -14,9 +14,12 @@
   /* slate-50 */
   --color-surface-dark: #0f172a;
   /* slate-900 */
+  --color-background: #ffffff;
+  --color-background-dark: #020617;
+  /* slate-950 */
   --color-secondary: #0f172a;
   /* slate-900 */
-  --color-textSecondary: #64748b;
+  --color-text-secondary: #64748b;
   /* slate-500 */
   --color-error: #ef4444;
   /* red-500 */
@@ -32,6 +35,16 @@
   --animate-shimmer: shimmer 2s linear infinite;
   --animate-strong-pulse: strongPulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animate-bounce-subtle: bounceSubtle 2s infinite;
+
+  /* Z-index scales */
+  --z-index-40: 40;
+  --z-index-60: 60;
+  --z-index-70: 70;
+  --z-index-80: 80;
+  --z-index-100: 100;
+  --z-index-110: 110;
+  --z-index-200: 200;
+  --z-index-9999: 9999;
 
   @keyframes fadeIn {
     from {
@@ -273,7 +286,7 @@ a.icon-only {
 }
 
 .dark ::selection {
-  background-color: var(--color-primaryLight);
+  background-color: var(--color-primary-light);
   color: black;
 }
 

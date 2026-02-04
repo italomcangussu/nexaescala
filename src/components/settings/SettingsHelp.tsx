@@ -49,7 +49,7 @@ const SettingsHelp: React.FC<SettingsHelpProps> = ({ onBack }) => {
                         <ExternalLink size={16} />
                     </button>
 
-                    <button className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300">
+                    <button className="w-full flex items-center justify-between p-4 bg-surface dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300">
                         <div className="flex items-center gap-3">
                             <Mail size={20} />
                             <span className="text-sm font-bold">Enviar E-mail</span>

@@ -246,7 +246,7 @@ const SupportAdminPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+        <div className="min-h-screen bg-surface dark:bg-background-dark">
             {/* Header */}
             <div className="bg-linear-to-r from-emerald-600 via-teal-600 to-emerald-600 p-6 shadow-lg">
                 <div className="max-w-7xl mx-auto">
@@ -265,26 +265,26 @@ const SupportAdminPage: React.FC = () => {
             <div className="max-w-7xl mx-auto p-6">
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <div className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div className="bg-white dark:bg-surface-dark rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
                         <div className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Total</div>
                         <div className="text-3xl font-bold text-slate-800 dark:text-slate-100">{stats.total}</div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-emerald-200 dark:border-emerald-800 shadow-sm">
+                    <div className="bg-white dark:bg-surface-dark rounded-xl p-6 border border-emerald-200 dark:border-emerald-800 shadow-sm">
                         <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mb-1">Novas</div>
                         <div className="text-3xl font-bold text-emerald-700 dark:text-emerald-300">{stats.new}</div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-blue-200 dark:border-blue-800 shadow-sm">
+                    <div className="bg-white dark:bg-surface-dark rounded-xl p-6 border border-blue-200 dark:border-blue-800 shadow-sm">
                         <div className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-1">Lidas</div>
                         <div className="text-3xl font-bold text-blue-700 dark:text-blue-300">{stats.read}</div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div className="bg-white dark:bg-surface-dark rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
                         <div className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Respondidas</div>
                         <div className="text-3xl font-bold text-slate-700 dark:text-slate-300">{stats.answered}</div>
                     </div>
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm mb-6">
+                <div className="bg-white dark:bg-surface-dark rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm mb-6">
                     <div className="flex items-center gap-2 mb-4">
                         <Filter size={20} className="text-slate-500" />
                         <h2 className="font-bold text-slate-800 dark:text-slate-100">Filtros</h2>
@@ -299,7 +299,7 @@ const SupportAdminPage: React.FC = () => {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Buscar por nome, email ou mensagem..."
-                                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-800 dark:text-slate-200"
+                                className="w-full pl-10 pr-4 py-2 bg-surface dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-800 dark:text-slate-200"
                             />
                         </div>
 
@@ -307,7 +307,7 @@ const SupportAdminPage: React.FC = () => {
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-800 dark:text-slate-200"
+                            className="px-4 py-2 bg-surface dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-800 dark:text-slate-200"
                         >
                             <option value="all">Todos os Status</option>
                             <option value="new">Novas</option>
@@ -319,7 +319,7 @@ const SupportAdminPage: React.FC = () => {
                         <select
                             value={typeFilter}
                             onChange={(e) => setTypeFilter(e.target.value)}
-                            className="px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-800 dark:text-slate-200"
+                            className="px-4 py-2 bg-surface dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-800 dark:text-slate-200"
                         >
                             <option value="all">Todos os Tipos</option>
                             <option value="suggestion">Sugestões</option>
@@ -337,7 +337,7 @@ const SupportAdminPage: React.FC = () => {
                         <Loader className="animate-spin text-emerald-600" size={32} />
                     </div>
                 ) : filteredMessages.length === 0 ? (
-                    <div className="bg-white dark:bg-slate-900 rounded-xl p-12 text-center border border-slate-200 dark:border-slate-800">
+                    <div className="bg-white dark:bg-surface-dark rounded-xl p-12 text-center border border-slate-200 dark:border-slate-800">
                         <MessageCircle size={48} className="mx-auto mb-4 text-slate-300 dark:text-slate-700" />
                         <p className="text-slate-500 dark:text-slate-400">Nenhuma mensagem encontrada</p>
                     </div>
@@ -346,7 +346,7 @@ const SupportAdminPage: React.FC = () => {
                         {filteredMessages.map((message) => (
                             <div
                                 key={message.id}
-                                className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                                className="bg-white dark:bg-surface-dark rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                                 onClick={() => handleViewMessage(message)}
                             >
                                 <div className="flex items-start justify-between gap-4">
@@ -406,7 +406,7 @@ const SupportAdminPage: React.FC = () => {
             {/* Message Detail Modal */}
             {selectedMessage && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-in">
+                    <div className="bg-white dark:bg-surface-dark rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-in">
                         {/* Modal Header */}
                         <div className="bg-linear-to-r from-emerald-600 to-teal-600 p-6 flex items-start justify-between">
                             <div>
@@ -437,7 +437,7 @@ const SupportAdminPage: React.FC = () => {
                                     </span>
                                 </div>
 
-                                <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 mb-4">
+                                <div className="bg-surface dark:bg-slate-800 rounded-xl p-4 mb-4">
                                     <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Contato:</h3>
                                     <div className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
                                         <p className="flex items-center gap-2">
@@ -447,7 +447,7 @@ const SupportAdminPage: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
+                                <div className="bg-surface dark:bg-slate-800 rounded-xl p-4">
                                     <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Mensagem:</h3>
                                     <p className="text-slate-800 dark:text-slate-200 whitespace-pre-wrap">
                                         {selectedMessage.message}
@@ -478,7 +478,7 @@ const SupportAdminPage: React.FC = () => {
                                         value={response}
                                         onChange={(e) => setResponse(e.target.value)}
                                         rows={6}
-                                        className="w-full p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 resize-none"
+                                        className="w-full p-4 bg-surface dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 resize-none"
                                         placeholder="Digite sua resposta aqui. Ela será enviada para o email do usuário..."
                                     />
 

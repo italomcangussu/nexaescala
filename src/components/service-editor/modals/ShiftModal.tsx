@@ -24,7 +24,7 @@ const ShiftModal: React.FC<ShiftModalProps> = ({
     const canSave = shift.code && shift.start_time && shift.end_time && (shift.days_of_week?.length ?? 0) > 0;
 
     return (
-        <div className="absolute inset-0 bg-white dark:bg-slate-900 z-50 flex flex-col items-center justify-center animate-fade-in-up p-6">
+        <div className="absolute inset-0 bg-white dark:bg-surface-dark z-50 flex flex-col items-center justify-center animate-fade-in-up p-6">
             <div className="w-full max-w-sm space-y-6">
                 {/* Header */}
                 <div className="text-center">
@@ -47,7 +47,7 @@ const ShiftModal: React.FC<ShiftModalProps> = ({
                     <input
                         value={shift.code || ''}
                         onChange={e => onUpdate('code', e.target.value.toUpperCase())}
-                        className="w-full p-4 bg-slate-50 dark:bg-slate-800 rounded-xl font-bold text-center text-2xl tracking-[0.3em] uppercase border-2 border-transparent focus:border-primary outline-none dark:text-white transition-colors"
+                        className="w-full p-4 bg-surface dark:bg-slate-800 rounded-xl font-bold text-center text-2xl tracking-[0.3em] uppercase border-2 border-transparent focus:border-primary outline-none dark:text-white transition-colors"
                         maxLength={4}
                         placeholder="DT"
                         id="shift-code"
@@ -74,7 +74,7 @@ const ShiftModal: React.FC<ShiftModalProps> = ({
                             type="time"
                             value={shift.start_time || ''}
                             onChange={e => onUpdate('start_time', e.target.value)}
-                            className="w-full p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-center font-semibold dark:text-white border-2 border-transparent focus:border-primary outline-none transition-colors text-lg"
+                            className="w-full p-4 bg-surface dark:bg-slate-800 rounded-xl text-center font-semibold dark:text-white border-2 border-transparent focus:border-primary outline-none transition-colors text-lg"
                             id="shift-start"
                             name="shift-start"
                         />
@@ -87,7 +87,7 @@ const ShiftModal: React.FC<ShiftModalProps> = ({
                             type="time"
                             value={shift.end_time || ''}
                             onChange={e => onUpdate('end_time', e.target.value)}
-                            className="w-full p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-center font-semibold dark:text-white border-2 border-transparent focus:border-primary outline-none transition-colors text-lg"
+                            className="w-full p-4 bg-surface dark:bg-slate-800 rounded-xl text-center font-semibold dark:text-white border-2 border-transparent focus:border-primary outline-none transition-colors text-lg"
                             id="shift-end"
                             name="shift-end"
                         />
@@ -97,7 +97,7 @@ const ShiftModal: React.FC<ShiftModalProps> = ({
                 {/* Duration Preview */}
                 {shift.start_time && shift.end_time && (
                     <div className="flex gap-4">
-                        <div className="flex-1 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 text-center">
+                        <div className="flex-1 bg-surface dark:bg-slate-800/50 rounded-xl p-4 text-center">
                             <p className="text-xs text-slate-400 mb-1">Duração</p>
                             <p className="text-lg font-bold text-slate-700 dark:text-slate-200">
                                 {calculateDuration(shift.start_time, shift.end_time)}
@@ -113,7 +113,7 @@ const ShiftModal: React.FC<ShiftModalProps> = ({
                                 max="20"
                                 value={shift.quantity_needed || 2}
                                 onChange={e => onUpdate('quantity_needed', e.target.value)}
-                                className="w-full p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-center font-bold text-xl dark:text-white border-2 border-transparent focus:border-primary outline-none transition-colors"
+                                className="w-full p-3 bg-surface dark:bg-slate-800 rounded-xl text-center font-bold text-xl dark:text-white border-2 border-transparent focus:border-primary outline-none transition-colors"
                                 id="shift-quantity"
                                 name="shift-quantity"
                             />
@@ -134,7 +134,7 @@ const ShiftModal: React.FC<ShiftModalProps> = ({
                         type="button"
                         onClick={onSave}
                         disabled={!canSave}
-                        className="flex-1 py-3.5 bg-primary text-white font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primaryDark transition-colors"
+                        className="flex-1 py-3.5 bg-primary text-white font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-dark transition-colors"
                     >
                         {isEditing ? 'Salvar' : 'Adicionar'}
                     </button>

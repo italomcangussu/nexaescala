@@ -15,8 +15,8 @@ const LegalModal: React.FC<LegalModalProps> = ({ isOpen, onClose, type }) => {
     const Icon = isTerms ? FileText : Shield;
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-2xl max-h-[85vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-scale-in">
+        <div className="fixed inset-0 z-110 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white dark:bg-surface-dark w-full max-w-2xl max-h-[85vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-scale-in">
 
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
@@ -100,7 +100,7 @@ const LegalModal: React.FC<LegalModalProps> = ({ isOpen, onClose, type }) => {
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex justify-center">
+                <div className="p-6 bg-surface dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex justify-center">
                     <button
                         onClick={onClose}
                         className="px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all"

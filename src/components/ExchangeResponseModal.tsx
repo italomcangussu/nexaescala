@@ -73,10 +73,10 @@ const ExchangeResponseModal: React.FC<ExchangeResponseModalProps> = ({
 
     return (
         <>
-            <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
                 <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
-                <div className="relative bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-xl animate-fade-in-up overflow-hidden">
+                <div className="relative bg-white dark:bg-surface-dark w-full max-w-2xl rounded-2xl shadow-xl animate-fade-in-up overflow-hidden">
                     {/* Header */}
                     <div className="p-6 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
                         <button
@@ -188,7 +188,7 @@ const ExchangeResponseModal: React.FC<ExchangeResponseModalProps> = ({
                         <button
                             onClick={handleAccept}
                             disabled={!selectedShiftId || isLoading}
-                            className="flex-1 px-6 py-3 bg-primary text-white font-semibold rounded-lg shadow-lg shadow-primary/30 hover:bg-primaryDark transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 px-6 py-3 bg-primary text-white font-semibold rounded-lg shadow-lg shadow-primary/30 hover:bg-primary-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isLoading ? 'Processando...' : 'Confirmar Troca'}
                         </button>
@@ -198,9 +198,9 @@ const ExchangeResponseModal: React.FC<ExchangeResponseModalProps> = ({
 
             {/* Confirmation Toast */}
             {showConfirmation && (
-                <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-80 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/60" onClick={() => setShowConfirmation(false)} />
-                    <div className="relative bg-white dark:bg-slate-900 rounded-xl p-6 shadow-2xl max-w-sm w-full animate-fade-in-up">
+                    <div className="relative bg-white dark:bg-surface-dark rounded-xl p-6 shadow-2xl max-w-sm w-full animate-fade-in-up">
                         <h4 className="text-lg font-bold text-slate-800 dark:text-white mb-2">
                             Confirmar Troca?
                         </h4>
@@ -217,7 +217,7 @@ const ExchangeResponseModal: React.FC<ExchangeResponseModalProps> = ({
                             <button
                                 onClick={confirmAccept}
                                 disabled={isLoading}
-                                className="flex-1 px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primaryDark transition-all disabled:opacity-50"
+                                className="flex-1 px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark transition-all disabled:opacity-50"
                             >
                                 {isLoading ? 'Confirmando...' : 'Sim, confirmar'}
                             </button>

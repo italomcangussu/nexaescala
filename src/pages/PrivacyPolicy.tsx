@@ -20,7 +20,7 @@ const PrivacyPolicy: React.FC = () => {
             </div>
 
             {/* Main Container */}
-            <div className="max-w-4xl mx-auto bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
+            <div className="max-w-4xl mx-auto bg-white/80 dark:bg-surface-dark/80 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
 
                 {/* Header Section */}
                 <div className="bg-linear-to-r from-emerald-600 to-teal-600 px-8 py-12 text-white relative overflow-hidden">
@@ -270,7 +270,7 @@ const PrivacyPolicy: React.FC = () => {
                             Se você tiver dúvidas, preocupações ou solicitações relacionadas a esta Política de Privacidade ou ao tratamento de seus dados pessoais, entre em contato conosco:
                         </p>
 
-                        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6 space-y-3">
+                        <div className="bg-surface dark:bg-slate-800/50 rounded-xl p-6 space-y-3">
                             <div className="flex items-start gap-3">
                                 <Mail size={20} className="text-emerald-600 dark:text-emerald-400 mt-0.5" />
                                 <div>

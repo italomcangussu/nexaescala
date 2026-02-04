@@ -56,7 +56,7 @@ const SettingsAccount: React.FC<SettingsAccountProps> = ({ onBack }) => {
                         <input
                             value={accountForm.fullName}
                             onChange={(e) => handleAccountChange('fullName', e.target.value)}
-                            className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-700 rounded-lg text-sm text-slate-800 dark:text-slate-100 font-medium focus:ring-2 focus:ring-primary/20 outline-none border border-transparent focus:bg-white dark:focus:bg-slate-600 transition-all"
+                            className="w-full mt-1 p-2 bg-surface dark:bg-slate-700 rounded-lg text-sm text-slate-800 dark:text-slate-100 font-medium focus:ring-2 focus:ring-primary/20 outline-none border border-transparent focus:bg-white dark:focus:bg-slate-600 transition-all"
                         />
                     </div>
                     <div>
@@ -64,7 +64,7 @@ const SettingsAccount: React.FC<SettingsAccountProps> = ({ onBack }) => {
                         <input
                             value={accountForm.crm}
                             onChange={(e) => handleAccountChange('crm', e.target.value)}
-                            className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-700 rounded-lg text-sm text-slate-800 dark:text-slate-100 font-medium focus:ring-2 focus:ring-primary/20 outline-none border border-transparent focus:bg-white dark:focus:bg-slate-600 transition-all"
+                            className="w-full mt-1 p-2 bg-surface dark:bg-slate-700 rounded-lg text-sm text-slate-800 dark:text-slate-100 font-medium focus:ring-2 focus:ring-primary/20 outline-none border border-transparent focus:bg-white dark:focus:bg-slate-600 transition-all"
                         />
                     </div>
                     <div>
@@ -72,7 +72,7 @@ const SettingsAccount: React.FC<SettingsAccountProps> = ({ onBack }) => {
                         <input
                             value={accountForm.email}
                             onChange={(e) => handleAccountChange('email', e.target.value)}
-                            className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-700 rounded-lg text-sm text-slate-800 dark:text-slate-100 font-medium focus:ring-2 focus:ring-primary/20 outline-none border border-transparent focus:bg-white dark:focus:bg-slate-600 transition-all"
+                            className="w-full mt-1 p-2 bg-surface dark:bg-slate-700 rounded-lg text-sm text-slate-800 dark:text-slate-100 font-medium focus:ring-2 focus:ring-primary/20 outline-none border border-transparent focus:bg-white dark:focus:bg-slate-600 transition-all"
                         />
                     </div>
                     <div>
@@ -80,7 +80,7 @@ const SettingsAccount: React.FC<SettingsAccountProps> = ({ onBack }) => {
                         <input
                             value={accountForm.phone}
                             onChange={(e) => handleAccountChange('phone', e.target.value)}
-                            className="w-full mt-1 p-2 bg-slate-50 dark:bg-slate-700 rounded-lg text-sm text-slate-800 dark:text-slate-100 font-medium focus:ring-2 focus:ring-primary/20 outline-none border border-transparent focus:bg-white dark:focus:bg-slate-600 transition-all"
+                            className="w-full mt-1 p-2 bg-surface dark:bg-slate-700 rounded-lg text-sm text-slate-800 dark:text-slate-100 font-medium focus:ring-2 focus:ring-primary/20 outline-none border border-transparent focus:bg-white dark:focus:bg-slate-600 transition-all"
                         />
                     </div>
                 </div>
@@ -105,7 +105,7 @@ const SettingsAccount: React.FC<SettingsAccountProps> = ({ onBack }) => {
                             <select
                                 value={accountForm.visibilityScope}
                                 onChange={(e) => handleAccountChange('visibilityScope', e.target.value)}
-                                className="w-full appearance-none bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none"
+                                className="w-full appearance-none bg-surface dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-sm rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none"
                             >
                                 <option>Todos</option>
                                 <option>Serviço</option>
@@ -117,7 +117,7 @@ const SettingsAccount: React.FC<SettingsAccountProps> = ({ onBack }) => {
                     </div>
                 </div>
 
-                <button className="w-full bg-primary text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-200 hover:bg-primaryDark active:scale-95 transition-all">
+                <button className="w-full bg-primary text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-200 hover:bg-primary-dark active:scale-95 transition-all">
                     Salvar Alterações
                 </button>
             </div>

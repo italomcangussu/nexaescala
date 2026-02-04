@@ -20,7 +20,7 @@ const AdminLogs = React.lazy(() => import('./pages/admin/SystemLogs'));
 const AdminLoginPage = React.lazy(() => import('./pages/admin/AdminLoginPage'));
 
 const LoadingFallback = () => (
-    <div className="flex items-center justify-center h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="flex items-center justify-center h-screen bg-surface dark:bg-background-dark">
         <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
     </div>
 );

@@ -194,7 +194,7 @@ const NotificationManager: React.FC = () => {
     if (!Capacitor.isNativePlatform() && isIOS && !isStandalone) {
         return (
             <div className="fixed top-4 left-4 right-4 z-50 animate-fade-in-down">
-                <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800 flex flex-col gap-3">
+                <div className="bg-white/95 dark:bg-surface-dark/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800 flex flex-col gap-3">
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl">
@@ -210,7 +210,7 @@ const NotificationManager: React.FC = () => {
                         <button onClick={handleDismiss} className="text-slate-400 p-1"><X size={16} /></button>
                     </div>
 
-                    <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl text-xs space-y-2">
+                    <div className="bg-surface dark:bg-slate-800 p-3 rounded-xl text-xs space-y-2">
                         <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                             <span className="font-bold">1.</span> Toque no botão Compartilhar <Share size={14} className="inline ml-1" />
                         </div>
@@ -226,10 +226,10 @@ const NotificationManager: React.FC = () => {
     // Standard Permission Request Banner
     return (
         <div className="fixed top-4 left-4 right-4 z-50 animate-fade-in-down">
-            <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800 flex flex-col gap-3">
+            <div className="bg-white/95 dark:bg-surface-dark/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800 flex flex-col gap-3">
                 <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 text-primary dark:text-primaryLight rounded-xl">
+                        <div className="p-2 bg-primary/10 text-primary dark:text-primary-light rounded-xl">
                             <Bell size={20} />
                         </div>
                         <div>
@@ -244,7 +244,7 @@ const NotificationManager: React.FC = () => {
 
                 <button
                     onClick={handleRequestPermission}
-                    className="w-full py-4 bg-primary text-white font-bold text-sm rounded-2xl hover:bg-primaryDark transition-all active:scale-[0.98] shadow-lg shadow-emerald-200/50 dark:shadow-none"
+                    className="w-full py-4 bg-primary text-white font-bold text-sm rounded-2xl hover:bg-primary-dark transition-all active:scale-[0.98] shadow-lg shadow-emerald-200/50 dark:shadow-none"
                 >
                     Ativar Notificações
                 </button>

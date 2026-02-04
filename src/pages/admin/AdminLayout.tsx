@@ -27,7 +27,7 @@ const AdminLayout: React.FC = () => {
     }
 
     return (
-        <div className="flex h-screen bg-slate-100 dark:bg-slate-900">
+        <div className="flex h-screen bg-slate-100 dark:bg-surface-dark">
             {/* Sidebar */}
             <aside className="w-64 bg-white dark:bg-slate-800 shadow-md flex flex-col">
                 <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
@@ -42,7 +42,7 @@ const AdminLayout: React.FC = () => {
                         className={({ isActive }) =>
                             `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
                                 ? 'bg-primary/10 text-primary font-medium'
-                                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-surface dark:hover:bg-slate-700'
                             }`
                         }
                     >
@@ -55,7 +55,7 @@ const AdminLayout: React.FC = () => {
                         className={({ isActive }) =>
                             `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
                                 ? 'bg-primary/10 text-primary font-medium'
-                                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-surface dark:hover:bg-slate-700'
                             }`
                         }
                     >
@@ -68,7 +68,7 @@ const AdminLayout: React.FC = () => {
                         className={({ isActive }) =>
                             `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
                                 ? 'bg-primary/10 text-primary font-medium'
-                                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-surface dark:hover:bg-slate-700'
                             }`
                         }
                     >

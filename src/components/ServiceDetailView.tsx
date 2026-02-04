@@ -105,7 +105,7 @@ const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUse
   };
 
   return (
-    <div className="fixed inset-0 z-60 bg-white dark:bg-slate-900 flex flex-col animate-fade-in-up overflow-hidden pt-[env(safe-area-inset-top)]">
+    <div className="fixed inset-0 z-60 bg-white dark:bg-surface-dark flex flex-col animate-fade-in-up overflow-hidden pt-safe">
       {/* Color Picker Banner */}
       {showColorBanner && (
         <ColorPickerBanner
@@ -116,7 +116,7 @@ const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUse
       )}
 
       {/* Header */}
-      <div className="px-6 py-4 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between shrink-0 shadow-sm z-20">
+      <div className="px-6 py-4 bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-slate-800 flex items-center justify-between shrink-0 shadow-sm z-20">
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{group.name}</h2>
@@ -154,7 +154,7 @@ const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUse
       </div>
 
       {/* Content based on Role */}
-      <div className="flex-1 overflow-y-auto relative bg-slate-50 dark:bg-slate-950">
+      <div className="flex-1 overflow-y-auto relative bg-surface dark:bg-background-dark">
         {(group.user_role === ServiceRole.ADMIN || group.user_role === ServiceRole.ADMIN_AUX) ? (
           <AdminServiceView
             group={group}

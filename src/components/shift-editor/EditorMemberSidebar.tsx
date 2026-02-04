@@ -18,7 +18,7 @@ const EditorMemberSidebar: React.FC<EditorMemberSidebarProps> = ({ members, onDr
     );
 
     return (
-        <div className="w-full md:w-80 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full shrink-0 z-20 shadow-xl">
+        <div className="w-full md:w-80 bg-white dark:bg-surface-dark border-r border-slate-200 dark:border-slate-800 flex flex-col h-full shrink-0 z-20 shadow-xl">
             {/* Header */}
             <div className="p-4 border-b border-slate-100 dark:border-slate-800">
                 <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-1">Membros</h3>
@@ -56,7 +56,7 @@ const EditorMemberSidebar: React.FC<EditorMemberSidebarProps> = ({ members, onDr
                             className={`group flex items-center gap-3 p-3 rounded-xl border cursor-pointer md:cursor-grab active:cursor-grabbing transition-all
                                 ${isSelected
                                     ? 'bg-primary/10 border-primary shadow-sm ring-1 ring-primary/20'
-                                    : 'bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 border-transparent hover:border-slate-200 dark:hover:border-slate-700'
+                                    : 'bg-transparent hover:bg-surface dark:hover:bg-slate-800 border-transparent hover:border-slate-200 dark:hover:border-slate-700'
                                 }
                             `}
                         >

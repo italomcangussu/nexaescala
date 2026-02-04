@@ -38,7 +38,7 @@ const InstitutionModal: React.FC<InstitutionModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="absolute inset-0 bg-white dark:bg-slate-900 z-50 flex flex-col animate-fade-in-up">
+        <div className="absolute inset-0 bg-white dark:bg-surface-dark z-50 flex flex-col animate-fade-in-up">
             {/* Header */}
             <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
                 <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">
@@ -61,7 +61,7 @@ const InstitutionModal: React.FC<InstitutionModalProps> = ({
                         <div className="relative">
                             <Search className="absolute left-3 top-3.5 text-slate-400" size={20} />
                             <input
-                                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800 rounded-xl border-none outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-white"
+                                className="w-full pl-10 pr-4 py-3 bg-surface dark:bg-slate-800 rounded-xl border-none outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-white"
                                 placeholder="Buscar instituição..."
                                 value={searchQuery}
                                 onChange={e => onSearch(e.target.value)}
@@ -178,7 +178,7 @@ const InstitutionModal: React.FC<InstitutionModalProps> = ({
                                 type="button"
                                 onClick={onSave}
                                 disabled={!formData.name}
-                                className="w-full py-3.5 bg-primary text-white font-bold rounded-xl text-sm hover:bg-primaryDark transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+                                className="w-full py-3.5 bg-primary text-white font-bold rounded-xl text-sm hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
                             >
                                 Salvar e Selecionar
                             </button>

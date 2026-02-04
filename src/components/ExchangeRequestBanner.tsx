@@ -73,7 +73,7 @@ const ExchangeRequestBanner: React.FC<ExchangeRequestBannerProps> = ({
                     <div className="flex gap-2 mt-4">
                         <button
                             onClick={onOpenResponse}
-                            className="px-4 py-2 bg-primary text-white font-semibold rounded-lg shadow-md shadow-primary/30 hover:bg-primaryDark transition-all text-sm"
+                            className="px-4 py-2 bg-primary text-white font-semibold rounded-lg shadow-md shadow-primary/30 hover:bg-primary-dark transition-all text-sm"
                         >
                             Ver Detalhes
                         </button>

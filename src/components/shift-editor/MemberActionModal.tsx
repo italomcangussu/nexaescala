@@ -16,7 +16,7 @@ const MemberActionModal: React.FC<MemberActionModalProps> = ({ member, onClose, 
             onClick={onClose}
         >
             <div
-                className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all scale-100"
+                className="bg-white dark:bg-surface-dark rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all scale-100"
                 onClick={e => e.stopPropagation()}
             >
                 <div className="p-6 text-center border-b border-slate-100 dark:border-slate-800 relative">
@@ -34,7 +34,7 @@ const MemberActionModal: React.FC<MemberActionModalProps> = ({ member, onClose, 
                 <div className="p-4 space-y-3">
                     <button
                         onClick={() => { onSwap(); onClose(); }}
-                        className="w-full p-4 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl flex items-center gap-4 transition-colors group text-left"
+                        className="w-full p-4 bg-surface dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl flex items-center gap-4 transition-colors group text-left"
                     >
                         <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                             <RefreshCw size={20} />
@@ -64,7 +64,7 @@ const MemberActionModal: React.FC<MemberActionModalProps> = ({ member, onClose, 
                     </button>
                 </div>
 
-                <div className="p-4 bg-slate-50 dark:bg-slate-950 text-center">
+                <div className="p-4 bg-surface dark:bg-background-dark text-center">
                     <button onClick={onClose} className="text-sm font-bold text-slate-400 hover:text-slate-600">Cancelar</button>
                 </div>
             </div>

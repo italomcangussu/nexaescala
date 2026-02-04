@@ -115,7 +115,7 @@ const SupportPage: React.FC = () => {
                 <div className="absolute -bottom-[20%] left-[20%] w-[50%] h-[50%] bg-blue-400/20 dark:bg-blue-900/10 rounded-full blur-[100px] animate-pulse-slow delay-2000"></div>
             </div>
 
-            <div className="max-w-3xl w-full backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border border-white/50 dark:border-slate-700/50 rounded-3xl shadow-2xl shadow-slate-200/50 dark:shadow-black/50 overflow-hidden relative z-10 animate-fade-in-up">
+            <div className="max-w-3xl w-full backdrop-blur-xl bg-white/90 dark:bg-surface-dark/90 border border-white/50 dark:border-slate-700/50 rounded-3xl shadow-2xl shadow-slate-200/50 dark:shadow-black/50 overflow-hidden relative z-10 animate-fade-in-up">
 
                 {/* Header */}
                 <div className="bg-linear-to-r from-emerald-600 via-teal-600 to-emerald-600 p-8 text-center">
@@ -158,7 +158,7 @@ const SupportPage: React.FC = () => {
                                 required
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
-                                className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 font-medium"
+                                className="w-full p-4 bg-surface dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 font-medium"
                                 placeholder="Ex: João Silva"
                             />
                         </div>
@@ -174,7 +174,7 @@ const SupportPage: React.FC = () => {
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 font-medium"
+                                className="w-full p-4 bg-surface dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 font-medium"
                                 placeholder="seu@email.com"
                             />
                         </div>
@@ -189,7 +189,7 @@ const SupportPage: React.FC = () => {
                                 <select
                                     value={countryCode}
                                     onChange={(e) => setCountryCode(e.target.value)}
-                                    className="w-1/3 p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 font-medium"
+                                    className="w-1/3 p-4 bg-surface dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 font-medium"
                                 >
                                     {COUNTRY_CODES.map((item) => (
                                         <option key={item.code} value={item.code}>
@@ -202,7 +202,7 @@ const SupportPage: React.FC = () => {
                                     required
                                     value={phoneNumber}
                                     onChange={handlePhoneChange}
-                                    className="flex-1 p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 font-medium"
+                                    className="flex-1 p-4 bg-surface dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 font-medium"
                                     placeholder={countryCode === '+55' ? '(11) 98765-4321' : 'Número de telefone'}
                                 />
                             </div>
@@ -222,7 +222,7 @@ const SupportPage: React.FC = () => {
                                         onClick={() => setMessageType(type.value)}
                                         className={`p-4 rounded-xl border-2 transition-all font-semibold text-sm flex flex-col items-center gap-2 ${messageType === type.value
                                             ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 shadow-lg shadow-emerald-500/20'
-                                            : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:border-emerald-300 dark:hover:border-emerald-700'
+                                            : 'border-slate-200 dark:border-slate-700 bg-surface dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:border-emerald-300 dark:hover:border-emerald-700'
                                             }`}
                                     >
                                         <span className="text-2xl">{type.icon}</span>
@@ -242,7 +242,7 @@ const SupportPage: React.FC = () => {
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
                                 rows={6}
-                                className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 font-medium resize-none"
+                                className="w-full p-4 bg-surface dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all text-slate-800 dark:text-slate-200 font-medium resize-none"
                                 placeholder="Descreva sua dúvida, sugestão ou feedback aqui..."
                             />
                             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
@@ -284,7 +284,7 @@ const SupportPage: React.FC = () => {
                 )}
 
                 {/* Footer */}
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-6 text-center border-t border-slate-200 dark:border-slate-700">
+                <div className="bg-surface dark:bg-slate-800/50 p-6 text-center border-t border-slate-200 dark:border-slate-700">
                     <p className="text-sm text-slate-600 dark:text-slate-400">
                         📧 Sua mensagem será respondida em até 24 horas • 💚 Obrigado por usar o NexaEscala
                     </p>

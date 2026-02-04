@@ -96,7 +96,7 @@ const RelatedServicesSection: React.FC<RelatedServicesSectionProps> = ({ group, 
             ) : (
                 <div className="space-y-3">
                     {relationships.map(rel => (
-                        <div key={rel.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <div key={rel.id} className="flex items-center justify-between p-3 bg-surface dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
                             <div>
                                 <h4 className="font-bold text-slate-700 dark:text-slate-200">
                                     {rel.related_group?.name}
@@ -117,7 +117,7 @@ const RelatedServicesSection: React.FC<RelatedServicesSectionProps> = ({ group, 
                     ))}
 
                     {relationships.length === 0 && !isAdding && (
-                        <div className="text-center py-6 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                        <div className="text-center py-6 bg-surface dark:bg-slate-800/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
                             <span className="text-sm text-slate-400">Nenhum serviço relacionado</span>
                         </div>
                     )}
@@ -127,31 +127,31 @@ const RelatedServicesSection: React.FC<RelatedServicesSectionProps> = ({ group, 
             {!isAdding ? (
                 <button
                     onClick={handleStartAdd}
-                    className="mt-4 w-full py-2 flex items-center justify-center gap-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium text-sm"
+                    className="mt-4 w-full py-2 flex items-center justify-center gap-2 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-slate-500 hover:bg-surface dark:hover:bg-slate-800 transition-colors font-medium text-sm"
                 >
                     <Plus size={16} />
                     Adicionar Relacionamento
                 </button>
             ) : (
-                <div className="mt-4 p-4 bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/30 rounded-xl shadow-sm ring-1 ring-emerald-500/20">
+                <div className="mt-4 p-4 bg-white dark:bg-surface-dark border border-emerald-100 dark:border-emerald-900/30 rounded-xl shadow-sm ring-1 ring-emerald-500/20">
                     <h4 className="font-bold text-sm mb-3 text-slate-800 dark:text-slate-100">Novo Relacionamento</h4>
 
                     <div className="space-y-3">
                         <div>
                             <label className="block text-xs font-bold text-slate-500 mb-1">Serviço</label>
                             {isLoadingGroups ? (
-                                <div className="h-10 flex items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-lg">
+                                <div className="h-10 flex items-center justify-center bg-surface dark:bg-slate-800 rounded-lg">
                                     <Loader2 className="animate-spin text-slate-400" size={16} />
                                 </div>
                             ) : availableGroups.length === 0 ? (
-                                <div className="text-center py-3 text-xs text-slate-400 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                                <div className="text-center py-3 text-xs text-slate-400 bg-surface dark:bg-slate-800 rounded-lg">
                                     Você não é administrador de outros serviços.
                                 </div>
                             ) : (
                                 <select
                                     value={selectedGroup}
                                     onChange={(e) => setSelectedGroup(e.target.value)}
-                                    className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 outline-none"
+                                    className="w-full p-2 bg-surface dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 outline-none"
                                 >
                                     <option value="">Selecione um serviço...</option>
                                     {availableGroups.map(g => (
@@ -168,7 +168,7 @@ const RelatedServicesSection: React.FC<RelatedServicesSectionProps> = ({ group, 
                                 value={customLabel}
                                 onChange={(e) => setCustomLabel(e.target.value)}
                                 placeholder="Ex: Chefia de Equipe, Interconsultas..."
-                                className="w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 outline-none"
+                                className="w-full p-2 bg-surface dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 outline-none"
                             />
                         </div>
 

@@ -47,11 +47,11 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
     ];
 
     return (
-        <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden">
+        <div className="flex h-screen bg-surface dark:bg-background-dark overflow-hidden">
             {/* Sidebar */}
             <aside
                 className={`
-          flex flex-col h-full bg-white dark:bg-slate-900 
+          flex flex-col h-full bg-white dark:bg-surface-dark 
           border-r border-slate-200/60 dark:border-slate-800
           transition-all duration-300 ease-in-out
           ${isSidebarCollapsed ? 'w-20' : 'w-72'}
@@ -191,7 +191,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 {/* Top Header */}
-                <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200/60 dark:border-slate-800 flex items-center justify-between px-6 shrink-0">
+                <header className="h-16 bg-white dark:bg-surface-dark border-b border-slate-200/60 dark:border-slate-800 flex items-center justify-between px-6 shrink-0">
                     <div className="flex items-center gap-4">
                         <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                             {navItems.find(n => n.id === activeTab)?.label || 'Dashboard'}
@@ -228,7 +228,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                 </header>
 
                 {/* Content */}
-                <main className="flex-1 overflow-auto p-6 bg-slate-50 dark:bg-slate-950">
+                <main className="flex-1 overflow-auto p-6 bg-surface dark:bg-background-dark">
                     {children}
                 </main>
             </div>

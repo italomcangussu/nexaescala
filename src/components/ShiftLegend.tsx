@@ -33,7 +33,7 @@ const ShiftLegend: React.FC<ShiftLegendProps> = ({ presets }) => {
     };
 
     return (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-800 mb-4">
+        <div className="bg-white dark:bg-surface-dark rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-800 mb-4">
             <div className="flex items-center gap-2 mb-3">
                 <Clock size={16} className="text-slate-400" />
                 <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">

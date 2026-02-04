@@ -129,9 +129,9 @@ const DraggableFAB: React.FC<DraggableFABProps> = ({ onClick }) => {
                     touchAction: 'none',
                     transition: isDragging ? 'none' : 'all 0.5s cubic-bezier(0.19, 1, 0.22, 1)'
                 }}
-                className={`fixed z-[9999] w-16 h-16 rounded-full flex items-center justify-center 
+                className={`fixed z-9999 w-16 h-16 rounded-full flex items-center justify-center 
                     ${isDragging ? 'scale-110 opacity-90 cursor-grabbing' : 'scale-100 cursor-grab'}
-                    bg-white/10 dark:bg-slate-900/10 backdrop-blur-xl border border-white/40 dark:border-slate-800/20 
+                    bg-white/10 dark:bg-surface-dark/10 backdrop-blur-xl border border-white/40 dark:border-slate-800/20 
                     shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] active:scale-95 transition-transform overflow-visible select-none`}
             >
                 {/* Subtle Inner Glow */}

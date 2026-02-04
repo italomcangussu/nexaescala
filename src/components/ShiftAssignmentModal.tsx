@@ -49,7 +49,7 @@ const ShiftAssignmentModal: React.FC<ShiftAssignmentModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-slate-100 dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl border border-white/20 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="bg-slate-100 dark:bg-surface-dark w-full max-w-md rounded-3xl shadow-2xl border border-white/20 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
 
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 pb-2">

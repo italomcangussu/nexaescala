@@ -304,7 +304,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
               hasRelevantShifts
                 ? (isAdminView || myShiftOnThisDay || isRepassing || isTransferred
                   ? 'cursor-pointer'
-                  : 'bg-slate-50 dark:bg-slate-800 border-transparent hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer')
+                  : 'bg-surface dark:bg-slate-800 border-transparent hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer')
                 : 'border-transparent text-slate-300 dark:text-slate-700 cursor-default opacity-50'}
             ${isToday && !isSelected ? 'ring-2 ring-gray-200 dark:ring-slate-700' : ''}
             ${shouldPulse ? 'animate-pulse' : ''}
@@ -368,13 +368,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   });
 
   return (
-    <div className="flex flex-col bg-surface dark:bg-slate-950 transition-colors duration-300">
+    <div className="flex flex-col bg-surface dark:bg-background-dark transition-colors duration-300">
 
       {/* Modern Calendar Header */}
-      <div className="bg-surface dark:bg-slate-900 pt-6 pb-2 px-6 transition-colors">
+      <div className="bg-surface dark:bg-surface-dark pt-6 pb-2 px-6 transition-colors">
         <div className="flex items-center justify-between mb-6">
           <div className="flex flex-col">
-            <span className="text-sm text-textSecondary dark:text-slate-500 font-medium uppercase tracking-wider">{currentDate.getFullYear()}</span>
+            <span className="text-sm text-text-secondary dark:text-slate-500 font-medium uppercase tracking-wider">{currentDate.getFullYear()}</span>
             <div className="flex items-center gap-2" onClick={() => setCurrentDate(new Date())}>
               <h2 className="text-3xl font-black text-textPrimary dark:text-slate-100 capitalize cursor-pointer hover:text-primary transition-colors tracking-tight">
                 {monthNames[currentDate.getMonth()]}
@@ -383,10 +383,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <button onClick={handlePrevMonth} className="p-2 border border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-white dark:hover:bg-slate-700 hover:shadow-sm text-textSecondary dark:text-slate-400 transition-all">
+            <button onClick={handlePrevMonth} className="p-2 border border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-white dark:hover:bg-slate-700 hover:shadow-sm text-text-secondary dark:text-slate-400 transition-all">
               <ChevronLeft size={18} />
             </button>
-            <button onClick={handleNextMonth} className="p-2 border border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-white dark:hover:bg-slate-700 hover:shadow-sm text-textSecondary dark:text-slate-400 transition-all">
+            <button onClick={handleNextMonth} className="p-2 border border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-white dark:hover:bg-slate-700 hover:shadow-sm text-text-secondary dark:text-slate-400 transition-all">
               <ChevronRight size={18} />
             </button>
           </div>
@@ -395,7 +395,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         {/* Weekday Headers */}
         <div className="grid grid-cols-7 text-center mb-2">
           {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, index) => (
-            <span key={`${d}-${index}`} className="text-xs font-black text-textSecondary dark:text-slate-600 opacity-60">{d}</span>
+            <span key={`${d}-${index}`} className="text-xs font-black text-text-secondary dark:text-slate-600 opacity-60">{d}</span>
           ))}
         </div>
       </div>
@@ -407,7 +407,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
       {/* Legend */}
       <div className="px-6 mb-6">
-        <div className="bg-slate-50/50 dark:bg-slate-900/50 backdrop-blur-md rounded-2xl p-4 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-800 shadow-sm">
+        <div className="bg-surface/50 dark:bg-surface-dark/50 backdrop-blur-md rounded-2xl p-4 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-800 shadow-sm">
 
           {/* Group 1: Service Legend */}
           <div className="flex flex-wrap gap-x-5 gap-y-2.5">
@@ -465,10 +465,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       {/* Available Shifts List - Conditionally Rendered */}
       {
         showAvailableShifts && (
-          <div className="bg-background dark:bg-slate-950 px-6 py-6 pb-20">
+          <div className="bg-background dark:bg-background-dark px-6 py-6 pb-20">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-bold text-textPrimary dark:text-slate-200">Plantões disponíveis</h3>
-              <button className="p-1 text-textSecondary dark:text-slate-500 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-full transition-colors">
+              <button className="p-1 text-text-secondary dark:text-slate-500 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-full transition-colors">
                 <MoreHorizontal size={20} />
               </button>
             </div>
@@ -494,8 +494,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                 })}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-textSecondary dark:text-slate-500 opacity-60">
-                <div className="w-16 h-16 bg-gray-50 dark:bg-slate-900 rounded-full mb-3 flex items-center justify-center">
+              <div className="flex flex-col items-center justify-center py-12 text-text-secondary dark:text-slate-500 opacity-60">
+                <div className="w-16 h-16 bg-gray-50 dark:bg-surface-dark rounded-full mb-3 flex items-center justify-center">
                   <CalendarIcon className="opacity-50" />
                 </div>
                 <p className="text-sm font-medium">Tudo tranquilo por aqui.</p>

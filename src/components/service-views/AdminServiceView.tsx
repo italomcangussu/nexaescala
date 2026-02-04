@@ -108,9 +108,9 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
     };
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 relative">
+        <div className="flex flex-col h-full bg-surface dark:bg-background-dark relative">
             {/* Toolbar */}
-            <div className="px-6 py-3 bg-white dark:bg-slate-900 border-b border-gray-50 dark:border-slate-800 flex items-center gap-4 overflow-x-auto no-scrollbar shrink-0 shadow-sm">
+            <div className="px-6 py-3 bg-white dark:bg-surface-dark border-b border-gray-50 dark:border-slate-800 flex items-center gap-4 overflow-x-auto no-scrollbar shrink-0 shadow-sm">
                 <button
                     onClick={() => setActiveTab('calendar')}
                     style={activeTab === 'calendar' ? { color: displayColor, backgroundColor: hexToRgba(displayColor, 0.05) } : undefined}
@@ -186,7 +186,7 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                                     />
 
                                     {/* Service Feed Section */}
-                                    <div className="bg-white dark:bg-slate-900 border-t-2 border-slate-100 dark:border-slate-800 rounded-t-[3rem] -mt-8 relative z-10 pt-4 pb-20 shadow-[0_-8px_30px_rgb(0,0,0,0.04)] flex flex-col min-h-[500px]">
+                                    <div className="bg-white dark:bg-surface-dark border-t-2 border-slate-100 dark:border-slate-800 rounded-t-[3rem] -mt-8 relative z-10 pt-4 pb-20 shadow-[0_-8px_30px_rgb(0,0,0,0.04)] flex flex-col min-h-[500px]">
                                         <ServiceFeedView
                                             group={group}
                                             currentUser={currentUser}
@@ -257,7 +257,7 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                             ) : (
                                 <div className="space-y-3">
                                     {members.map(member => (
-                                        <div key={member.id} className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center gap-4">
+                                        <div key={member.id} className="bg-white dark:bg-surface-dark p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center gap-4">
                                             {/* Avatar */}
                                             <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0">
                                                 <img src={member.profile.avatar_url} alt={member.profile.full_name} className="w-full h-full object-cover" />
@@ -302,7 +302,7 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                                         type="text"
                                         value={editName}
                                         onChange={(e) => setEditName(e.target.value)}
-                                        className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-all font-bold text-slate-800 dark:text-slate-100"
+                                        className="w-full px-4 py-3 bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-all font-bold text-slate-800 dark:text-slate-100"
                                     />
                                 </div>
 
@@ -316,7 +316,7 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                                             type="text"
                                             value={editInstitution}
                                             onChange={(e) => setEditInstitution(e.target.value)}
-                                            className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-all font-medium text-slate-800 dark:text-slate-100"
+                                            className="w-full pl-11 pr-4 py-3 bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-all font-medium text-slate-800 dark:text-slate-100"
                                         />
                                     </div>
                                 </div>
@@ -326,7 +326,7 @@ const AdminServiceView: React.FC<AdminServiceViewProps> = ({ group, currentUser,
                                         <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">Cor de Identificação Pessoal</h3>
                                         <p className="text-xs text-slate-500 dark:text-slate-400">Esta cor será visível apenas para você na sua lista de serviços.</p>
                                     </div>
-                                    <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                                    <div className="bg-surface dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                                         <ColorPalette
                                             selectedColor={personalColor}
                                             onColorChange={setPersonalColor}

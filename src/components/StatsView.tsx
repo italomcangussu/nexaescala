@@ -33,11 +33,11 @@ const StatsView: React.FC<StatsViewProps> = ({ shifts, assignments, profiles }) 
 
   return (
     <div className="p-6 pb-20">
-      <h2 className="text-2xl font-bold text-primary dark:text-primaryLight mb-2">Dashboard Gestor</h2>
+      <h2 className="text-2xl font-bold text-primary dark:text-primary-light mb-2">Dashboard Gestor</h2>
       <p className="text-slate-500 dark:text-slate-400 mb-8">Visão geral da escala mensal</p>
 
       {/* Coverage Card */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800 mb-6 transition-colors">
+      <div className="bg-white dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800 mb-6 transition-colors">
         <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 uppercase tracking-wider">Cobertura da Escala</h3>
         <div className="h-48 w-full flex items-center justify-center">
           <ResponsiveContainer width="100%" height="100%">
@@ -75,7 +75,7 @@ const StatsView: React.FC<StatsViewProps> = ({ shifts, assignments, profiles }) 
       </div>
 
       {/* Distribution Card */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800 transition-colors">
+      <div className="bg-white dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800 transition-colors">
         <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 uppercase tracking-wider">Plantões por Médico</h3>
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">

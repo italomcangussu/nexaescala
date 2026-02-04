@@ -23,10 +23,10 @@ const ShiftCheckoutModal: React.FC<ShiftCheckoutModalProps> = ({ shift, config, 
    const netTotal = grossTotal * (1 - (config.tax_percent / 100));
 
    return (
-      <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="fixed inset-0 z-80 flex items-end sm:items-center justify-center p-0 sm:p-4">
          <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm transition-opacity" onClick={onClose} />
 
-         <div className="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col animate-slide-up sm:animate-fade-in-up overflow-hidden max-h-[90vh]">
+         <div className="relative bg-white dark:bg-surface-dark w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col animate-slide-up sm:animate-fade-in-up overflow-hidden max-h-[90vh]">
 
             {/* Header Graphic */}
             <div className="bg-gradient-to-r from-emerald-600 to-teal-500 p-6 pt-8 text-white text-center relative overflow-hidden">
@@ -43,7 +43,7 @@ const ShiftCheckoutModal: React.FC<ShiftCheckoutModalProps> = ({ shift, config, 
                </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/50 dark:bg-slate-950/50">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-surface/50 dark:bg-background-dark/50">
 
                {/* Summary Fixed */}
                {config.payment_model !== PaymentModel.PRODUCTION && (
@@ -86,7 +86,7 @@ const ShiftCheckoutModal: React.FC<ShiftCheckoutModalProps> = ({ shift, config, 
 
                         <button
                            onClick={() => setProductionQty(productionQty + 1)}
-                           className="w-12 h-12 rounded-xl bg-primary text-white font-bold text-xl shadow-lg hover:bg-primaryDark transition-colors"
+                           className="w-12 h-12 rounded-xl bg-primary text-white font-bold text-xl shadow-lg hover:bg-primary-dark transition-colors"
                         >+</button>
                      </div>
 
@@ -104,7 +104,7 @@ const ShiftCheckoutModal: React.FC<ShiftCheckoutModalProps> = ({ shift, config, 
                <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden transition-all">
                   <button
                      onClick={() => setShowExtras(!showExtras)}
-                     className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                     className="w-full flex items-center justify-between p-4 hover:bg-surface dark:hover:bg-slate-700/50 transition-colors"
                   >
                      <span className="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
                         <Plus size={16} className="text-primary" /> Adicionar Ganhos Extras
@@ -118,7 +118,7 @@ const ShiftCheckoutModal: React.FC<ShiftCheckoutModalProps> = ({ shift, config, 
                            value={extraDesc}
                            onChange={(e) => setExtraDesc(e.target.value)}
                            placeholder="Descrição (ex: Procedimento X)"
-                           className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:border-primary dark:text-slate-200"
+                           className="w-full p-3 bg-surface dark:bg-surface-dark border border-gray-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:border-primary dark:text-slate-200"
                         />
                         <div className="relative">
                            <span className="absolute left-3 top-3 text-slate-400 text-sm">R$</span>
@@ -127,7 +127,7 @@ const ShiftCheckoutModal: React.FC<ShiftCheckoutModalProps> = ({ shift, config, 
                               value={extraValue || ''}
                               onChange={(e) => setExtraValue(Number(e.target.value))}
                               placeholder="0,00"
-                              className="w-full pl-10 p-3 bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:border-primary dark:text-slate-200"
+                              className="w-full pl-10 p-3 bg-surface dark:bg-surface-dark border border-gray-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:border-primary dark:text-slate-200"
                            />
                         </div>
                      </div>
@@ -137,7 +137,7 @@ const ShiftCheckoutModal: React.FC<ShiftCheckoutModalProps> = ({ shift, config, 
             </div>
 
             {/* Footer Total */}
-            <div className="p-6 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+            <div className="p-6 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-slate-800 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
                <div className="flex justify-between items-end mb-4">
                   <div>
                      <p className="text-xs font-bold text-slate-400 uppercase">Total Líquido (Estimado)</p>
@@ -159,7 +159,7 @@ const ShiftCheckoutModal: React.FC<ShiftCheckoutModalProps> = ({ shift, config, 
                      fixed_earnings: fixedEarnings,
                      production_value_unit: config.production_value_unit
                   })}
-                  className="w-full py-4 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primaryDark active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primary-dark active:scale-95 transition-all flex items-center justify-center gap-2"
                >
                   <CheckCircle size={20} />
                   CONFIRMAR E SALVAR NO EXTRATO

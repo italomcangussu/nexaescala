@@ -332,7 +332,7 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
                 ? 'bg-primary text-white'
                 : isWeekend
                     ? 'bg-slate-100 dark:bg-slate-800 text-slate-500'
-                    : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300'
+                    : 'bg-white dark:bg-surface-dark text-slate-700 dark:text-slate-300'
         };
     };
 
@@ -347,7 +347,7 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
     }));
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 overflow-hidden">
+        <div className="flex flex-col h-full bg-surface dark:bg-background-dark overflow-hidden">
             {(isLoading && groupShifts.length === 0) && (
                 <div className="absolute inset-0 bg-white/70 dark:bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
                     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-2xl flex items-center gap-4">
@@ -358,7 +358,7 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
             )}
 
             {/* Header */}
-            <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-4 shrink-0">
+            <div className="bg-white dark:bg-surface-dark border-b border-slate-200 dark:border-slate-800 px-6 py-4 shrink-0">
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                         <button
@@ -427,7 +427,7 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
                                             }}
                                             className={`py-2.5 px-3 rounded-xl text-sm font-medium transition-all ${currentDate.getMonth() === index
                                                 ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                                : 'bg-slate-50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600'
+                                                : 'bg-surface dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600'
                                                 }`}
                                         >
                                             {month.substring(0, 3)}
@@ -517,18 +517,18 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
             </div>
 
             <div className="flex-1 overflow-auto p-4">
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full border-collapse min-w-max">
                             <thead>
                                 <tr>
-                                    <th className="sticky left-0 z-20 bg-slate-50 dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-700 p-3 text-left min-w-[200px]">
+                                    <th className="sticky left-0 z-20 bg-surface dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-700 p-3 text-left min-w-[200px]">
                                         <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                                             Membro / Turno
                                         </span>
                                     </th>
 
-                                    <th className="sticky left-[200px] z-20 bg-slate-50 dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-700 p-3 text-center min-w-[100px]">
+                                    <th className="sticky left-[200px] z-20 bg-surface dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-700 p-3 text-center min-w-[100px]">
                                         <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                                             Turno
                                         </span>
@@ -572,12 +572,12 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
                                         shiftTypes.map((shiftType, shiftIndex) => (
                                             <tr
                                                 key={`${member.id}-${shiftType.code}-${shiftType.startTime}`}
-                                                className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                                className="hover:bg-surface dark:hover:bg-slate-800/50 transition-colors"
                                             >
                                                 {shiftIndex === 0 ? (
                                                     <td
                                                         rowSpan={shiftTypes.length}
-                                                        className="sticky left-0 z-10 bg-white dark:bg-slate-900 border-b border-r border-slate-200 dark:border-slate-700 p-3"
+                                                        className="sticky left-0 z-10 bg-white dark:bg-surface-dark border-b border-r border-slate-200 dark:border-slate-700 p-3"
                                                     >
                                                         <div className="flex items-center gap-3">
                                                             <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary to-emerald-400 flex items-center justify-center text-white font-bold text-xs shrink-0">
@@ -595,7 +595,7 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
                                                     </td>
                                                 ) : null}
 
-                                                <td className="sticky left-[200px] z-10 bg-white dark:bg-slate-900 border-b border-r border-slate-200 dark:border-slate-700 p-2 text-center">
+                                                <td className="sticky left-[200px] z-10 bg-white dark:bg-surface-dark border-b border-r border-slate-200 dark:border-slate-700 p-2 text-center">
                                                     <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-white text-[10px] font-bold ${shiftType.color}`}>
                                                         <Clock size={10} />
                                                         {shiftType.code}
@@ -614,8 +614,8 @@ const DesktopScaleEditor: React.FC<DesktopScaleEditorProps> = ({
                                                             onClick={() => isUserAdmin && hasShift && handleCellClick(member, date, shiftType)}
                                                             className={`
                                                                 border-b border-r border-slate-100 dark:border-slate-800 p-1 text-center
-                                                                ${(isUserAdmin && hasShift) ? 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700' : 'bg-slate-50 dark:bg-slate-800/30 cursor-not-allowed'}
-                                                                ${dayStyle.isWeekend && !assignment ? 'bg-slate-50/50 dark:bg-slate-800/30' : ''}
+                                                                ${(isUserAdmin && hasShift) ? 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700' : 'bg-surface dark:bg-slate-800/30 cursor-not-allowed'}
+                                                                ${dayStyle.isWeekend && !assignment ? 'bg-surface/50 dark:bg-slate-800/30' : ''}
                                                                 transition-colors
                                                             `}
                                                         >

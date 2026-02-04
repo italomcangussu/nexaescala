@@ -64,7 +64,7 @@ const TransferStatusSheet: React.FC<TransferStatusSheetProps> = ({
 
     return (
         <Portal>
-            <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
+            <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center">
                 {/* Backdrop */}
                 <div
                     className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm animate-fade-in"
@@ -72,7 +72,7 @@ const TransferStatusSheet: React.FC<TransferStatusSheetProps> = ({
                 />
 
                 {/* Sheet Content */}
-                <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl animate-slide-up sm:animate-zoom-in overflow-hidden border-t sm:border border-slate-100 dark:border-slate-800">
+                <div className="relative w-full max-w-lg bg-white dark:bg-surface-dark rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl animate-slide-up sm:animate-zoom-in overflow-hidden border-t sm:border border-slate-100 dark:border-slate-800">
 
                     {/* Visual Header / Indicator */}
                     <div className="h-1.5 w-12 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mt-4 mb-2 sm:hidden" />
@@ -103,14 +103,14 @@ const TransferStatusSheet: React.FC<TransferStatusSheetProps> = ({
                             </div>
                             <button
                                 onClick={onClose}
-                                className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors"
+                                className="p-2 rounded-xl bg-surface dark:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors"
                             >
                                 <X size={20} />
                             </button>
                         </div>
 
                         {/* Shift Card Summary Inline */}
-                        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 space-y-4">
+                        <div className="bg-surface dark:bg-slate-800/50 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 space-y-4">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-700">
                                     <Calendar className="text-primary" size={20} />

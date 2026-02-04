@@ -41,7 +41,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
   const isSuccessState = showCompletion;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center pointer-events-none">
+    <div className="fixed inset-0 z-70 flex items-end sm:items-center justify-center pointer-events-none">
       {/* Overlay Backdrop - Handles Close */}
       <div
         className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity z-10 pointer-events-auto"
@@ -53,7 +53,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
         onClick={e => e.stopPropagation()}
         className={`
           relative w-full mx-4 rounded-3xl shadow-2xl flex flex-col transition-all duration-300 animate-fade-in-up z-20 pointer-events-auto
-          bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 overflow-hidden
+          bg-white/95 dark:bg-surface-dark/95 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 overflow-hidden
           ${isSuccessState ? 'max-w-md h-auto' : 'max-w-2xl h-[650px] max-h-[85vh]'}
         `}
       >
@@ -61,12 +61,12 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
         {!isSuccessState ? (
           <>
             {/* Header */}
-            <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
+            <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-surface-dark">
               <div>
                 <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Novo Serviço</h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Etapa {step} de 3</p>
               </div>
-              <button type="button" onClick={onClose} className="p-2 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full">
+              <button type="button" onClick={onClose} className="p-2 text-slate-400 hover:bg-surface dark:hover:bg-slate-800 rounded-full">
                 <X size={20} />
               </button>
             </div>
@@ -80,7 +80,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50 dark:bg-slate-950/50">
+            <div className="flex-1 overflow-y-auto p-6 bg-surface/50 dark:bg-background-dark/50">
 
               {/* STEP 1: INFO */}
               {step === 1 && (
@@ -137,7 +137,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
                     {shifts.map(shift => (
                       <div key={shift.id} className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-slate-700 flex items-center justify-between shadow-sm">
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary dark:text-primaryLight flex items-center justify-center font-bold text-sm border border-primary/20">
+                          <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary dark:text-primary-light flex items-center justify-center font-bold text-sm border border-primary/20">
                             {shift.code}
                           </div>
                           <div>
@@ -151,7 +151,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <button type="button" onClick={() => { setEditingShift(shift); setShowShiftModal(true); }} className="p-2 text-slate-400 hover:text-primary dark:hover:text-primaryLight">
+                          <button type="button" onClick={() => { setEditingShift(shift); setShowShiftModal(true); }} className="p-2 text-slate-400 hover:text-primary dark:hover:text-primary-light">
                             <Edit2 size={18} />
                           </button>
                           <button type="button" onClick={() => removeShift(shift.id)} className="p-2 text-slate-400 hover:text-error">
@@ -165,7 +165,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
                   <button
                     type="button"
                     onClick={() => { setEditingShift({ code: '', start_time: '', end_time: '' }); setShowShiftModal(true); }}
-                    className="w-full py-4 border-2 border-dashed border-primary/30 text-primary dark:text-primaryLight font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-primary/5 transition-colors"
+                    className="w-full py-4 border-2 border-dashed border-primary/30 text-primary dark:text-primary-light font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-primary/5 transition-colors"
                   >
                     <Plus size={20} />
                     Adicionar Turno
@@ -242,7 +242,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
             </div>
 
             {/* Footer Navigation */}
-            <div className="p-4 border-t border-gray-100 dark:border-slate-800 flex justify-between bg-white dark:bg-slate-900">
+            <div className="p-4 border-t border-gray-100 dark:border-slate-800 flex justify-between bg-white dark:bg-surface-dark">
               {step > 1 ? (
                 <button type="button" onClick={handlePrev} className="px-6 py-3 text-slate-500 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
                   Voltar
@@ -254,7 +254,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
                   type="button"
                   onClick={handleNext}
                   disabled={step === 1 && (!serviceName || !institution)}
-                  className="px-6 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primaryDark disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                  className="px-6 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
                 >
                   Prosseguir
                   <ChevronRight size={18} />
@@ -263,7 +263,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
                 <button
                   onClick={handleCreateService}
                   disabled={isSaving}
-                  className="px-6 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primaryDark transition-all flex items-center gap-2 disabled:opacity-50"
+                  className="px-6 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primary-dark transition-all flex items-center gap-2 disabled:opacity-50"
                 >
                   {isSaving ? <span className="animate-spin">⏳</span> : <Save size={18} />}
                   {isSaving ? 'Salvando...' : 'Salvar Serviço'}
@@ -290,7 +290,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
                 <button
                   type="button"
                   onClick={() => onFinish(createdGroup!, true)}
-                  className="w-full py-3.5 bg-primary text-white font-bold rounded-xl text-base shadow-lg shadow-emerald-500/20 hover:bg-primaryDark transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 group"
+                  className="w-full py-3.5 bg-primary text-white font-bold rounded-xl text-base shadow-lg shadow-emerald-500/20 hover:bg-primary-dark transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 group"
                 >
                   Ir para Editor de Escala
                   <ChevronRight size={18} strokeWidth={2.5} className="group-hover:translate-x-1 transition-transform" />
@@ -298,7 +298,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
                 <button
                   type="button"
                   onClick={() => onFinish(createdGroup!, false)}
-                  className="w-full py-3.5 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-sm"
+                  className="w-full py-3.5 bg-surface dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-sm"
                 >
                   Voltar ao Início
                 </button>
@@ -309,7 +309,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
 
         {/* --- MODAL INSTITUTION --- */}
         {showInstitutionModal && !isSuccessState && (
-          <div className="absolute inset-0 bg-white dark:bg-slate-900 z-50 flex flex-col animate-fade-in-up">
+          <div className="absolute inset-0 bg-white dark:bg-surface-dark z-50 flex flex-col animate-fade-in-up">
             <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
               <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">
                 {showNewInstForm ? 'Nova Instituição' : 'Selecionar Instituição'}
@@ -323,7 +323,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
                   <div className="relative">
                     <Search className="absolute left-3 top-3.5 text-slate-400" size={20} />
                     <input
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800 rounded-xl border-none outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-white"
+                      className="w-full pl-10 pr-4 py-3 bg-surface dark:bg-slate-800 rounded-xl border-none outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-white"
                       placeholder="Buscar instituição..."
                       value={instSearch}
                       onChange={e => setInstSearch(e.target.value)}
@@ -370,13 +370,13 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
                     <ChevronLeft size={14} /> Voltar para busca
                   </button>
                   <div className="space-y-3">
-                    <input placeholder="Nome da Instituição" value={instForm.name} onChange={e => setInstForm({ ...instForm, name: e.target.value })} className="w-full p-3 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:border-primary" />
+                    <input placeholder="Nome da Instituição" value={instForm.name} onChange={e => setInstForm({ ...instForm, name: e.target.value })} className="w-full p-3 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-surface-dark text-slate-800 dark:text-slate-100 outline-none focus:border-primary" />
                     <div className="flex gap-3">
-                      <input placeholder="Cidade" value={instForm.city} onChange={e => setInstForm({ ...instForm, city: e.target.value })} className="w-1/2 p-3 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:border-primary" />
-                      <input placeholder="Estado" value={instForm.state} onChange={e => setInstForm({ ...instForm, state: e.target.value })} className="w-1/2 p-3 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:border-primary" />
+                      <input placeholder="Cidade" value={instForm.city} onChange={e => setInstForm({ ...instForm, city: e.target.value })} className="w-1/2 p-3 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-surface-dark text-slate-800 dark:text-slate-100 outline-none focus:border-primary" />
+                      <input placeholder="Estado" value={instForm.state} onChange={e => setInstForm({ ...instForm, state: e.target.value })} className="w-1/2 p-3 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-surface-dark text-slate-800 dark:text-slate-100 outline-none focus:border-primary" />
                     </div>
-                    <input placeholder="Telefone" value={instForm.phone} onChange={e => setInstForm({ ...instForm, phone: e.target.value })} className="w-full p-3 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:border-primary" />
-                    <button type="button" onClick={saveInstitution} className="w-full py-3 bg-primary text-white font-bold rounded-lg text-sm hover:bg-primaryDark">Salvar e Selecionar</button>
+                    <input placeholder="Telefone" value={instForm.phone} onChange={e => setInstForm({ ...instForm, phone: e.target.value })} className="w-full p-3 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-surface-dark text-slate-800 dark:text-slate-100 outline-none focus:border-primary" />
+                    <button type="button" onClick={saveInstitution} className="w-full py-3 bg-primary text-white font-bold rounded-lg text-sm hover:bg-primary-dark">Salvar e Selecionar</button>
                   </div>
                 </div>
               )}
@@ -386,7 +386,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
 
         {/* --- MODAL SHIFT --- */}
         {showShiftModal && !isSuccessState && (
-          <div className="absolute inset-0 bg-white dark:bg-slate-900 z-50 flex flex-col items-center justify-center animate-fade-in-up p-6">
+          <div className="absolute inset-0 bg-white dark:bg-surface-dark z-50 flex flex-col items-center justify-center animate-fade-in-up p-6">
             <div className="w-full max-w-sm space-y-6">
               <div className="text-center">
                 <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Editar Turno</h3>
@@ -398,7 +398,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
                 <input
                   value={editingShift?.code || ''}
                   onChange={e => setEditingShift(prev => ({ ...prev, code: e.target.value }))}
-                  className="w-full mt-1 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl font-bold text-center text-xl tracking-widest uppercase border border-transparent focus:border-primary outline-none dark:text-white"
+                  className="w-full mt-1 p-4 bg-surface dark:bg-slate-800 rounded-xl font-bold text-center text-xl tracking-widest uppercase border border-transparent focus:border-primary outline-none dark:text-white"
                   maxLength={4}
                 />
               </div>
@@ -410,7 +410,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
                     type="time"
                     value={editingShift?.start_time || ''}
                     onChange={e => setEditingShift(prev => ({ ...prev, start_time: e.target.value }))}
-                    className="w-full mt-1 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-center font-semibold dark:text-white border border-transparent focus:border-primary outline-none"
+                    className="w-full mt-1 p-3 bg-surface dark:bg-slate-800 rounded-xl text-center font-semibold dark:text-white border border-transparent focus:border-primary outline-none"
                   />
                 </div>
               </div>
@@ -420,7 +420,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
                   type="time"
                   value={editingShift?.end_time || ''}
                   onChange={e => setEditingShift(prev => ({ ...prev, end_time: e.target.value }))}
-                  className="w-full mt-1 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-center font-semibold dark:text-white border border-transparent focus:border-primary outline-none"
+                  className="w-full mt-1 p-3 bg-surface dark:bg-slate-800 rounded-xl text-center font-semibold dark:text-white border border-transparent focus:border-primary outline-none"
                 />
               </div>
             </div>
@@ -433,7 +433,7 @@ const ServiceWizard: React.FC<ServiceWizardProps> = ({ onClose, currentUser, onF
                 max="50"
                 value={editingShift?.quantity_needed || 2}
                 onChange={e => setEditingShift(prev => ({ ...prev, quantity_needed: parseInt(e.target.value) || 2 }))}
-                className="w-full mt-1 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl font-bold text-center text-xl tracking-widest border border-transparent focus:border-primary outline-none dark:text-white"
+                className="w-full mt-1 p-4 bg-surface dark:bg-slate-800 rounded-xl font-bold text-center text-xl tracking-widest border border-transparent focus:border-primary outline-none dark:text-white"
               />
             </div>
 

@@ -107,11 +107,11 @@ const RepasseModal: React.FC<RepasseModalProps> = ({ isOpen, onClose, onSuccess,
 
     return (
         <Portal>
-            <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4">
                 {/* Backdrop Click */}
                 <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm animate-fade-in" onClick={onClose}></div>
 
-                <div className="relative bg-white/95 dark:bg-slate-900/95 backdrop-blur-md w-full max-w-lg rounded-t-[3rem] sm:rounded-[3rem] shadow-2xl border-t sm:border border-white/20 dark:border-slate-800/50 overflow-hidden animate-fade-in-up flex flex-col max-h-[92vh] sm:max-h-[85vh]">
+                <div className="relative bg-white/95 dark:bg-surface-dark/95 backdrop-blur-md w-full max-w-lg rounded-t-[3rem] sm:rounded-[3rem] shadow-2xl border-t sm:border border-white/20 dark:border-slate-800/50 overflow-hidden animate-fade-in-up flex flex-col max-h-[92vh] sm:max-h-[85vh]">
 
                     {/* Pull Handle (Mobile) */}
                     <div className="sm:hidden flex justify-center pt-4 pb-1 shrink-0">
@@ -123,7 +123,7 @@ const RepasseModal: React.FC<RepasseModalProps> = ({ isOpen, onClose, onSuccess,
                         {/* Back Button (Top Left) */}
                         <button
                             onClick={handleBack}
-                            className="absolute left-6 top-6 sm:top-8 p-2 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors"
+                            className="absolute left-6 top-6 sm:top-8 p-2 rounded-full bg-surface dark:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors"
                         >
                             <ArrowLeft size={20} />
                         </button>
@@ -131,7 +131,7 @@ const RepasseModal: React.FC<RepasseModalProps> = ({ isOpen, onClose, onSuccess,
                         {/* Close Button (Top Right) */}
                         <button
                             onClick={onClose}
-                            className="absolute right-6 top-6 sm:top-8 p-2 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors"
+                            className="absolute right-6 top-6 sm:top-8 p-2 rounded-full bg-surface dark:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors"
                         >
                             <X size={20} />
                         </button>
@@ -170,7 +170,7 @@ const RepasseModal: React.FC<RepasseModalProps> = ({ isOpen, onClose, onSuccess,
                             <div className="space-y-4">
                                 <button
                                     onClick={() => setStep('CONFIRM_GLOBAL')}
-                                    className="w-full group relative overflow-hidden flex items-center p-6 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 border-2 border-slate-100 dark:border-slate-800 hover:border-sky-500 dark:hover:border-sky-500 transition-all rounded-[2.5rem] text-left active:scale-[0.98]"
+                                    className="w-full group relative overflow-hidden flex items-center p-6 bg-surface dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 border-2 border-slate-100 dark:border-slate-800 hover:border-sky-500 dark:hover:border-sky-500 transition-all rounded-[2.5rem] text-left active:scale-[0.98]"
                                 >
                                     <div className="w-14 h-14 rounded-3xl bg-sky-100 dark:bg-sky-900/40 flex items-center justify-center mr-5 shrink-0 group-hover:scale-110 transition-transform">
                                         <Users className="text-sky-600 dark:text-sky-400" size={28} />
@@ -184,7 +184,7 @@ const RepasseModal: React.FC<RepasseModalProps> = ({ isOpen, onClose, onSuccess,
 
                                 <button
                                     onClick={() => setStep('DIRECTED_MEMBER')}
-                                    className="w-full group relative overflow-hidden flex items-center p-6 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 border-2 border-slate-100 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 transition-all rounded-[2.5rem] text-left active:scale-[0.98]"
+                                    className="w-full group relative overflow-hidden flex items-center p-6 bg-surface dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 border-2 border-slate-100 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 transition-all rounded-[2.5rem] text-left active:scale-[0.98]"
                                 >
                                     <div className="w-14 h-14 rounded-3xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center mr-5 shrink-0 group-hover:scale-110 transition-transform">
                                         <User className="text-blue-600 dark:text-blue-400" size={28} />
@@ -244,7 +244,7 @@ const RepasseModal: React.FC<RepasseModalProps> = ({ isOpen, onClose, onSuccess,
                                         placeholder="Buscar colega..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full pl-14 pr-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-2 border-slate-100 dark:border-slate-800 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-3xl outline-none font-bold text-slate-700 dark:text-white transition-all text-sm transition-all"
+                                        className="w-full pl-14 pr-6 py-4 bg-surface dark:bg-slate-800/50 border-2 border-slate-100 dark:border-slate-800 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-3xl outline-none font-bold text-slate-700 dark:text-white transition-all text-sm transition-all"
                                     />
                                 </div>
 
@@ -252,7 +252,7 @@ const RepasseModal: React.FC<RepasseModalProps> = ({ isOpen, onClose, onSuccess,
                                 <div className="flex-1 space-y-3 min-h-[300px]">
                                     {isLoadingMembers ? (
                                         Array.from({ length: 4 }).map((_, i) => (
-                                            <div key={i} className="h-20 bg-slate-50 dark:bg-slate-800 animate-pulse rounded-3xl"></div>
+                                            <div key={i} className="h-20 bg-surface dark:bg-slate-800 animate-pulse rounded-3xl"></div>
                                         ))
                                     ) : filteredMembers.length > 0 ? (
                                         filteredMembers.map(member => (
@@ -261,7 +261,7 @@ const RepasseModal: React.FC<RepasseModalProps> = ({ isOpen, onClose, onSuccess,
                                                 onClick={() => setSelectedMember(member)}
                                                 className={`w-full flex items-center p-4 rounded-[1.5rem] border-2 transition-all active:scale-[0.98] ${selectedMember?.id === member.id
                                                     ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500'
-                                                    : 'bg-white dark:bg-slate-900 border-slate-50 dark:border-slate-800'
+                                                    : 'bg-white dark:bg-surface-dark border-slate-50 dark:border-slate-800'
                                                     }`}
                                             >
                                                 <img
@@ -284,7 +284,7 @@ const RepasseModal: React.FC<RepasseModalProps> = ({ isOpen, onClose, onSuccess,
                                         ))
                                     ) : (
                                         <div className="py-20 text-center space-y-3">
-                                            <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-300">
+                                            <div className="w-16 h-16 bg-surface dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-300">
                                                 <User size={32} />
                                             </div>
                                             <p className="text-sm font-bold text-slate-400">Nenhum membro encontrado</p>

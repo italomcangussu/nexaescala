@@ -77,7 +77,7 @@ const DayCell: React.FC<DayCellProps> = ({
     const getProfile = (id: string) => members.find(m => m.id === id);
 
     return (
-        <div className={`min-h-[140px] bg-white dark:bg-slate-900 rounded-2xl border p-3 transition-colors flex flex-col group relative ${isToday ? 'border-primary/50 ring-1 ring-primary/20' : 'border-slate-200 dark:border-slate-800 hover:border-primary/30'}`}>
+        <div className={`min-h-[140px] bg-white dark:bg-surface-dark rounded-2xl border p-3 transition-colors flex flex-col group relative ${isToday ? 'border-primary/50 ring-1 ring-primary/20' : 'border-slate-200 dark:border-slate-800 hover:border-primary/30'}`}>
 
             {/* Header */}
             <div className="flex justify-between items-start mb-2">
@@ -113,8 +113,8 @@ const DayCell: React.FC<DayCellProps> = ({
                     const shiftAssignments = assignments.filter(a => a.shift_id === shift.id);
                     const isNight = parseInt(shift.start_time) >= 18 || parseInt(shift.start_time) <= 5;
                     const styleClass = isNight
-                        ? 'bg-slate-900 dark:bg-slate-950 border-slate-800 border-l-indigo-500 text-slate-400'
-                        : 'bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700 border-l-orange-400 text-slate-500';
+                        ? 'bg-slate-900 dark:bg-background-dark border-slate-800 border-l-indigo-500 text-slate-400'
+                        : 'bg-surface dark:bg-slate-800 border-slate-100 dark:border-slate-700 border-l-orange-400 text-slate-500';
 
                     return (
                         <div

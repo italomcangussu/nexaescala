@@ -73,7 +73,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onSignOut 
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-100 flex items-center justify-center px-4">
       {/* Backdrop */}
       <div
         className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 ${showContent ? 'opacity-100' : 'opacity-0'}`}
@@ -82,7 +82,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onSignOut 
 
       {/* Main Card */}
       <div
-        className={`relative bg-surface dark:bg-slate-900 w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${showContent ? 'scale-100 opacity-100 translate-y-0' : 'scale-50 opacity-0 translate-y-20'}`}
+        className={`relative bg-surface dark:bg-surface-dark w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${showContent ? 'scale-100 opacity-100 translate-y-0' : 'scale-50 opacity-0 translate-y-20'}`}
       >
 
         {/* Decoration */}

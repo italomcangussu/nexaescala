@@ -51,7 +51,7 @@ const StepShifts: React.FC<StepShiftsProps> = ({
                         <div className="flex items-center gap-4">
                             {/* Code Badge */}
                             <div
-                                className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary dark:text-primaryLight flex items-center justify-center font-bold text-base border border-primary/20 shadow-inner"
+                                className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary dark:text-primary-light flex items-center justify-center font-bold text-base border border-primary/20 shadow-inner"
                             >
                                 {shift.code}
                             </div>
@@ -92,7 +92,7 @@ const StepShifts: React.FC<StepShiftsProps> = ({
                             <button
                                 type="button"
                                 onClick={() => onEdit(shift)}
-                                className="p-2.5 text-slate-400 hover:text-primary dark:hover:text-primaryLight hover:bg-primary/5 rounded-lg transition-colors"
+                                className="p-2.5 text-slate-400 hover:text-primary dark:hover:text-primary-light hover:bg-primary/5 rounded-lg transition-colors"
                                 title="Editar turno"
                             >
                                 <Edit2 size={18} />
@@ -114,14 +114,14 @@ const StepShifts: React.FC<StepShiftsProps> = ({
             <button
                 type="button"
                 onClick={onAdd}
-                className="w-full py-4 border-2 border-dashed border-primary/30 text-primary dark:text-primaryLight font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-primary/5 hover:border-primary/50 transition-all group"
+                className="w-full py-4 border-2 border-dashed border-primary/30 text-primary dark:text-primary-light font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-primary/5 hover:border-primary/50 transition-all group"
             >
                 <Plus size={20} className="group-hover:rotate-90 transition-transform" />
                 Adicionar Turno
             </button>
 
             {/* Tips */}
-            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700/50">
+            <div className="bg-surface dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700/50">
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                     <span className="font-bold text-primary">💡 Dica:</span> Use siglas curtas como "T" (Tarde), "M" (Manhã),
                     "MT", "SN". Os horários podem ultrapassar meia-noite.

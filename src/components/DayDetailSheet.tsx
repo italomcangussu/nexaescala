@@ -138,7 +138,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
         onClick={onClose}
       />
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 rounded-t-3xl z-50 max-h-[85vh] overflow-y-auto shadow-2xl animate-slide-up transition-colors duration-300 ring-1 ring-black/5 dark:ring-white/10">
+      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-surface-dark rounded-t-3xl z-50 max-h-[85vh] overflow-y-auto shadow-2xl animate-slide-up transition-colors duration-300 ring-1 ring-black/5 dark:ring-white/10">
 
         <div className="w-full flex justify-center pt-3 pb-2" onClick={onClose}>
           <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full"></div>
@@ -156,10 +156,10 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
           </button>
         </div>
 
-        <div className="p-6 space-y-6 pb-20 bg-slate-50 dark:bg-slate-950 min-h-[300px] transition-colors">
+        <div className="p-6 space-y-6 pb-20 bg-surface dark:bg-background-dark min-h-[300px] transition-colors">
           {sortedShifts.length === 0 ? (
             <div className="text-center py-16 text-slate-400 dark:text-slate-600">
-              <div className="w-20 h-20 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 relative">
+              <div className="w-20 h-20 bg-slate-100 dark:bg-surface-dark rounded-full flex items-center justify-center mx-auto mb-4 relative">
                 <Clock size={40} className="opacity-40" />
                 <div className="absolute top-0 right-0 w-6 h-6 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-xs text-slate-500">0</div>
               </div>
@@ -167,7 +167,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
               <p className="max-w-[200px] mx-auto leading-relaxed text-sm">Nenhum plantão cadastrado nesta data.</p>
 
               {currentUserRole === AppRole.GESTOR && (
-                <button className="mt-6 px-6 py-3 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primaryDark transition-all active:scale-95">
+                <button className="mt-6 px-6 py-3 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all active:scale-95">
                   + Criar Plantão
                 </button>
               )}
@@ -188,7 +188,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
               const cardStyles = isNightShift ? {
                 container: 'bg-slate-900 border-slate-800 shadow-lg shadow-indigo-900/10',
                 textPrimary: 'text-slate-100',
-                textSecondary: 'text-slate-400',
+                text-secondary: 'text-slate-400',
                 iconColor: 'text-indigo-400',
                 badge: 'bg-indigo-900/30 text-indigo-300 border-indigo-800',
                 orb1: 'from-indigo-900/40 to-purple-900/10',
@@ -196,9 +196,9 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                 divider: 'border-slate-800',
                 buttonBg: 'bg-emerald-600 hover:bg-emerald-700 shadow-indigo-900/40'
               } : {
-                container: 'bg-white dark:bg-slate-900 border-slate-50 dark:border-slate-800 shadow-sm',
+                container: 'bg-white dark:bg-surface-dark border-slate-50 dark:border-slate-800 shadow-sm',
                 textPrimary: 'text-slate-800 dark:text-slate-100',
-                textSecondary: 'text-slate-500 dark:text-slate-400',
+                text-secondary: 'text-slate-500 dark:text-slate-400',
                 iconColor: 'text-amber-500',
                 badge: 'bg-emerald-50/80 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800',
                 orb1: 'from-emerald-100/30 to-teal-50/10 dark:from-emerald-900/20 dark:to-teal-900/10',
@@ -222,7 +222,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                           <h3 className={`font-black text-xl leading-tight transition-colors ${cardStyles.textPrimary}`}>
                             {shift.group_name || 'Serviço'}
                           </h3>
-                          <div className={`flex items-center text-xs font-semibold mt-1 ${cardStyles.textSecondary}`}>
+                          <div className={`flex items-center text-xs font-semibold mt-1 ${cardStyles.text-secondary}`}>
                             <Users size={12} className={`mr-1 ${isNightShift ? 'text-indigo-400' : 'text-primary'}`} />
                             <span className="opacity-80 tracking-wide">{shift.institution_name || 'Instituição'}</span>
                           </div>
@@ -245,14 +245,14 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                       {/* Body: Time & Visuals */}
                       <div className="flex items-center justify-between mb-6">
                         <div>
-                          <span className={`text-[10px] font-black uppercase tracking-widest mb-1 block opacity-60 ${cardStyles.textSecondary}`}>Horário</span>
+                          <span className={`text-[10px] font-black uppercase tracking-widest mb-1 block opacity-60 ${cardStyles.text-secondary}`}>Horário</span>
                           <div className="flex items-baseline space-x-1">
                             <span className={`text-4xl font-black tracking-tighter ${isNightShift ? 'text-white' : 'text-slate-800 dark:text-slate-100'}`}>
                               {shift.start_time}
                             </span>
-                            <span className={`text-lg font-medium opacity-40 ${cardStyles.textSecondary}`}>- {shift.end_time}</span>
+                            <span className={`text-lg font-medium opacity-40 ${cardStyles.text-secondary}`}>- {shift.end_time}</span>
                           </div>
-                          <span className={`text-[10px] font-bold uppercase tracking-widest mt-1 block opacity-60 ${cardStyles.textSecondary}`}>
+                          <span className={`text-[10px] font-bold uppercase tracking-widest mt-1 block opacity-60 ${cardStyles.text-secondary}`}>
                             {shift.code || (isNightShift ? 'Noturno' : 'Diurno')}
                           </span>
                         </div>
@@ -267,7 +267,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
 
                       {/* Footer: User & Actions */}
                       <div className={`pt-4 border-t ${cardStyles.divider}`}>
-                        <h4 className={`text-[10px] uppercase font-black tracking-wider mb-4 opacity-50 ${cardStyles.textSecondary}`}>Plantonistas Escalados</h4>
+                        <h4 className={`text-[10px] uppercase font-black tracking-wider mb-4 opacity-50 ${cardStyles.text-secondary}`}>Plantonistas Escalados</h4>
 
                         <div className="space-y-4">
                           {shiftAssignments.length > 0 ? (
@@ -293,11 +293,11 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                               if (item.type === 'ghost') {
                                 const ex = item.data;
                                 return (
-                                  <div key={`ghost-${ex.id}`} className="flex items-center justify-between py-2 opacity-40 grayscale select-none pointer-events-none relative rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 px-3 border border-dashed border-slate-200 dark:border-slate-700">
+                                  <div key={`ghost-${ex.id}`} className="flex items-center justify-between py-2 opacity-40 grayscale select-none pointer-events-none relative rounded-2xl bg-surface/50 dark:bg-slate-800/30 px-3 border border-dashed border-slate-200 dark:border-slate-700">
                                     <div className="flex items-center space-x-3">
                                       <div className="relative">
                                         <img src={currentUser.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover ring-2 ring-slate-200" />
-                                        <div className="absolute -bottom-0.5 -right-0.5 bg-slate-500 text-white rounded-full p-0.5">
+                                        <div className="absolute -bottom-0.5 -right-0.5 bg-surface0 text-white rounded-full p-0.5">
                                           <Repeat size={10} />
                                         </div>
                                       </div>
@@ -334,7 +334,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                                       )}
                                     </div>
                                     <div>
-                                      <p className={`text-sm ${assign.profile_id === currentUser.id ? `font-black ${cardStyles.textPrimary}` : `font-bold ${cardStyles.textSecondary}`}`}>
+                                      <p className={`text-sm ${assign.profile_id === currentUser.id ? `font-black ${cardStyles.textPrimary}` : `font-bold ${cardStyles.text-secondary}`}`}>
                                         {assign.profile?.full_name}
                                       </p>
                                       <p className={`text-[10px] font-medium ${assign.profile_id === currentUser.id ? 'text-primary' : 'opacity-60 text-slate-500'}`}>
@@ -410,7 +410,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
 
                           {missingCount > 0 && (
                             <div className="pt-2">
-                              <div className="flex items-center justify-between p-3 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/10">
+                              <div className="flex items-center justify-between p-3 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-surface/50 dark:bg-slate-800/10">
                                 <div className="flex items-center gap-2 opacity-60">
                                   <Users size={14} className="text-slate-400" />
                                   <span className="text-xs font-bold text-slate-500">
@@ -440,7 +440,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
         </div>
 
         {relatedShifts.length > 0 && (
-          <div className="px-8 pb-10 bg-white dark:bg-slate-950">
+          <div className="px-8 pb-10 bg-white dark:bg-background-dark">
             <div className="h-px bg-linear-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent mb-6" />
             <h3 className="text-xs font-black uppercase tracking-wider mb-4 text-slate-400 dark:text-slate-500 flex items-center gap-2">
               <Sparkles size={12} />
@@ -454,8 +454,8 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
             ) : (
               <div className="space-y-3">
                 {relatedShifts.map((rel, index) => (
-                  <div key={index} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm">
-                    <div className="px-4 py-2 bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between">
+                  <div key={index} className="bg-white dark:bg-surface-dark rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm">
+                    <div className="px-4 py-2 bg-surface/80 dark:bg-slate-800/50 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
                         <h4 className="font-bold text-xs text-slate-700 dark:text-slate-200">{rel.group.name}</h4>
@@ -525,7 +525,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
         <Portal>
           <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm animate-fade-in" onClick={() => setIsCancelModalOpen(false)}></div>
-            <div className="relative bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl w-full max-w-sm animate-zoom-in border border-slate-100 dark:border-slate-800">
+            <div className="relative bg-white dark:bg-surface-dark rounded-3xl p-6 shadow-2xl w-full max-w-sm animate-zoom-in border border-slate-100 dark:border-slate-800">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-500 mb-2">
                   <Megaphone size={32} />
@@ -574,7 +574,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
         <Portal>
           <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-950/50 backdrop-blur-sm animate-fade-in" onClick={() => setIsAddMemberModalOpen(false)}></div>
-            <div className="relative bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md animate-zoom-in border border-slate-100 dark:border-slate-800 flex flex-col max-h-[80vh] shadow-2xl">
+            <div className="relative bg-white dark:bg-surface-dark rounded-3xl w-full max-w-md animate-zoom-in border border-slate-100 dark:border-slate-800 flex flex-col max-h-[80vh] shadow-2xl">
 
               <div className="p-6 pb-2 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center justify-between mb-4">
@@ -591,14 +591,14 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                     placeholder="Buscar médico..."
                     value={memberSearchTerm}
                     onChange={(e) => setMemberSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-sm font-medium border border-slate-100 dark:border-slate-700 focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                    className="w-full pl-10 pr-4 py-3 bg-surface dark:bg-slate-800/50 rounded-xl text-sm font-medium border border-slate-100 dark:border-slate-700 focus:ring-2 focus:ring-primary/50 outline-none transition-all"
                   />
                 </div>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-2">
                 {isAddingMember && (
-                  <div className="absolute inset-0 bg-white/50 dark:bg-slate-900/50 z-10 flex items-center justify-center backdrop-blur-sm rounded-3xl">
+                  <div className="absolute inset-0 bg-white/50 dark:bg-surface-dark/50 z-10 flex items-center justify-center backdrop-blur-sm rounded-3xl">
                     <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
                   </div>
                 )}
@@ -621,8 +621,8 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                         disabled={isAssigned || isAddingMember}
                         className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left
                           ${isAssigned
-                            ? 'bg-slate-50 dark:bg-slate-800/50 border-transparent opacity-50 cursor-not-allowed'
-                            : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-primary/50 hover:shadow-md active:scale-95'
+                            ? 'bg-surface dark:bg-slate-800/50 border-transparent opacity-50 cursor-not-allowed'
+                            : 'bg-white dark:bg-surface-dark border-slate-100 dark:border-slate-800 hover:border-primary/50 hover:shadow-md active:scale-95'
                           }
                         `}
                       >

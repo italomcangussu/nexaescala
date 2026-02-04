@@ -16,16 +16,16 @@ const SocialFeedView: React.FC<SocialFeedViewProps> = ({ posts, profiles, onProf
   return (
     <div className="pb-10">
       {/* Feed Header with Chat */}
-      <div className="px-5 py-4 flex justify-between items-center bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 sticky top-0 z-10 transition-colors">
-        <h2 className="text-xl font-bold text-primaryDark dark:text-slate-100">Rede Nexa</h2>
-        <button className="relative p-2 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-primary/10 transition-colors text-primary dark:text-primaryLight">
+      <div className="px-5 py-4 flex justify-between items-center bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-slate-800 sticky top-0 z-10 transition-colors">
+        <h2 className="text-xl font-bold text-primary-dark dark:text-slate-100">Rede Nexa</h2>
+        <button className="relative p-2 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-primary/10 transition-colors text-primary dark:text-primary-light">
           <MessageSquare size={22} />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full border-2 border-white dark:border-slate-900"></span>
         </button>
       </div>
 
       {/* Stories / Quick Access (Mock) */}
-      <div className="py-4 pl-4 overflow-x-auto no-scrollbar flex space-x-4 border-b border-gray-50 dark:border-slate-800 bg-white dark:bg-slate-900 mb-2 transition-colors">
+      <div className="py-4 pl-4 overflow-x-auto no-scrollbar flex space-x-4 border-b border-gray-50 dark:border-slate-800 bg-white dark:bg-surface-dark mb-2 transition-colors">
         <div className="flex flex-col items-center space-y-1 min-w-[64px]">
            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-primary to-emerald-300 p-0.5 cursor-pointer">
               <div className="w-full h-full bg-white dark:bg-slate-800 rounded-full p-0.5">
@@ -53,7 +53,7 @@ const SocialFeedView: React.FC<SocialFeedViewProps> = ({ posts, profiles, onProf
           if (!author) return null;
 
           return (
-            <div key={post.id} className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden transition-colors">
+            <div key={post.id} className="bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden transition-colors">
               
               {/* Post Header */}
               <div className="p-4 flex items-center justify-between">
@@ -94,11 +94,11 @@ const SocialFeedView: React.FC<SocialFeedViewProps> = ({ posts, profiles, onProf
                        <Heart size={20} className="group-hover:fill-error" />
                        <span className="text-xs font-medium">{post.likes}</span>
                     </button>
-                    <button className="flex items-center space-x-1.5 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primaryLight transition-colors">
+                    <button className="flex items-center space-x-1.5 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary-light transition-colors">
                        <MessageCircle size={20} />
                        <span className="text-xs font-medium">{post.comments}</span>
                     </button>
-                    <button className="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primaryLight transition-colors">
+                    <button className="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary-light transition-colors">
                        <Share2 size={20} />
                     </button>
                  </div>
