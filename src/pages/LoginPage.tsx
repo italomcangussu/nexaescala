@@ -140,11 +140,34 @@ const LoginPage: React.FC = () => {
                 });
 
                 if (result.response.identityToken) {
+                    const { givenName, familyName, email } = result.response;
+
                     const { error } = await supabase.auth.signInWithIdToken({
                         provider: 'apple',
                         token: result.response.identityToken,
                     });
                     if (error) throw error;
+
+                    // Apple only provides name on FIRST sign-in
+                    const appleFullName = [givenName, familyName]
+                        .filter(Boolean).join(' ').trim();
+
+                    if (appleFullName) {
+                        try {
+                            await supabase.auth.updateUser({
+                                data: { full_name: appleFullName }
+                            });
+                            const { data: { user: currentUser } } = await supabase.auth.getUser();
+                            if (currentUser) {
+                                await supabase.from('profiles').update({
+                                    full_name: appleFullName,
+                                    ...(email ? { email } : {})
+                                }).eq('id', currentUser.id);
+                            }
+                        } catch (metadataError) {
+                            console.warn('Could not update Apple user metadata:', metadataError);
+                        }
+                    }
                 }
             } else {
                 const { error } = await supabase.auth.signInWithOAuth({

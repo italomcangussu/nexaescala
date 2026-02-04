@@ -67,6 +67,13 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Sync fullName if initialProfile updates after mount (e.g. Apple Sign In race condition)
+    React.useEffect(() => {
+        if (initialProfile?.full_name && !fullName) {
+            setFullName(initialProfile.full_name);
+        }
+    }, [initialProfile?.full_name]);
+
     const steps = [
         { id: 'welcome', title: 'Bem-vindo' },
         { id: 'info', title: 'Seus Dados' },
