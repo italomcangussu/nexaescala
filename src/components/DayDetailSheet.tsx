@@ -188,7 +188,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
               const cardStyles = isNightShift ? {
                 container: 'bg-slate-900 border-slate-800 shadow-lg shadow-indigo-900/10',
                 textPrimary: 'text-slate-100',
-                text-secondary: 'text-slate-400',
+                textSecondary: 'text-slate-400',
                 iconColor: 'text-indigo-400',
                 badge: 'bg-indigo-900/30 text-indigo-300 border-indigo-800',
                 orb1: 'from-indigo-900/40 to-purple-900/10',
@@ -198,7 +198,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
               } : {
                 container: 'bg-white dark:bg-surface-dark border-slate-50 dark:border-slate-800 shadow-sm',
                 textPrimary: 'text-slate-800 dark:text-slate-100',
-                text-secondary: 'text-slate-500 dark:text-slate-400',
+                textSecondary: 'text-slate-500 dark:text-slate-400',
                 iconColor: 'text-amber-500',
                 badge: 'bg-emerald-50/80 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800',
                 orb1: 'from-emerald-100/30 to-teal-50/10 dark:from-emerald-900/20 dark:to-teal-900/10',
@@ -222,7 +222,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                           <h3 className={`font-black text-xl leading-tight transition-colors ${cardStyles.textPrimary}`}>
                             {shift.group_name || 'Serviço'}
                           </h3>
-                          <div className={`flex items-center text-xs font-semibold mt-1 ${cardStyles.text-secondary}`}>
+                          <div className={`flex items-center text-xs font-semibold mt-1 ${cardStyles.textSecondary}`}>
                             <Users size={12} className={`mr-1 ${isNightShift ? 'text-indigo-400' : 'text-primary'}`} />
                             <span className="opacity-80 tracking-wide">{shift.institution_name || 'Instituição'}</span>
                           </div>
@@ -245,14 +245,14 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                       {/* Body: Time & Visuals */}
                       <div className="flex items-center justify-between mb-6">
                         <div>
-                          <span className={`text-[10px] font-black uppercase tracking-widest mb-1 block opacity-60 ${cardStyles.text-secondary}`}>Horário</span>
+                          <span className={`text-[10px] font-black uppercase tracking-widest mb-1 block opacity-60 ${cardStyles.textSecondary}`}>Horário</span>
                           <div className="flex items-baseline space-x-1">
                             <span className={`text-4xl font-black tracking-tighter ${isNightShift ? 'text-white' : 'text-slate-800 dark:text-slate-100'}`}>
                               {shift.start_time}
                             </span>
-                            <span className={`text-lg font-medium opacity-40 ${cardStyles.text-secondary}`}>- {shift.end_time}</span>
+                            <span className={`text-lg font-medium opacity-40 ${cardStyles.textSecondary}`}>- {shift.end_time}</span>
                           </div>
-                          <span className={`text-[10px] font-bold uppercase tracking-widest mt-1 block opacity-60 ${cardStyles.text-secondary}`}>
+                          <span className={`text-[10px] font-bold uppercase tracking-widest mt-1 block opacity-60 ${cardStyles.textSecondary}`}>
                             {shift.code || (isNightShift ? 'Noturno' : 'Diurno')}
                           </span>
                         </div>
@@ -267,7 +267,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
 
                       {/* Footer: User & Actions */}
                       <div className={`pt-4 border-t ${cardStyles.divider}`}>
-                        <h4 className={`text-[10px] uppercase font-black tracking-wider mb-4 opacity-50 ${cardStyles.text-secondary}`}>Plantonistas Escalados</h4>
+                        <h4 className={`text-[10px] uppercase font-black tracking-wider mb-4 opacity-50 ${cardStyles.textSecondary}`}>Plantonistas Escalados</h4>
 
                         <div className="space-y-4">
                           {shiftAssignments.length > 0 ? (
@@ -334,7 +334,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                                       )}
                                     </div>
                                     <div>
-                                      <p className={`text-sm ${assign.profile_id === currentUser.id ? `font-black ${cardStyles.textPrimary}` : `font-bold ${cardStyles.text-secondary}`}`}>
+                                      <p className={`text-sm ${assign.profile_id === currentUser.id ? `font-black ${cardStyles.textPrimary}` : `font-bold ${cardStyles.textSecondary}`}`}>
                                         {assign.profile?.full_name}
                                       </p>
                                       <p className={`text-[10px] font-medium ${assign.profile_id === currentUser.id ? 'text-primary' : 'opacity-60 text-slate-500'}`}>

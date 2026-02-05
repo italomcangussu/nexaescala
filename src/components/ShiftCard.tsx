@@ -48,7 +48,7 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
     // Night Shift Styles (Always Darkish)
     container: 'bg-slate-900 border-slate-800 shadow-lg shadow-indigo-900/20 dark:border-indigo-900/50',
     textPrimary: 'text-slate-100',
-    text-secondary: 'text-slate-400',
+    textSecondary: 'text-slate-400',
     iconColor: 'text-indigo-400',
     badge: 'bg-slate-800/80 border-slate-700',
     badgeText: 'text-indigo-400',
@@ -61,7 +61,7 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
     // Day Shift Styles (Adaptive)
     container: 'bg-white dark:bg-slate-800 border-emerald-50 dark:border-slate-700 shadow-card dark:shadow-none',
     textPrimary: 'text-slate-800 dark:text-slate-100 group-hover:text-primary-dark dark:group-hover:text-primary-light',
-    text-secondary: 'text-slate-500 dark:text-slate-400',
+    textSecondary: 'text-slate-500 dark:text-slate-400',
     iconColor: 'text-amber-500',
     badge: 'bg-emerald-50/80 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800',
     badgeText: 'text-emerald-600 dark:text-emerald-400',
@@ -91,7 +91,7 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
               <h3 className={`font-bold text-lg leading-tight transition-colors ${cardStyles.textPrimary}`}>
                 {shift.group_name || 'Serviço'}
               </h3>
-              <div className={`flex items-center text-xs font-medium mt-1 ${cardStyles.text-secondary}`}>
+              <div className={`flex items-center text-xs font-medium mt-1 ${cardStyles.textSecondary}`}>
                 <MapPin size={12} className={`mr-1 ${isNightShift ? 'text-indigo-400' : 'text-primary'}`} />
                 <span className="opacity-80 tracking-wide">{shift.institution_name || 'Instituição'}</span>
               </div>
@@ -115,12 +115,12 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
           {/* Body: Time & Visuals */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <span className={`text-[10px] font-bold uppercase tracking-widest mb-1 block ${cardStyles.text-secondary}`}>Horário</span>
+              <span className={`text-[10px] font-bold uppercase tracking-widest mb-1 block ${cardStyles.textSecondary}`}>Horário</span>
               <div className="flex items-baseline space-x-1">
                 <span className={`text-4xl font-black tracking-tighter ${isNightShift ? 'text-white' : 'text-slate-800 dark:text-slate-100'}`}>
                   {shift.start_time}
                 </span>
-                <span className={`text-lg font-light ${cardStyles.text-secondary}`}>- {shift.end_time}</span>
+                <span className={`text-lg font-light ${cardStyles.textSecondary}`}>- {shift.end_time}</span>
               </div>
             </div>
 
@@ -162,7 +162,7 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
                     <span className={`text-xs font-bold truncate max-w-[120px] ${isNightShift ? 'text-slate-300' : 'text-slate-700 dark:text-slate-200'}`}>
                       {assignment?.profile?.full_name}
                     </span>
-                    <span className={`text-[10px] font-medium ${cardStyles.text-secondary}`}>
+                    <span className={`text-[10px] font-medium ${cardStyles.textSecondary}`}>
                       CRM {assignment?.profile?.crm || '---'}
                       {assignment?.profile_id === currentUserId &&
                         <span className="font-bold ml-1">(Você)</span>}
