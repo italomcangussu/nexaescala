@@ -251,20 +251,22 @@ const LoginPage: React.FC = () => {
             )}
 
             {forgotPassword ? (
-                <form onSubmit={handleForgotPassword} className="space-y-4">
+                <form onSubmit={handleForgotPassword} className="space-y-4" aria-busy={loading}>
                     <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-slate-500 uppercase ml-1">Email Profissional</label>
+                        <label htmlFor="recovery-email" className="text-xs font-bold text-slate-500 uppercase ml-1">Email Profissional</label>
                         <div className="relative group">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-primary">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-primary" aria-hidden="true">
                                 <Mail size={18} className="text-slate-400 group-focus-within:text-primary transition-colors" />
                             </div>
                             <input
+                                id="recovery-email"
                                 type="email"
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="w-full pl-12 pr-4 py-3.5 bg-surface dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-slate-800 dark:text-white font-medium"
                                 placeholder="seu@email.com"
+                                autoComplete="email"
                             />
                         </div>
                     </div>
@@ -272,8 +274,9 @@ const LoginPage: React.FC = () => {
                         type="submit"
                         disabled={loading}
                         className="w-full py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white font-bold rounded-2xl shadow-xl shadow-slate-900/10 dark:shadow-none hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                        aria-busy={loading}
                     >
-                        {loading ? <Loader className="animate-spin" size={20} /> : 'Enviar Recuperação'}
+                        {loading ? <Loader className="animate-spin" size={20} aria-hidden="true" /> : 'Enviar Recuperação'}
                     </button>
                     <button
                         type="button"
@@ -284,41 +287,45 @@ const LoginPage: React.FC = () => {
                     </button>
                 </form>
             ) : (
-                <form onSubmit={handleAuth} className="space-y-5">
+                <form onSubmit={handleAuth} className="space-y-5" aria-busy={loading}>
                     {isSignUp && (
                         <div className="space-y-1.5 animate-fade-in-up">
-                            <label className="text-xs font-bold text-slate-500 uppercase ml-1">Nome Completo</label>
+                            <label htmlFor="signup-fullname" className="text-xs font-bold text-slate-500 uppercase ml-1">Nome Completo</label>
                             <input
+                                id="signup-fullname"
                                 type="text"
                                 required
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
                                 className="w-full px-4 py-3.5 bg-surface dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-slate-800 dark:text-white font-medium"
                                 placeholder="Como deseja ser chamado?"
+                                autoComplete="name"
                             />
                         </div>
                     )}
 
                     <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-slate-500 uppercase ml-1">Email</label>
+                        <label htmlFor="auth-email" className="text-xs font-bold text-slate-500 uppercase ml-1">Email</label>
                         <div className="relative group">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-primary">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-primary" aria-hidden="true">
                                 <Mail size={18} className="text-slate-400 group-focus-within:text-primary transition-colors" />
                             </div>
                             <input
+                                id="auth-email"
                                 type="email"
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="w-full pl-12 pr-4 py-3.5 bg-surface dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-slate-800 dark:text-white font-medium"
                                 placeholder="seu@email.com"
+                                autoComplete="email"
                             />
                         </div>
                     </div>
 
                     <div className="space-y-1.5">
                         <div className="flex justify-between items-center ml-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase">Senha</label>
+                            <label htmlFor="auth-password" className="text-xs font-bold text-slate-500 uppercase">Senha</label>
                             {!isSignUp && (
                                 <button
                                     type="button"
@@ -330,10 +337,11 @@ const LoginPage: React.FC = () => {
                             )}
                         </div>
                         <div className="relative group">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-primary">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-primary" aria-hidden="true">
                                 <Lock size={18} className="text-slate-400 group-focus-within:text-primary transition-colors" />
                             </div>
                             <input
+                                id="auth-password"
                                 type={showPassword ? 'text' : 'password'}
                                 required
                                 value={password}
@@ -342,11 +350,13 @@ const LoginPage: React.FC = () => {
                                 onBlur={() => setShowPasswordHints(false)}
                                 className="w-full pl-12 pr-12 py-3.5 bg-surface dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-slate-800 dark:text-white font-medium"
                                 placeholder="••••••••"
+                                autoComplete={isSignUp ? 'new-password' : 'current-password'}
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
                                 className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                                aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                             >
                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>

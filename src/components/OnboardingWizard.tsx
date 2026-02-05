@@ -215,34 +215,40 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">
+                            <label htmlFor="onboarding-full-name" className="block text-xs font-bold text-slate-500 uppercase mb-1.5">
                                 Nome Completo {!isAppleUser && '*'}
                             </label>
                             <input
+                                id="onboarding-full-name"
                                 type="text"
                                 required={!isAppleUser}
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
                                 className="w-full p-3.5 bg-surface dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 dark:text-slate-200"
                                 placeholder="Dr. João Silva"
+                                autoComplete="name"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">CRM (Opcional)</label>
+                            <label htmlFor="onboarding-crm" className="block text-xs font-bold text-slate-500 uppercase mb-1.5">CRM (Opcional)</label>
                             <div className="flex gap-2">
                                 <input
+                                    id="onboarding-crm"
                                     type="text"
                                     value={crmNumber}
                                     onChange={(e) => setCrmNumber(e.target.value.replace(/\D/g, ''))}
                                     className="flex-1 p-3.5 bg-surface dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 dark:text-slate-200"
                                     placeholder="12345"
                                     maxLength={10}
+                                    aria-describedby="crm-state-label"
                                 />
+                                <label id="crm-state-label" className="sr-only">Estado do CRM</label>
                                 <select
                                     value={crmState}
                                     onChange={(e) => setCrmState(e.target.value)}
                                     className="w-24 p-3.5 bg-surface dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 dark:text-slate-200"
+                                    aria-label="Estado do CRM"
                                 >
                                     <option value="">UF</option>
                                     {BRAZILIAN_STATES.map(state => (
@@ -253,10 +259,11 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Especialidade</label>
+                            <label htmlFor="onboarding-specialty" className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Especialidade</label>
                             <div className="relative">
-                                <Stethoscope size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <Stethoscope size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
                                 <select
+                                    id="onboarding-specialty"
                                     value={specialty}
                                     onChange={(e) => setSpecialty(e.target.value)}
                                     className="w-full pl-11 p-3.5 bg-surface dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 dark:text-slate-200 appearance-none"

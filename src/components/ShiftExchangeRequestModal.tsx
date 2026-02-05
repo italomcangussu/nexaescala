@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ChevronRight, ChevronLeft, Send, Search, Calendar, Clock, MapPin, Sparkles, User as UserIcon } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, Send, Search, Calendar, Clock, Sparkles, User as UserIcon } from 'lucide-react';
 import { Profile, Shift, ShiftAssignment } from '../types';
 import { getGroupMembers, getAvailableShiftsForExchange, createShiftExchangeRequest } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -269,7 +269,7 @@ const ShiftExchangeRequestModal: React.FC<ShiftExchangeRequestModalProps> = ({
                                                 key={shift.id}
                                                 onClick={() => handleShiftToggle(shift.id)}
                                                 disabled={!selectedShiftIds.includes(shift.id) && selectedShiftIds.length >= 3}
-                                                className={`group relative p-5 rounded-[2rem] border-2 transition-all text-left overflow-hidden active:scale-[0.98] ${selectedShiftIds.includes(shift.id)
+                                                className={`group relative p-5 rounded-4xl border-2 transition-all text-left overflow-hidden active:scale-[0.98] ${selectedShiftIds.includes(shift.id)
                                                     ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10'
                                                     : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800 hover:border-primary/20'
                                                     } ${!selectedShiftIds.includes(shift.id) && selectedShiftIds.length >= 3 ? 'opacity-40 cursor-not-allowed grayscale' : ''}`}
@@ -343,7 +343,7 @@ const ShiftExchangeRequestModal: React.FC<ShiftExchangeRequestModalProps> = ({
                                 </>
                             )}
                             {((step === 1 && selectedMember) || (step === 2 && selectedShiftIds.length > 0)) && (
-                                <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-shimmer" />
+                                <div className="absolute inset-0 w-full h-full bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-shimmer" />
                             )}
                         </button>
                     </div>

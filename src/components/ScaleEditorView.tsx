@@ -755,7 +755,7 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
     }
 
     return (
-        <div className="fixed inset-0 z-70 flex flex-col h-full bg-slate-100 dark:bg-black transition-colors duration-300 overflow-y-auto pb-10 transition-all animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="fixed inset-0 z-70 flex flex-col h-full bg-slate-100 dark:bg-black overflow-y-auto pb-10 transition-all animate-in fade-in slide-in-from-bottom-4 duration-500">
             {isLoading && (
                 <div className="absolute inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
                     <Loader2 className="w-10 h-10 text-primary animate-spin" />
@@ -763,7 +763,7 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
             )}
 
             {/* Header Section - Compact Liquid Glass */}
-            <div className="bg-white/70 dark:bg-surface-dark/70 backdrop-blur-xl py-3 px-4 shadow-sm border-b border-white/20 dark:border-slate-800/50 z-20 sticky top-0 flex items-center justify-between gap-3 transition-colors duration-300 supports-[backdrop-filter]:bg-white/60">
+            <div className="bg-white/70 dark:bg-surface-dark/70 backdrop-blur-xl py-3 px-4 shadow-sm border-b border-white/20 dark:border-slate-800/50 z-20 sticky top-0 flex items-center justify-between gap-3 transition-colors duration-300 supports-backdrop-filter:bg-white/60">
 
                 {/* Left: Back Btn + Title & Group Info */}
                 <div className="flex items-center gap-3 min-w-0">

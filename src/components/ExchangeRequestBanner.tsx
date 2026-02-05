@@ -22,9 +22,9 @@ const ExchangeRequestBanner: React.FC<ExchangeRequestBannerProps> = ({
     };
 
     return (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 mb-4 animate-fade-in-up shadow-lg">
+        <div className="bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 mb-4 animate-fade-in-up shadow-lg">
             <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
                     <ArrowRightLeft className="text-white" size={20} />
                 </div>
 
@@ -35,7 +35,7 @@ const ExchangeRequestBanner: React.FC<ExchangeRequestBannerProps> = ({
                         </h4>
                         <button
                             onClick={onDismiss}
-                            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors flex-shrink-0"
+                            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors shrink-0"
                         >
                             <X size={18} />
                         </button>

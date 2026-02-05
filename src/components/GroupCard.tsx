@@ -101,7 +101,7 @@ const GroupCard: React.FC<GroupCardProps> = ({ group }) => {
         </div>
 
         {/* Right Action Area */}
-        <div className="flex flex-col items-end justify-between h-full pl-2 border-l border-slate-50 dark:border-slate-700/50 min-h-[3rem]">
+        <div className="flex flex-col items-end justify-between h-full pl-2 border-l border-slate-50 dark:border-slate-700/50 min-h-12">
           {group.unread_messages > 0 ? (
             <div className="flex flex-col items-center gap-1 mt-1">
               <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full shadow-sm shadow-red-200 dark:shadow-none animate-pulse">
@@ -124,4 +124,4 @@ const GroupCard: React.FC<GroupCardProps> = ({ group }) => {
   );
 };
 
-export default GroupCard;
+export default React.memo(GroupCard);

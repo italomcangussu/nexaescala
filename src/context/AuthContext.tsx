@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { Profile } from '../types';
 import { createAppLog } from '../services/api';
 
 interface AuthContextType {
-    user: any | null;
+    user: User | null;
     profile: Profile | null;
     loading: boolean;
     needsOnboarding: boolean;
@@ -22,7 +23,7 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<any | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
     const [needsOnboarding, setNeedsOnboarding] = useState(false);

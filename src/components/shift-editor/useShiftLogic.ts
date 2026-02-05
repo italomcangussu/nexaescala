@@ -2,6 +2,12 @@ import { useState, useEffect, useMemo } from 'react';
 import { Group, Shift, ShiftAssignment, GroupMember } from '../../types';
 import { getGroupMembers, getShifts, getAssignments, createShift, createAssignment, deleteAssignment, getMemberAssignmentsForPeriod, publishShifts, createNotificationsBulk, updateShift } from '../../services/api';
 
+// Type for external assignments (from other groups) used for conflict detection
+interface ExternalAssignment {
+    profile_id: string;
+    shift: Shift & { group?: { name: string } };
+}
+
 // Helper to get days in month
 const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -20,7 +26,7 @@ export const useShiftLogic = (group: Group) => {
     const [assignments, setAssignments] = useState<ShiftAssignment[]>([]);
 
     // External Conflicts State
-    const [externalAssignments, setExternalAssignments] = useState<any[]>([]); // Assignments from OTHER groups
+    const [externalAssignments, setExternalAssignments] = useState<ExternalAssignment[]>([]); // Assignments from OTHER groups
 
     // Initial Data Snapshots (for diffing if needed, or just to know what's deleted)
     // const [originalShifts, setOriginalShifts] = useState<Shift[]>([]);
@@ -74,7 +80,7 @@ export const useShiftLogic = (group: Group) => {
                 // Filter out assignments that belong to THIS group to avoid self-conflict flags if API returns them
                 // The API query uses !inner on shifts. check if group_id is excluded? 
                 // We didn't exclude in API, so filter here:
-                const others = extData.filter((a: any) => a.shift.group_id !== group.id);
+                const others = extData.filter((a: ExternalAssignment) => a.shift.group_id !== group.id);
                 setExternalAssignments(others);
             }
 
@@ -97,7 +103,7 @@ export const useShiftLogic = (group: Group) => {
         // 19-07 (Night) technically spans to next day, handled by date? 
         // `shift.date` usually represents the start date.
 
-        const conflict = externalAssignments.find((ext: any) => {
+        const conflict = externalAssignments.find((ext) => {
             if (ext.profile_id !== memberId) return false;
             // Check date match
             // Note: Night shifts might need special handling if date definition varies

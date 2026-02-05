@@ -123,7 +123,7 @@ export interface AppLog {
   user_id: string;
   level: 'info' | 'warn' | 'error';
   message: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   created_at: string;
 }
 
@@ -309,7 +309,7 @@ export interface ChatMessage {
   sender_id: string;
   content: string;
   message_type: MessageType;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   created_at: string;
   sender?: Profile; // Joined
 }
@@ -321,7 +321,7 @@ export interface Notification {
   type: 'SHIFT_PUBLISHED' | 'SHIFT_SWAP' | 'SYSTEM' | 'SHIFT_OFFER' | 'MENTION' | 'SERVICE_UPDATE';
   is_read: boolean;
   created_at: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export type RecurrenceType = 'NONE' | 'WEEKLY' | 'BIWEEKLY';

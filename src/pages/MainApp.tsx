@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import Layout from '../components/Layout';
 import CalendarView from '../components/CalendarView';
 import ShiftCard from '../components/ShiftCard';
@@ -101,13 +101,13 @@ const Dashboard: React.FC = () => {
 
 
 
-  // Hydrate data
-  const hydratedAssignments = assignments.map(a => ({
+  // Hydrate data - memoized to avoid recalculation on every render
+  const hydratedAssignments = useMemo(() => assignments.map(a => ({
     ...a,
     profile: profiles.find(p => p.id === a.profile_id)
-  }));
+  })), [assignments, profiles]);
 
-  const myShifts = shifts.filter(s => {
+  const myShifts = useMemo(() => shifts.filter(s => {
     // Only show published shifts
     if (!s.is_published) return false;
 
@@ -117,22 +117,22 @@ const Dashboard: React.FC = () => {
     const dateB = new Date(b.date).getTime();
     if (dateA !== dateB) return dateA - dateB;
     return a.start_time.localeCompare(b.start_time);
-  });
+  }), [shifts, assignments, currentUser.id]);
 
-  const handleEditShift = (shift: Shift) => {
+  const handleEditShift = useCallback((shift: Shift) => {
     showToast(`Editar configurações do plantão: ${shift.date}`, 'info');
-  };
+  }, [showToast]);
 
-  const handleProfileClick = (profileId: string) => {
+  const handleProfileClick = useCallback((profileId: string) => {
     setViewingProfileId(profileId);
-  };
+  }, []);
 
-  const handleSaveProfile = (updatedProfile: Profile) => {
+  const handleSaveProfile = useCallback((updatedProfile: Profile) => {
     setProfiles(prev => prev.map(p => p.id === updatedProfile.id ? updatedProfile : p));
     setIsEditingProfile(false);
-  };
+  }, [setProfiles]);
 
-  const handleFinishWizard = async (group?: Group, navigate?: boolean, presets?: ShiftPreset[]) => {
+  const handleFinishWizard = useCallback(async (group?: Group, navigate?: boolean, presets?: ShiftPreset[]) => {
     await refresh();
     if (group && navigate) {
       // Updated: Open the editor in 'selector' mode (months overview)
@@ -143,16 +143,16 @@ const Dashboard: React.FC = () => {
       setSelectedService(group); // Just open detail
     }
     setIsWizardOpen(false);
-  };
+  }, [refresh]);
 
-  const handleOpenScaleEditor = (group: Group) => {
+  const handleOpenScaleEditor = useCallback((group: Group) => {
     setEditorTargetGroup(group);
     setEditorInitialDate(undefined); // Default to current date for existing services
     setEditorInitialPresets([]); // Clear local presets so it fetches
-  };
+  }, []);
 
-  // Finance Handlers
-  const handleSimulateCheckout = async () => {
+  // Finance Handlers - memoized with useCallback
+  const handleSimulateCheckout = useCallback(async () => {
     const lastShift = myShifts[0];
     if (lastShift && currentUser) {
       try {
@@ -173,23 +173,23 @@ const Dashboard: React.FC = () => {
     } else {
       showToast("Nenhum plantão recente encontrado para checkout.", 'info');
     }
-  };
+  }, [myShifts, currentUser, userGroups, showToast]);
 
-  const onActionAccept = async (item: any) => {
+  const onActionAccept = useCallback(async (item: unknown) => {
     const result = await handleAccept(item);
     if (result?.type === 'OPEN_MODAL') {
       setRespondingToSwap(result.item);
     } else {
       await refresh();
     }
-  };
+  }, [handleAccept, refresh]);
 
-  const onActionDecline = async (item: any) => {
+  const onActionDecline = useCallback(async (item: unknown) => {
     await handleDecline(item);
     await refresh();
-  };
+  }, [handleDecline, refresh]);
 
-  const handleSaveFinConfig = async (config: FinancialConfig) => {
+  const handleSaveFinConfig = useCallback(async (config: FinancialConfig) => {
     if (!currentUser) return;
     try {
       await saveFinancialConfig(currentUser.id, config);
@@ -197,9 +197,9 @@ const Dashboard: React.FC = () => {
     } catch {
       showToast("Erro ao salvar configuração", 'error');
     }
-  };
+  }, [currentUser, showToast]);
 
-  const handleConfirmCheckout = async (data: any) => {
+  const handleConfirmCheckout = useCallback(async (data: { fixed_earnings?: number; productionQty: number; production_value_unit?: number; extraValue: number; extraDesc: string; grossTotal: number; netTotal: number }) => {
     if (!checkoutShift || !currentUser) return;
 
     try {
@@ -222,9 +222,9 @@ const Dashboard: React.FC = () => {
     } catch {
       showToast("Erro ao salvar checkout.", 'error');
     }
-  };
+  }, [checkoutShift, currentUser, showToast]);
 
-  const handleNotificationClick = (notification: AppNotification) => {
+  const handleNotificationClick = useCallback((notification: AppNotification) => {
     if (notification.metadata && notification.metadata.group_id) {
       const group = userGroups.find(g => g.id === notification.metadata.group_id);
       if (group) {
@@ -235,7 +235,7 @@ const Dashboard: React.FC = () => {
       setActiveBottomTab('home');
       setActiveHomeTab('requests');
     }
-  };
+  }, [userGroups]);
 
   const renderHomeContent = () => {
     return (

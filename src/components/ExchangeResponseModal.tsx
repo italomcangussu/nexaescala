@@ -78,7 +78,7 @@ const ExchangeResponseModal: React.FC<ExchangeResponseModalProps> = ({
 
                 <div className="relative bg-white dark:bg-surface-dark w-full max-w-2xl rounded-2xl shadow-xl animate-fade-in-up overflow-hidden">
                     {/* Header */}
-                    <div className="p-6 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+                    <div className="p-6 border-b border-slate-200 dark:border-slate-700 bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
                         <button
                             onClick={onClose}
                             className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
@@ -165,7 +165,7 @@ const ExchangeResponseModal: React.FC<ExchangeResponseModalProps> = ({
                                                 </div>
                                             </div>
                                             {selectedShiftId === shift.id && (
-                                                <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                                                <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0">
                                                     <span className="text-white text-sm">✓</span>
                                                 </div>
                                             )}

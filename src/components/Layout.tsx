@@ -119,16 +119,22 @@ const Layout: React.FC<LayoutProps> = ({
           </div>
         </div>
         <div className="flex items-center space-x-1 text-text-secondary dark:text-slate-400">
-          <button className="p-2 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-full transition-colors hidden sm:block">
+          <button
+            className="p-2 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-full transition-colors hidden sm:block"
+            aria-label="Buscar"
+          >
             <Search size={20} strokeWidth={2.5} />
           </button>
           <button
             onClick={handleBellClick}
             className={`p-2 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-full relative transition-colors ${showNotifications ? 'text-primary' : ''}`}
+            aria-label={hasUnread ? `Notificações (${notifications.filter(n => !n.is_read).length} não lidas)` : 'Notificações'}
+            aria-expanded={showNotifications}
+            aria-haspopup="true"
           >
             <Bell size={20} strokeWidth={2.5} />
             {hasUnread && (
-              <span className="absolute top-2 right-2.5 w-2 h-2 bg-error rounded-full ring-2 ring-white dark:ring-slate-900 animate-pulse"></span>
+              <span className="absolute top-2 right-2.5 w-2 h-2 bg-error rounded-full ring-2 ring-white dark:ring-slate-900 animate-pulse" aria-hidden="true"></span>
             )}
           </button>
 
@@ -182,6 +188,8 @@ const Layout: React.FC<LayoutProps> = ({
           <button
             onClick={() => setIsSettingsOpen(true)}
             className="p-2 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary-light active:scale-90 transform duration-200"
+            aria-label="Configurações"
+            aria-expanded={isSettingsOpen}
           >
             <Settings size={20} strokeWidth={2.5} />
           </button>
@@ -255,8 +263,10 @@ const NavButton: React.FC<NavButtonProps> = ({ active, onClick, icon, label }) =
     <button
       onClick={onClick}
       className={`flex flex-col items-center justify-center w-20 py-2 transition-all duration-300 ${active ? 'text-primary dark:text-primary-light' : 'text-text-secondary dark:text-slate-500 hover:text-gray-900 dark:hover:text-slate-300'}`}
+      aria-pressed={active}
+      aria-label={label}
     >
-      <div className={`${active ? 'scale-110 -translate-y-1' : 'scale-100'} transition-transform duration-300`}>
+      <div className={`${active ? 'scale-110 -translate-y-1' : 'scale-100'} transition-transform duration-300`} aria-hidden="true">
         {/* Fill the icon if active for solid look */}
         {React.cloneElement(icon as React.ReactElement<LucideProps>, {
           strokeWidth: active ? 2.5 : 2,
@@ -264,7 +274,7 @@ const NavButton: React.FC<NavButtonProps> = ({ active, onClick, icon, label }) =
           fillOpacity: active ? 0.2 : 0
         })}
       </div>
-      <span className={`text-[10px] font-medium mt-1 ${active ? 'font-bold' : ''}`}>{label}</span>
+      <span className={`text-[10px] font-medium mt-1 ${active ? 'font-bold' : ''}`} aria-hidden="true">{label}</span>
     </button>
   );
 };

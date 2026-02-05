@@ -6,8 +6,10 @@ import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { useNavigate } from 'react-router-dom';
 
+type PermissionState = NotificationPermission | 'prompt' | 'granted' | 'denied';
+
 const NotificationManager: React.FC = () => {
-    const [permission, setPermission] = useState<any>('default');
+    const [permission, setPermission] = useState<PermissionState>('default');
     const [showBanner, setShowBanner] = useState(false);
     const [isIOS, setIsIOS] = useState(false);
     const [isStandalone, setIsStandalone] = useState(false);

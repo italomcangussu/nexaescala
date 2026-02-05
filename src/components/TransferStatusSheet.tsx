@@ -177,14 +177,14 @@ const TransferStatusSheet: React.FC<TransferStatusSheetProps> = ({
                                 <button
                                     onClick={handleCancel}
                                     disabled={isCancelling}
-                                    className="flex-[2] flex items-center justify-center gap-2 py-4 rounded-2xl bg-red-500 text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-red-200 hover:bg-red-600 transition-all disabled:opacity-50"
+                                    className="flex-2 flex items-center justify-center gap-2 py-4 rounded-2xl bg-red-500 text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-red-200 hover:bg-red-600 transition-all disabled:opacity-50"
                                 >
                                     {isCancelling ? 'Processando...' : 'Confirmar Cancelamento'}
                                 </button>
                             </div>
                         )}
                         <p className="text-[10px] text-center text-slate-400 font-bold uppercase tracking-tight mt-2">
-                            Você pode cancelar a qualquer momento enquanto não houver aceite
+                            Após aceito, a troca é permanente e não pode ser desfeita
                         </p>
                     </div>
                 </div>

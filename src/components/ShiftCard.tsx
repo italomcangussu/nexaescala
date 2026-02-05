@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ArrowRightLeft, Edit, Sun, Moon, MapPin, Sparkles, Megaphone } from 'lucide-react';
-import { Shift, ShiftAssignment, AppRole, ShiftExchangeRequest } from '../types';
+import { Shift, ShiftAssignment, AppRole, ShiftExchangeRequest, ShiftExchange } from '../types';
 import RepasseModal from './RepasseModal';
 import ShiftExchangeRequestModal from './ShiftExchangeRequestModal';
 import TransferStatusSheet from './TransferStatusSheet';
@@ -16,7 +16,7 @@ interface ShiftCardProps {
   currentUserId?: string;
   onRefresh?: () => void;
 
-  pendingExchange?: any;
+  pendingExchange?: ShiftExchange;
   pendingSwapRequest?: ShiftExchangeRequest;
 }
 
@@ -40,11 +40,11 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
   // Icon Selection
   const Icon = isNightShift ? Moon : Sun;
 
-  // Dynamic Styles based on Night/Day + App Dark Mode
+  // Dynamic Styles based on Night/Day + App Dark Mode - memoized
   // Night shift stays dark/indigo even in light mode.
   // Day shift is white in light mode, but needs to be dark slate in dark mode.
 
-  const cardStyles = isNightShift ? {
+  const cardStyles = useMemo(() => isNightShift ? {
     // Night Shift Styles (Always Darkish)
     container: 'bg-slate-900 border-slate-800 shadow-lg shadow-indigo-900/20 dark:border-indigo-900/50',
     textPrimary: 'text-slate-100',
@@ -70,7 +70,7 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
     editBtnHover: 'hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-slate-700',
     divider: 'border-slate-50 dark:border-slate-700',
     buttonBg: 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200 hover:shadow-emerald-300 dark:shadow-none'
-  };
+  }, [isNightShift]);
 
   return (
     <div className="group relative w-full mb-4 animate-fade-in-up">
@@ -300,4 +300,4 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
   );
 };
 
-export default ShiftCard;
+export default React.memo(ShiftCard);
