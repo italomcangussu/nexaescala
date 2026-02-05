@@ -1,0 +1,6 @@
+{
+    "appId": "com.nexaescala.app",
+    "appName": "NexaEscala",
+    "webDir": "dist",
+    "npmClient": "npm"
+}

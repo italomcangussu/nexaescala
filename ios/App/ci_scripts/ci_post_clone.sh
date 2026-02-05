@@ -27,12 +27,11 @@ ls -F
 
 # 1. Environment Check
 echo "🔍 Checking Environment..."
-if ! command -v node >/dev/null 2>&1; then
-    echo "❌ Node.js not found! This is unexpected in Xcode Cloud."
-    # We try to use a default path or install if absolutely necessary, 
-    # but usually it's in the path.
-    exit 1
-fi
+# Force install Node to ensure we have a recent version (Vite 6 requires Node 18+)
+echo "⬇️  Installing Node.js via Homebrew..."
+brew install node
+# Link it just in case
+brew link --overwrite node
 
 NODE_VERSION=$(node -v)
 echo "📍 Node version: $NODE_VERSION"
@@ -41,19 +40,13 @@ echo "📍 npm version: $(npm -v)"
 # 2. Dependency Installation
 echo "📦 Installing npm dependencies..."
 # Use --legacy-peer-deps to avoid common installation failures in CI
-# npm ci is preferred if package-lock.json is reliable
-if [ -f "package-lock.json" ]; then
-    echo "using npm ci..."
-    npm ci --legacy-peer-deps || (echo "npm ci failed, trying npm install..." && npm install --legacy-peer-deps)
-else
-    echo "using npm install..."
-    npm install --legacy-peer-deps
-fi
+# We use npm install instead of ci to be more forgiving of lockfile mismatches in this environment
+npm install --legacy-peer-deps || { echo "❌ npm install failed"; exit 1; }
 
 # 3. Web App Build
 echo "🏗️ Building web application..."
 # Use CI=false to prevent warnings from failing the build in some environments
-CI=false npm run build
+CI=false npm run build || { echo "❌ npm run build failed"; exit 1; }
 
 # Verify build output
 if [ ! -d "dist" ]; then
@@ -65,7 +58,8 @@ echo "✅ Web build completed successfully"
 # 4. Capacitor Copy
 echo "📱 Copying assets to iOS..."
 # We use 'copy' instead of 'sync' to avoid triggering CocoaPods as per ios-helper.sh
-./node_modules/.bin/cap copy ios
+./node_modules/.bin/cap copy ios || { echo "❌ capacitor copy failed"; exit 1; }
+
 
 
 # Verify synchronization
