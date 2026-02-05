@@ -138,9 +138,10 @@ const LoginPage: React.FC = () => {
         setError(null);
         try {
             if (Capacitor.isNativePlatform()) {
+                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
                 const result = await SignInWithApple.authorize({
                     clientId: 'com.nexaescala.app',
-                    redirectURI: 'https://vjlcfkkyfeteljutwfet.supabase.co/auth/v1/callback',
+                    redirectURI: `${supabaseUrl}/auth/v1/callback`,
                     scopes: 'name email',
                 });
 

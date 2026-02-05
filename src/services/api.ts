@@ -1689,6 +1689,7 @@ export const getShiftExchanges = async (groupId: string): Promise<ShiftExchange[
 };
 
 export const getUserShiftExchanges = async (userId: string): Promise<ShiftExchange[]> => {
+    const uid = sanitizeFilterValue(userId);
     const { data, error } = await supabase
         .from('shift_exchanges')
         .select(`
@@ -1704,7 +1705,7 @@ export const getUserShiftExchanges = async (userId: string): Promise<ShiftExchan
                 shift: shifts(*)
             )
         `)
-        .or(`requesting_profile_id.eq.${userId},target_profile_id.eq.${userId}`)
+        .or(`requesting_profile_id.eq.${uid},target_profile_id.eq.${uid}`)
         .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -2150,6 +2151,7 @@ export const createShiftExchangeRequest = async (
  * Returns both sent and received requests
  */
 export const getMyPendingExchangeRequests = async (userId: string): Promise<ShiftExchangeRequest[]> => {
+    const uid = sanitizeFilterValue(userId);
     const { data, error } = await supabase
         .from('shift_exchange_requests')
         .select(`
@@ -2158,7 +2160,7 @@ export const getMyPendingExchangeRequests = async (userId: string): Promise<Shif
             target_user:profiles!target_user_id(*),
             offered_shift:shifts!offered_shift_id(*)
         `)
-        .or(`requesting_user_id.eq.${userId},target_user_id.eq.${userId}`)
+        .or(`requesting_user_id.eq.${uid},target_user_id.eq.${uid}`)
         .eq('status', 'PENDING')
         .order('created_at', { ascending: false });
 
@@ -2404,11 +2406,12 @@ const executeShiftSwap = async (
 
 
 export const getPendingActionableRequests = async (userId: string): Promise<{ swaps: ShiftExchangeRequest[], giveaways: ShiftExchange[] }> => {
+    const uid = sanitizeFilterValue(userId);
     // Get the user's groups first to filter public giveaways
     const { data: userGroups } = await supabase
         .from('group_members')
         .select('group_id')
-        .eq('profile_id', userId);
+        .eq('profile_id', uid);
 
     const groupIds = userGroups?.map(g => g.group_id) || [];
 
@@ -2423,7 +2426,7 @@ export const getPendingActionableRequests = async (userId: string): Promise<{ sw
                 group:groups(name, institution)
             )
         `)
-        .eq('target_user_id', userId)
+        .eq('target_user_id', uid)
         .eq('status', 'PENDING');
 
     if (swapsError) throw swapsError;
@@ -2448,14 +2451,14 @@ export const getPendingActionableRequests = async (userId: string): Promise<{ sw
         `)
         .eq('status', TradeStatus.PENDING)
         .eq('type', TradeType.GIVEAWAY)
-        .neq('requesting_profile_id', userId);
+        .neq('requesting_profile_id', uid);
 
     if (groupIds.length > 0) {
         giveawaysQuery = giveawaysQuery.in('group_id', groupIds);
     }
 
     const { data: giveaways, error: giveawaysError } = await giveawaysQuery
-        .or(`target_profile_id.eq.${userId},target_profile_id.is.null`);
+        .or(`target_profile_id.eq.${uid},target_profile_id.is.null`);
 
     if (giveawaysError) throw giveawaysError;
 
@@ -2521,6 +2524,7 @@ export const cancelExchangeRequest = async (requestId: string): Promise<void> =>
  * Unified history of completed exchanges (Swaps and Giveaways)
  */
 export const getTradeHistory = async (userId: string): Promise<any[]> => {
+    const uid = sanitizeFilterValue(userId);
     // 1. Fetch Accepted Swaps (ShiftExchangeRequest)
     // Involved as requester or target
     const { data: swaps, error: swapsError } = await supabase
@@ -2539,7 +2543,7 @@ export const getTradeHistory = async (userId: string): Promise<any[]> => {
             )
         `)
         .eq('status', 'ACCEPTED')
-        .or(`requesting_user_id.eq.${userId},target_user_id.eq.${userId}`);
+        .or(`requesting_user_id.eq.${uid},target_user_id.eq.${uid}`);
 
     if (swapsError) throw swapsError;
 
@@ -2560,7 +2564,7 @@ export const getTradeHistory = async (userId: string): Promise<any[]> => {
             )
         `)
         .eq('status', TradeStatus.ACCEPTED)
-        .or(`requesting_profile_id.eq.${userId},target_profile_id.eq.${userId}`);
+        .or(`requesting_profile_id.eq.${uid},target_profile_id.eq.${uid}`);
 
     if (giveawaysError) throw giveawaysError;
 

@@ -14,8 +14,7 @@ const NotificationManager: React.FC = () => {
     const { profile: currentUser } = useAuth();
     const navigate = useNavigate();
 
-    // VAPID Public Key - Placeholder (Needs to be generated for production)
-    const VAPID_PUBLIC_KEY = 'BGLk82NQyHgeqPW-SMaw8DM3P7HOvyM70oRulole1344JMggQIOCT6hglOZXnPvjBfs5k0wLToAO1EiGqrzSoOI';
+    const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || '';
 
     useEffect(() => {
         // Platform detection and base logic...
