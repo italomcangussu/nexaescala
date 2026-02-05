@@ -119,11 +119,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       checkDate.setHours(0, 0, 0, 0);
       const isPast = checkDate < today;
 
-      if (day === 1) {
-        console.log(`[DEBUG Day 1] Date: ${dateStr}`);
-        console.log(`[DEBUG Day 1] Assignments Count:`, assignments.length);
-      }
-
       const dayShifts = shifts.filter(s => s.date === dateStr);
       const dayVisibleShifts = visibleShifts.filter(s => s.date === dateStr);
       const publishedDayShifts = dayVisibleShifts.filter(s => s.is_published);
@@ -147,12 +142,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         // Use Set to get unique colors to avoid gradient of same color
         const uniqueColors = new Set(dayGroups.map(g => g.color || '#10b981'));
         dayServiceColors = Array.from(uniqueColors);
-      }
-
-
-      if (day === 1) {
-        console.log(`[DEBUG Day 1] myVisibleAssignmentsOnDay:`, myVisibleAssignmentsOnDay);
-        console.log(`[DEBUG Day 1] All Exchanges:`, exchanges);
       }
 
       // Check for Transferred Shifts (Was mine, now someone else's) -> History

@@ -13,7 +13,6 @@ if (!rootElement) {
 import ErrorBoundary from './components/ErrorBoundary';
 
 const root = ReactDOM.createRoot(rootElement);
-console.log("DEBUG: index.tsx - Mounting App...");
 root.render(
   <React.StrictMode>
     <ErrorBoundary>

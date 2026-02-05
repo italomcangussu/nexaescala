@@ -16,6 +16,18 @@ interface EmailRequest {
     messageType: string
 }
 
+// Email validation regex (RFC 5322 compliant, simplified)
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+const isValidEmail = (email: string): boolean => {
+    return typeof email === 'string' && EMAIL_REGEX.test(email) && email.length <= 254
+}
+
+const sanitizeText = (text: string, maxLength: number): string => {
+    if (typeof text !== 'string') return ''
+    return text.slice(0, maxLength).replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
 const messageTypeLabels: Record<string, string> = {
     suggestion: 'Sugestão',
     support: 'Suporte Técnico',
@@ -43,6 +55,17 @@ serve(async (req) => {
         if (!to || !userName || !userMessage || !adminResponse) {
             throw new Error('Missing required fields')
         }
+
+        // Validate email format
+        if (!isValidEmail(to)) {
+            throw new Error('Invalid email format')
+        }
+
+        // Sanitize inputs to prevent XSS
+        const safeUserName = sanitizeText(userName, 100)
+        const safeUserMessage = sanitizeText(userMessage, 5000)
+        const safeAdminResponse = sanitizeText(adminResponse, 5000)
+        const safeMessageType = sanitizeText(messageType || 'support', 50)
 
         // Create HTML email template
         const htmlContent = `
@@ -172,25 +195,25 @@ serve(async (req) => {
 
             <!-- Content -->
             <div class="content">
-              <p class="greeting">Olá, <strong>${userName}</strong>! 👋</p>
-              
+              <p class="greeting">Olá, <strong>${safeUserName}</strong>! 👋</p>
+
               <p>Recebemos sua mensagem e temos uma resposta para você:</p>
 
               <!-- Message Type Badge -->
               <div style="margin: 16px 0;">
-                <span class="badge">${messageTypeLabels[messageType] || messageType}</span>
+                <span class="badge">${messageTypeLabels[safeMessageType] || safeMessageType}</span>
               </div>
 
               <!-- Original Message -->
               <div class="info-box">
                 <strong>📝 Sua Mensagem Original:</strong>
-                <p>${userMessage}</p>
+                <p>${safeUserMessage}</p>
               </div>
 
               <!-- Admin Response -->
               <div class="response-box">
                 <strong>💬 Nossa Resposta:</strong>
-                <p>${adminResponse}</p>
+                <p>${safeAdminResponse}</p>
               </div>
 
               <p style="margin-top: 24px; color: #475569;">

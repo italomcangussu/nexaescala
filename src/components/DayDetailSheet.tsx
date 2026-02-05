@@ -56,21 +56,23 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
   const [isLoadingRelated, setIsLoadingRelated] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     if (isOpen && date && groupId) {
-      fetchRelatedShifts();
+      fetchRelatedShifts(isMounted);
     }
+    return () => { isMounted = false; };
   }, [isOpen, date, groupId]);
 
-  const fetchRelatedShifts = async () => {
+  const fetchRelatedShifts = async (isMounted = true) => {
     if (!date || !groupId) return;
     setIsLoadingRelated(true);
     try {
       const data = await getRelatedShiftsForDay(groupId, date);
-      setRelatedShifts(data);
-    } catch (error) {
-      console.error('Failed to fetch related shifts', error);
+      if (isMounted) setRelatedShifts(data);
+    } catch {
+      // Silently ignore fetch errors
     } finally {
-      setIsLoadingRelated(false);
+      if (isMounted) setIsLoadingRelated(false);
     }
   };
 
@@ -81,8 +83,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
       try {
         const data = await getGroupMembers(groupId);
         setMembers(data);
-      } catch (error) {
-        console.error("Failed to load members", error);
+      } catch {
         showToast("Erro ao carregar lista de membros", "error");
       }
     }
@@ -102,8 +103,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
       if (onRefresh) onRefresh();
       // Optional: Force reload if no refresh prop (temporary fix for responsiveness)
       else if (typeof window !== 'undefined') window.location.reload();
-    } catch (error) {
-      console.error("Error adding member:", error);
+    } catch {
       showToast("Erro ao adicionar membro.", "error");
     } finally {
       setIsAddingMember(false);
@@ -553,8 +553,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
                         }
                         setIsCancelModalOpen(false);
                         onClose(); // Optional: Close sheet to force refresh or callback
-                      } catch (error) {
-                        console.error(error);
+                      } catch {
                         showToast('Erro ao cancelar', 'error');
                       }
                     }}

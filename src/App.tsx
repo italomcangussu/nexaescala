@@ -43,7 +43,6 @@ const MainAppRouter: React.FC = () => {
 };
 
 const App: React.FC = () => {
-    console.log("DEBUG: App.tsx - Rendering...");
     return (
         <ToastProvider>
             <BrowserRouter>

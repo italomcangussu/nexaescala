@@ -33,15 +33,16 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onSignOut 
   const [currentView, setCurrentView] = useState<SettingsView>('main');
 
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
     if (isOpen) {
-      const timer = setTimeout(() => setShowContent(true), 50);
-      return () => clearTimeout(timer);
+      timer = setTimeout(() => setShowContent(true), 50);
     } else {
       setShowContent(false);
-      setTimeout(() => {
+      timer = setTimeout(() => {
         setCurrentView('main');
       }, 500);
     }
+    return () => clearTimeout(timer);
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -86,7 +87,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onSignOut 
       >
 
         {/* Decoration */}
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-emerald-50/50 to-transparent dark:from-emerald-900/20 pointer-events-none z-0" />
+        <div className="absolute top-0 left-0 right-0 h-32 bg-linear-to-b from-emerald-50/50 to-transparent dark:from-emerald-900/20 pointer-events-none z-0" />
 
         <button
           onClick={onClose}

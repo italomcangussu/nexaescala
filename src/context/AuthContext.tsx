@@ -22,29 +22,32 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    console.log("DEBUG: AuthContext - Provider Rendering...");
     const [user, setUser] = useState<any | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
     const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
     useEffect(() => {
+        let isMounted = true;
+
         // Check active session
         supabase.auth.getSession().then(({ data: { session } }) => {
+            if (!isMounted) return;
             setUser(session?.user ?? null);
-            if (session?.user) fetchProfile(session.user.id);
+            if (session?.user) fetchProfile(session.user.id, isMounted);
             else setLoading(false);
         });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            if (!isMounted) return;
             if (_event === 'SIGNED_IN' && session?.user) {
                 // Log the sign in event (fire and forget)
                 createAppLog('info', 'User signed in', { email: session.user.email })
-                    .catch(e => console.error('Log error', e));
+                    .catch(() => { /* Silently ignore log errors */ });
             }
 
             setUser(session?.user ?? null);
-            if (session?.user) fetchProfile(session.user.id);
+            if (session?.user) fetchProfile(session.user.id, isMounted);
             else {
                 setProfile(null);
                 setNeedsOnboarding(false);
@@ -52,10 +55,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         });
 
-        return () => subscription.unsubscribe();
+        return () => {
+            isMounted = false;
+            subscription.unsubscribe();
+        };
     }, []);
 
-    const fetchProfile = async (userId: string) => {
+    const fetchProfile = async (userId: string, isMounted = true) => {
         try {
             const { data, error } = await supabase
                 .from('profiles')
@@ -63,8 +69,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 .eq('id', userId)
                 .single();
 
+            if (!isMounted) return;
+
             if (error) {
-                console.error('Error fetching profile:', error);
                 setNeedsOnboarding(true); // Assume needs onboarding if no profile
             } else {
                 const profileData = data as Profile;
@@ -74,11 +81,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const isIncomplete = !profileData.onboarding_completed;
                 setNeedsOnboarding(isIncomplete);
             }
-        } catch (err) {
-            console.error('Unexpected error:', err);
+        } catch {
+            if (!isMounted) return;
             setNeedsOnboarding(true);
         } finally {
-            setLoading(false);
+            if (isMounted) setLoading(false);
         }
     };
 
@@ -97,8 +104,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     setProfile(profileData);
                     setNeedsOnboarding(!profileData.onboarding_completed);
                 }
-            } catch (err) {
-                console.error('Error refetching profile:', err);
+            } catch {
+                // Silently ignore refetch errors
             }
         }
     };

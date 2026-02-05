@@ -58,6 +58,11 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
     const [step, setStep] = useState(0);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const isMountedRef = React.useRef(true);
+
+    React.useEffect(() => {
+        return () => { isMountedRef.current = false; };
+    }, []);
 
     // Detect if user signed in with Apple
     const isAppleUser = user?.app_metadata?.provider === 'apple'
@@ -123,7 +128,9 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
         setShowPermissionPrompt(false);
         // Small delay to ensure modal close animation doesn't jitter with file picker open
         setTimeout(() => {
-            fileInputRef.current?.click();
+            if (isMountedRef.current) {
+                fileInputRef.current?.click();
+            }
         }, 300);
     };
 

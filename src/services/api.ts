@@ -50,6 +50,73 @@ const sanitizeFilterValue = (value: string): string => {
     return value.replace(/[,.()"'\\]/g, '');
 };
 
+// --- INPUT VALIDATION ---
+const MAX_NAME_LENGTH = 100;
+const MAX_BIO_LENGTH = 500;
+const MAX_FIELD_LENGTH = 255;
+
+const ALLOWED_PROFILE_FIELDS: (keyof Profile)[] = [
+    'full_name', 'avatar_url', 'crm', 'specialty', 'bio', 'company',
+    'education', 'academic_title', 'post_grad', 'onboarding_completed',
+    'notification_preferences', 'push_subscription'
+];
+
+const validateString = (value: unknown, maxLength: number): string | null => {
+    if (value === null || value === undefined) return null;
+    if (typeof value !== 'string') return null;
+    return value.slice(0, maxLength);
+};
+
+const validateProfileUpdates = (updates: Partial<Profile>): Partial<Profile> => {
+    const validated: Partial<Profile> = {};
+    for (const key of Object.keys(updates) as (keyof Profile)[]) {
+        if (!ALLOWED_PROFILE_FIELDS.includes(key)) continue;
+        const value = updates[key];
+        switch (key) {
+            case 'full_name':
+                validated.full_name = validateString(value, MAX_NAME_LENGTH) || undefined;
+                break;
+            case 'bio':
+                validated.bio = validateString(value, MAX_BIO_LENGTH) || undefined;
+                break;
+            case 'crm':
+            case 'specialty':
+            case 'company':
+            case 'education':
+            case 'academic_title':
+            case 'post_grad':
+                validated[key] = validateString(value, MAX_FIELD_LENGTH) || undefined;
+                break;
+            case 'avatar_url':
+                const url = validateString(value, 1000);
+                if (url && (url.startsWith('https://') || url.startsWith('data:image/'))) {
+                    validated.avatar_url = url;
+                }
+                break;
+            case 'onboarding_completed':
+                if (typeof value === 'boolean') validated.onboarding_completed = value;
+                break;
+            case 'notification_preferences':
+            case 'push_subscription':
+                validated[key] = value as any;
+                break;
+        }
+    }
+    return validated;
+};
+
+const validateServiceInput = (name: string, institution: string): { name: string; institution: string } => {
+    const validatedName = validateString(name, MAX_NAME_LENGTH);
+    const validatedInstitution = validateString(institution, MAX_FIELD_LENGTH);
+    if (!validatedName || validatedName.trim().length === 0) {
+        throw new Error('Nome do serviço é obrigatório');
+    }
+    if (!validatedInstitution || validatedInstitution.trim().length === 0) {
+        throw new Error('Instituição é obrigatória');
+    }
+    return { name: validatedName.trim(), institution: validatedInstitution.trim() };
+};
+
 // --- PROFILES ---
 
 export const getProfiles = async (): Promise<Profile[]> => {
@@ -457,13 +524,16 @@ export const saveFinancialConfig = async (userId: string, config: FinancialConfi
 // --- GROUPS MANAGEMENT ---
 
 export const createService = async (ownerId: string, name: string, institution: string, color: string): Promise<Group> => {
+    const validated = validateServiceInput(name, institution);
+    const validatedColor = /^#[0-9A-Fa-f]{6}$/.test(color) ? color : '#10b981';
+
     const { data, error } = await supabase
         .from('groups')
         .insert({
             owner_id: ownerId,
-            name,
-            institution,
-            color
+            name: validated.name,
+            institution: validated.institution,
+            color: validatedColor
         })
         .select()
         .single();
@@ -607,7 +677,6 @@ export const leaveGroup = async (groupId: string, userId: string): Promise<void>
 // --- PERSONAL COLOR PREFERENCES ---
 
 export const updateMemberPersonalColor = async (groupId: string, userId: string, color: string): Promise<void> => {
-    console.log('[API] updateMemberPersonalColor', { groupId, userId, color });
     const { error } = await supabase
         .from('group_members')
         .update({
@@ -616,11 +685,7 @@ export const updateMemberPersonalColor = async (groupId: string, userId: string,
         })
         .match({ group_id: groupId, profile_id: userId });
 
-    if (error) {
-        console.error('[API] updateMemberPersonalColor ERROR', error);
-        throw error;
-    }
-    console.log('[API] updateMemberPersonalColor SUCCESS');
+    if (error) throw error;
 };
 
 export const markColorBannerSeen = async (groupId: string, userId: string): Promise<void> => {
@@ -656,9 +721,14 @@ export const updateShift = async (shiftId: string, updates: Partial<Shift>): Pro
 };
 
 export const updateProfile = async (userId: string, updates: Partial<Profile>): Promise<Profile> => {
+    const validatedUpdates = validateProfileUpdates(updates);
+    if (Object.keys(validatedUpdates).length === 0) {
+        throw new Error('Nenhum campo válido para atualizar');
+    }
+
     const { data, error } = await supabase
         .from('profiles')
-        .update(updates)
+        .update(validatedUpdates)
         .eq('id', userId)
         .select()
         .single();

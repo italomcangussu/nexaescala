@@ -20,6 +20,7 @@ import DraggableFAB from '../components/DraggableFAB';
 import { usePendingRequests } from '../hooks/usePendingRequests';
 
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { useDashboardData } from '../hooks/useDashboardData';
 
 import { Profile, Shift, ServiceRole, Group, FinancialConfig, ShiftPreset, Notification as AppNotification } from '../types';
@@ -35,6 +36,7 @@ const Dashboard: React.FC = () => {
 
   // Data State
   const { profile: currentUser, signOut } = useAuth();
+  const { showToast } = useToast();
 
   // Custom Hooks for Data
   const {
@@ -118,7 +120,7 @@ const Dashboard: React.FC = () => {
   });
 
   const handleEditShift = (shift: Shift) => {
-    alert(`Editar configurações do plantão: ${shift.date}`);
+    showToast(`Editar configurações do plantão: ${shift.date}`, 'info');
   };
 
   const handleProfileClick = (profileId: string) => {
@@ -163,13 +165,13 @@ const Dashboard: React.FC = () => {
           // If no config, open config modal first or show error
           setFinConfigGroup(userGroups.find(g => g.id === lastShift.group_id) || null);
           setIsFinConfigOpen(true);
-          alert("Por favor, configure seus honorários para este serviço primeiro.");
+          showToast("Por favor, configure seus honorários para este serviço primeiro.", 'info');
         }
-      } catch (error) {
-        console.error("Error fetching checkout config:", error);
+      } catch {
+        showToast("Erro ao buscar configurações financeiras", 'error');
       }
     } else {
-      alert("Nenhum plantão recente encontrado para checkout.");
+      showToast("Nenhum plantão recente encontrado para checkout.", 'info');
     }
   };
 
@@ -192,8 +194,8 @@ const Dashboard: React.FC = () => {
     try {
       await saveFinancialConfig(currentUser.id, config);
       // Success
-    } catch (error) {
-      console.error("Error saving config:", error);
+    } catch {
+      showToast("Erro ao salvar configuração", 'error');
     }
   };
 
@@ -216,10 +218,9 @@ const Dashboard: React.FC = () => {
         is_paid: false
       });
       setIsCheckoutOpen(false);
-      alert("Checkout realizado com sucesso!");
-    } catch (error) {
-      console.error("Error saving checkout:", error);
-      alert("Erro ao salvar checkout.");
+      showToast("Checkout realizado com sucesso!", 'success');
+    } catch {
+      showToast("Erro ao salvar checkout.", 'error');
     }
   };
 
@@ -516,7 +517,7 @@ const Dashboard: React.FC = () => {
             </button>
 
             <button
-              onClick={() => { alert("Link de convite copiado!"); setIsFabOpen(false); }}
+              onClick={() => { showToast("Link de convite copiado!", 'success'); setIsFabOpen(false); }}
               className="w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-gray-200 dark:border-slate-700 p-4 rounded-2xl flex items-center gap-4 shadow-sm hover:scale-105 transition-transform"
             >
               <div className="w-12 h-12 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl flex items-center justify-center">

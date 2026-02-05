@@ -26,7 +26,7 @@ export const useDashboardData = (currentUser: Profile | null): UseDashboardDataR
     const [isLoading, setIsLoading] = useState(true);
     const [userRole] = useState<AppRole>(AppRole.MEDICO);
 
-    const fetchData = async () => {
+    const fetchData = async (isMounted = true) => {
         if (!currentUser) return;
         setIsLoading(true);
         try {
@@ -38,21 +38,25 @@ export const useDashboardData = (currentUser: Profile | null): UseDashboardDataR
                 getMyPendingExchangeRequests(currentUser.id)
             ]);
 
+            if (!isMounted) return;
+
             setProfiles(fetchedProfiles);
             setUserGroups(fetchedGroups);
             setShifts(myShiftData.shifts);
             setAssignments(myShiftData.assignments);
             setExchanges(fetchedExchanges);
             setPendingSwapRequests(fetchedRequests);
-        } catch (error) {
-            console.error("Error fetching dashboard data:", error);
+        } catch {
+            // Silently ignore fetch errors
         } finally {
-            setIsLoading(false);
+            if (isMounted) setIsLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchData();
+        let isMounted = true;
+        fetchData(isMounted);
+        return () => { isMounted = false; };
     }, [currentUser]);
 
     return {

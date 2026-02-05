@@ -70,11 +70,9 @@ export const useServiceCreation = (currentUser: Profile, onFinish: (group?: Grou
     }, [searchQuery]);
 
     const handleNext = (e?: React.MouseEvent) => {
-        console.log('[DEBUG] handleNext called, current step:', step);
         e?.preventDefault();
         e?.stopPropagation();
         if (step < 3) {
-            console.log('[DEBUG] Moving to step:', step + 1);
             setStep(step + 1);
         }
     };

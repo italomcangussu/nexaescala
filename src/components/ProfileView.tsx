@@ -1,6 +1,7 @@
 import React from 'react';
 import { Profile } from '../types';
 import { ArrowLeft, Briefcase, GraduationCap, Award, Users, Check, Edit2 } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 interface ProfileViewProps {
    profile: Profile;
@@ -10,7 +11,7 @@ interface ProfileViewProps {
 }
 
 const ProfileView: React.FC<ProfileViewProps> = ({ profile, currentUser, onBack, onEdit }) => {
-
+   const { showToast } = useToast();
    const isMe = profile.id === currentUser.id;
 
    // Mock follow state
@@ -20,7 +21,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ profile, currentUser, onBack,
       setIsFollowing(!isFollowing);
       // In a real app, emit event to update database
       if (!isFollowing) {
-         alert(`Solicitação enviada para ${profile.full_name}`);
+         showToast(`Solicitação enviada para ${profile.full_name}`, 'success');
       }
    };
 

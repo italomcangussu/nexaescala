@@ -20,21 +20,32 @@ const SettingsNotifications: React.FC<SettingsNotificationsProps> = ({ onBack })
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const isMountedRef = useRef(true);
+
+    // Cleanup debounce on unmount
+    useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+        };
+    }, []);
 
     // Load preferences from database
     useEffect(() => {
         if (!currentUser) return;
+        let isMounted = true;
         const load = async () => {
             try {
                 const prefs = await getNotificationPreferences(currentUser.id);
-                setNotifSettings(prefs);
-            } catch (error) {
-                console.error('Error loading notification preferences:', error);
+                if (isMounted) setNotifSettings(prefs);
+            } catch {
+                // Silently ignore load errors
             } finally {
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         };
         load();
+        return () => { isMounted = false; };
     }, [currentUser]);
 
     // Save preferences with debounce
@@ -43,13 +54,14 @@ const SettingsNotifications: React.FC<SettingsNotificationsProps> = ({ onBack })
         if (debounceRef.current) clearTimeout(debounceRef.current);
 
         debounceRef.current = setTimeout(async () => {
+            if (!isMountedRef.current) return;
             setSaving(true);
             try {
                 await updateNotificationPreferences(currentUser.id, newSettings);
-            } catch (error) {
-                console.error('Error saving notification preferences:', error);
+            } catch {
+                // Silently ignore save errors
             } finally {
-                setSaving(false);
+                if (isMountedRef.current) setSaving(false);
             }
         }, 500);
     };
