@@ -103,9 +103,19 @@ export interface Profile {
     show_education: boolean;
   };
 
+  // Notification preferences
+  notification_preferences?: NotificationPreferences;
+
   // Onboarding flag
   onboarding_completed?: boolean;
   app_role?: 'admin' | 'user' | 'support';
+}
+
+export interface NotificationPreferences {
+  enabled: boolean;
+  swaps: boolean;
+  newShifts: boolean;
+  groups: boolean;
 }
 
 export interface AppLog {
@@ -308,7 +318,7 @@ export interface Notification {
   user_id: string;
   title: string;
   message: string;
-  type: 'SHIFT_PUBLISHED' | 'SHIFT_SWAP' | 'SYSTEM' | 'SHIFT_OFFER' | 'MENTION';
+  type: 'SHIFT_PUBLISHED' | 'SHIFT_SWAP' | 'SYSTEM' | 'SHIFT_OFFER' | 'MENTION' | 'SERVICE_UPDATE';
   is_read: boolean;
   created_at: string;
   metadata?: any;

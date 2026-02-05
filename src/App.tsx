@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { AdminRoute } from './components/AdminRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useDeviceDetection } from './hooks/useDeviceDetection';
 
@@ -68,7 +69,11 @@ const App: React.FC = () => {
 
                         {/* Admin Routes */}
                         <Route path="/painel-admin/login" element={<AdminLoginPage />} />
-                        <Route path="/painel-admin" element={<AdminLayout />}>
+                        <Route path="/painel-admin" element={
+                            <AdminRoute>
+                                <AdminLayout />
+                            </AdminRoute>
+                        }>
                             <Route index element={<AdminDashboard />} />
                             <Route path="users" element={<AdminUsers />} />
                             <Route path="logs" element={<AdminLogs />} />

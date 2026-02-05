@@ -1,30 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { LayoutDashboard, Users, FileText, LogOut, ArrowLeft } from 'lucide-react';
-import { useToast } from '../../context/ToastContext';
+import { LayoutDashboard, Users, FileText, ArrowLeft } from 'lucide-react';
 
 const AdminLayout: React.FC = () => {
-    const { user, profile } = useAuth();
     const navigate = useNavigate();
-    const { showToast } = useToast();
 
-    useEffect(() => {
-        if (!user) {
-            navigate('/login');
-            return;
-        }
-
-        // Basic check - reliable check happens via RLS on data fetch
-        if (profile?.app_role !== 'admin') {
-            showToast('Acesso negado. Apenas administradores.', 'error');
-            navigate('/');
-        }
-    }, [user, profile, navigate, showToast]);
-
-    if (!profile || profile.app_role !== 'admin') {
-        return null; // Or loading spinner
-    }
+    // Auth/role verification is handled by AdminRoute wrapper in App.tsx
 
     return (
         <div className="flex h-screen bg-slate-100 dark:bg-surface-dark">

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Home, Calendar, Search, Bell, Landmark, Settings, LucideProps } from 'lucide-react';
-import { Profile, Notification } from '../types';
-import { getNotifications, markNotificationAsRead } from '../services/api';
+import { Profile, Notification, NotificationPreferences } from '../types';
+import { getNotifications, markNotificationAsRead, getNotificationPreferences } from '../services/api';
 import Logo from './Logo';
 import SettingsMenu from './SettingsMenu';
 import SkipToMain from './SkipToMain';
@@ -29,6 +29,14 @@ const Layout: React.FC<LayoutProps> = ({
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
 
+  // Map notification types to preference keys
+  const NOTIF_TYPE_TO_PREF: Record<string, keyof NotificationPreferences> = {
+    'SHIFT_SWAP': 'swaps',
+    'SHIFT_OFFER': 'swaps',
+    'SHIFT_PUBLISHED': 'newShifts',
+    'SERVICE_UPDATE': 'groups',
+  };
+
   React.useEffect(() => {
     if (currentUser) {
       fetchNotifications();
@@ -37,8 +45,24 @@ const Layout: React.FC<LayoutProps> = ({
 
   const fetchNotifications = async () => {
     try {
-      const data = await getNotifications(currentUser.id);
-      setNotifications(data);
+      const [data, prefs] = await Promise.all([
+        getNotifications(currentUser.id),
+        getNotificationPreferences(currentUser.id),
+      ]);
+
+      if (!prefs.enabled) {
+        setNotifications([]);
+        return;
+      }
+
+      // Filter by user preference categories
+      const filtered = data.filter(n => {
+        const prefKey = NOTIF_TYPE_TO_PREF[n.type];
+        if (!prefKey) return true; // SYSTEM, MENTION always shown
+        return prefs[prefKey];
+      });
+
+      setNotifications(filtered);
     } catch (error) {
       console.error("Error fetching notifications:", error);
     }

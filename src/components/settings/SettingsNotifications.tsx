@@ -1,22 +1,83 @@
-import React, { useState } from 'react';
-import { Bell, ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Bell, ArrowLeft, Loader } from 'lucide-react';
 import Switch from '../Switch';
+import { useAuth } from '../../context/AuthContext';
+import { getNotificationPreferences, updateNotificationPreferences } from '../../services/api';
+import { NotificationPreferences } from '../../types';
 
 interface SettingsNotificationsProps {
     onBack: () => void;
 }
 
 const SettingsNotifications: React.FC<SettingsNotificationsProps> = ({ onBack }) => {
-    const [notifSettings, setNotifSettings] = useState({
+    const { profile: currentUser } = useAuth();
+    const [notifSettings, setNotifSettings] = useState<NotificationPreferences>({
         enabled: true,
         swaps: true,
         newShifts: true,
         groups: true
     });
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const toggleSwitch = (key: keyof typeof notifSettings) => {
-        setNotifSettings(prev => ({ ...prev, [key]: !prev[key] }));
+    // Load preferences from database
+    useEffect(() => {
+        if (!currentUser) return;
+        const load = async () => {
+            try {
+                const prefs = await getNotificationPreferences(currentUser.id);
+                setNotifSettings(prefs);
+            } catch (error) {
+                console.error('Error loading notification preferences:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, [currentUser]);
+
+    // Save preferences with debounce
+    const persistPreferences = (newSettings: NotificationPreferences) => {
+        if (!currentUser) return;
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+
+        debounceRef.current = setTimeout(async () => {
+            setSaving(true);
+            try {
+                await updateNotificationPreferences(currentUser.id, newSettings);
+            } catch (error) {
+                console.error('Error saving notification preferences:', error);
+            } finally {
+                setSaving(false);
+            }
+        }, 500);
     };
+
+    const toggleSwitch = (key: keyof NotificationPreferences) => {
+        const newSettings = { ...notifSettings, [key]: !notifSettings[key] };
+        setNotifSettings(newSettings);
+        persistPreferences(newSettings);
+    };
+
+    if (loading) {
+        return (
+            <div className="px-6 animate-fade-in-up w-full">
+                <div className="flex items-center mb-6 relative px-1">
+                    <button
+                        onClick={onBack}
+                        className="p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
+                    >
+                        <ArrowLeft size={24} />
+                    </button>
+                    <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 ml-2">Notificações</h2>
+                </div>
+                <div className="flex justify-center py-12">
+                    <Loader className="animate-spin text-primary" size={24} />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="px-6 animate-fade-in-up w-full">
@@ -28,6 +89,7 @@ const SettingsNotifications: React.FC<SettingsNotificationsProps> = ({ onBack })
                     <ArrowLeft size={24} />
                 </button>
                 <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 ml-2">Notificações</h2>
+                {saving && <Loader className="animate-spin text-primary ml-auto" size={16} />}
             </div>
 
             <div className="space-y-6">
@@ -60,7 +122,7 @@ const SettingsNotifications: React.FC<SettingsNotificationsProps> = ({ onBack })
                         <div className="flex items-center justify-between p-3 rounded-xl hover:bg-surface dark:hover:bg-slate-800 transition-colors">
                             <div>
                                 <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Novos Plantões</h4>
-                                <p className="text-[11px] text-slate-400 mt-0.5">Quando surgirem vagas livres.</p>
+                                <p className="text-[11px] text-slate-400 mt-0.5">Quando novas escalas forem publicadas.</p>
                             </div>
                             <Switch isOn={notifSettings.newShifts} onToggle={() => toggleSwitch('newShifts')} />
                         </div>
@@ -68,7 +130,7 @@ const SettingsNotifications: React.FC<SettingsNotificationsProps> = ({ onBack })
                         <div className="flex items-center justify-between p-3 rounded-xl hover:bg-surface dark:hover:bg-slate-800 transition-colors">
                             <div>
                                 <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Meus Serviços</h4>
-                                <p className="text-[11px] text-slate-400 mt-0.5">Entradas, saídas e avisos do gestor.</p>
+                                <p className="text-[11px] text-slate-400 mt-0.5">Atualizações e avisos do gestor.</p>
                             </div>
                             <Switch isOn={notifSettings.groups} onToggle={() => toggleSwitch('groups')} />
                         </div>

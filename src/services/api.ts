@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { Profile, Group, Shift, ShiftAssignment, FinancialRecord, FinancialConfig, ServiceRole, ShiftExchange, TradeStatus, TradeType, GroupMember, ChatMessage, ShiftPreset, TeamMember, AppRole, GroupRelationship, Notification, ShiftExchangeRequest, AppLog } from '../types';
+import { Profile, Group, Shift, ShiftAssignment, FinancialRecord, FinancialConfig, ServiceRole, ShiftExchange, TradeStatus, TradeType, GroupMember, ChatMessage, ShiftPreset, TeamMember, AppRole, GroupRelationship, Notification, ShiftExchangeRequest, AppLog, NotificationPreferences } from '../types';
 
 
 // --- CACHE HELPER ---
@@ -43,6 +43,13 @@ const fetchWithCache = async <T>(key: string, fetcher: () => Promise<T>, forceRe
     }
 };
 
+// --- FILTER SANITIZATION ---
+// Supabase PostgREST filter syntax uses special characters: , . ( )
+// User input must be sanitized to prevent filter injection.
+const sanitizeFilterValue = (value: string): string => {
+    return value.replace(/[,.()"'\\]/g, '');
+};
+
 // --- PROFILES ---
 
 export const getProfiles = async (): Promise<Profile[]> => {
@@ -69,10 +76,11 @@ export const getProfileById = async (id: string): Promise<Profile | null> => {
 export const searchProfiles = async (query: string): Promise<Profile[]> => {
     if (!query || query.length < 2) return [];
 
+    const q = sanitizeFilterValue(query);
     const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .or(`full_name.ilike.%${query}%,email.ilike.%${query}%,crm.ilike.%${query}%`)
+        .or(`full_name.ilike.%${q}%,email.ilike.%${q}%,crm.ilike.%${q}%`)
         .limit(10);
 
     if (error) throw error;
@@ -162,40 +170,17 @@ export const createAppLog = async (
 };
 
 export const deleteUserAccount = async (userId: string): Promise<void> => {
-    // 1. Log the deletion request for audit
-    await createAppLog('info', `User requested account deletion: ${userId}`);
-
-    // 2. Here we should ideally verify if it's safe to delete (e.g. not the only admin of a large group)
-    // For MVP/Review compiliance, we can proceed.
-
-    // 3. Option A: Call a Supabase Edge Function to handle full deletion (Auth + Data)
-    // Option B: Client-side soft delete (update profile) and sign out.
-    // We'll go with Option B + SignOut for now as it's safer without server-side admin setup.
-    // Ideally, you should have an RPC function 'delete_user' that handles this securely.
-
-    // Attempt to delete profile row (this usually triggers cascading deletes if set up, or fails if restricted)
-    // If strict RLS prevents deletion, we update status.
-    const { error } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userId);
+    // Call the delete-user Edge Function which handles full deletion
+    // (profile data + auth.users) using service_role key server-side.
+    const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { userId },
+    });
 
     if (error) {
-        console.warn("Could not hard delete profile, attempting soft delete/anonymization...", error);
-        // Fallback: Anonymize
-        const { error: updateError } = await supabase
-            .from('profiles')
-            .update({
-                full_name: 'Usuário Excluído',
-                email: `${userId}@deleted.nexaescala.com`,
-                app_role: 'user' // Downgrade
-            })
-            .eq('id', userId);
-
-        if (updateError) throw updateError;
+        throw new Error(error.message || 'Falha ao deletar conta');
     }
 
-    // 4. Sign out
+    // Sign out after successful deletion
     await supabase.auth.signOut();
 };
 
@@ -691,6 +676,115 @@ export const updatePushSubscription = async (userId: string, subscription: PushS
     if (error) throw error;
 };
 
+// --- NOTIFICATION PREFERENCES ---
+
+const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
+    enabled: true,
+    swaps: true,
+    newShifts: true,
+    groups: true
+};
+
+export const getNotificationPreferences = async (userId: string): Promise<NotificationPreferences> => {
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('notification_preferences')
+        .eq('id', userId)
+        .single();
+
+    if (error) throw error;
+    return (data?.notification_preferences as NotificationPreferences) || DEFAULT_NOTIFICATION_PREFERENCES;
+};
+
+export const updateNotificationPreferences = async (userId: string, preferences: NotificationPreferences): Promise<void> => {
+    const { error } = await supabase
+        .from('profiles')
+        .update({ notification_preferences: preferences })
+        .eq('id', userId);
+
+    if (error) throw error;
+};
+
+// --- PUSH NOTIFICATION SENDER ---
+
+// Maps notification types to preference keys
+const NOTIFICATION_TYPE_TO_PREF: Record<string, keyof NotificationPreferences> = {
+    'SHIFT_SWAP': 'swaps',
+    'SHIFT_OFFER': 'swaps',
+    'SHIFT_PUBLISHED': 'newShifts',
+    'SERVICE_UPDATE': 'groups',
+    'SYSTEM': 'enabled', // System notifications always go if enabled
+    'MENTION': 'enabled',
+};
+
+/**
+ * Send push notification to specific users after checking their preferences.
+ * Called after inserting into the notifications table.
+ */
+export const sendPushToUsers = async (
+    userIds: string[],
+    notificationType: string,
+    title: string,
+    body: string,
+    url?: string
+): Promise<void> => {
+    if (userIds.length === 0) return;
+
+    try {
+        // Fetch push subscriptions and preferences for target users
+        const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, push_subscription, notification_preferences')
+            .in('id', userIds)
+            .not('push_subscription', 'is', null);
+
+        if (!profiles || profiles.length === 0) return;
+
+        const prefKey = NOTIFICATION_TYPE_TO_PREF[notificationType] || 'enabled';
+
+        for (const profile of profiles) {
+            const prefs = (profile.notification_preferences as NotificationPreferences) || DEFAULT_NOTIFICATION_PREFERENCES;
+
+            // Check if notifications are enabled globally and for this category
+            if (!prefs.enabled) continue;
+            if (prefKey !== 'enabled' && !prefs[prefKey]) continue;
+
+            const subscription = profile.push_subscription;
+            if (!subscription) continue;
+
+            const parsedSub = JSON.parse(subscription);
+
+            if (parsedSub.endpoint === 'native') {
+                // Native push (iOS/Android) - send via Edge Function
+                await supabase.functions.invoke('send-push-notification', {
+                    body: {
+                        type: 'native',
+                        platform: parsedSub.keys?.p256dh, // 'ios' or 'android'
+                        token: parsedSub.keys?.auth,
+                        title,
+                        body,
+                        data: { url: url || '/' }
+                    }
+                });
+            } else {
+                // Web push - send via Edge Function
+                await supabase.functions.invoke('send-push-notification', {
+                    body: {
+                        type: 'web',
+                        subscription: parsedSub,
+                        title,
+                        body,
+                        data: { url: url || '/' }
+                    }
+                });
+            }
+        }
+    } catch (error) {
+        // Push failures should not break the main flow
+        console.error('Error sending push notifications:', error);
+    }
+};
+
 export const publishShifts = async (groupId: string, shiftIds: string[]): Promise<void> => {
     if (shiftIds.length === 0) return;
     const { error } = await supabase
@@ -716,6 +810,10 @@ export const publishShifts = async (groupId: string, shiftIds: string[]): Promis
             metadata: { group_id: groupId }
         }));
         await createNotificationsBulk(notifications as any);
+
+        // Send push notifications
+        const memberIds = members.map(m => m.profile_id);
+        await sendPushToUsers(memberIds, 'SHIFT_PUBLISHED', 'Nova Escala Publicada', 'Uma nova escala foi publicada no seu serviço.');
     }
 };
 
@@ -801,10 +899,11 @@ export const deleteGroup = async (groupId: string): Promise<void> => {
 export const searchInstitutions = async (query: string): Promise<string[]> => {
     if (!query || query.length < 2) return [];
 
+    const q = sanitizeFilterValue(query);
     const { data, error } = await supabase
         .from('groups')
         .select('institution')
-        .ilike('institution', `%${query}%`)
+        .ilike('institution', `%${q}%`)
         .limit(20);
 
     if (error) throw error;
@@ -1253,6 +1352,27 @@ export const updateServiceComplete = async (
             }
         }
     }
+
+    // Notify all current members about the service update
+    const { data: allMembers } = await supabase
+        .from('group_members')
+        .select('profile_id')
+        .eq('group_id', groupId);
+
+    if (allMembers && allMembers.length > 0) {
+        const serviceName = updates.name || 'seu serviço';
+        const memberIds = allMembers.map(m => m.profile_id);
+        const notifs = memberIds.map(uid => ({
+            user_id: uid,
+            title: 'Serviço Atualizado',
+            message: `O serviço "${serviceName}" foi atualizado pelo gestor.`,
+            type: 'SERVICE_UPDATE' as const,
+            is_read: false,
+            metadata: { group_id: groupId }
+        }));
+        await createNotificationsBulk(notifs as any);
+        await sendPushToUsers(memberIds, 'SERVICE_UPDATE', 'Serviço Atualizado', `O serviço "${serviceName}" foi atualizado pelo gestor.`);
+    }
 };
 
 // --- SHIFT GENERATION ---
@@ -1437,6 +1557,7 @@ export const createShiftExchange = async (exchange: Partial<ShiftExchange>): Pro
                 is_read: false,
                 metadata: { exchange_id: data.id }
             }]);
+            await sendPushToUsers([exchange.target_profile_id], 'SHIFT_OFFER', 'Repasse de Plantão Recebido', 'Um colega repassou um plantão diretamente para você.');
         } else {
             // Global Giveaway: Notify ALL group members
             const { data: members } = await supabase
@@ -1460,6 +1581,11 @@ export const createShiftExchange = async (exchange: Partial<ShiftExchange>): Pro
                         metadata: { exchange_id: data.id }
                     }));
                     await createNotificationsBulk(notifications as any);
+                    const pushIds = otherMembers.map(m => m.profile_id);
+                    const pushMsg = exchange.type === TradeType.DIRECT_SWAP
+                        ? 'Um colega solicitou uma troca de plantão no grupo.'
+                        : 'Um colega ofertou um plantão para o grupo.';
+                    await sendPushToUsers(pushIds, 'SHIFT_OFFER', 'Oportunidade de Plantão', pushMsg);
                 }
             }
         }
@@ -1484,6 +1610,7 @@ export const cancelShiftExchange = async (exchangeId: string): Promise<void> => 
             is_read: false,
             metadata: { exchange_id: exchangeId }
         }]);
+        await sendPushToUsers([exchange.target_profile_id], 'SHIFT_OFFER', 'Solicitação Cancelada', 'Um colega cancelou a solicitação de repasse/troca que enviou para você.');
     }
 
     // 3. Update status to CANCELLED (better than delete for notification context)
@@ -1533,6 +1660,7 @@ export const respondToShiftExchange = async (
                 is_read: false,
                 metadata: { exchange_id: exchangeId }
             }]);
+            await sendPushToUsers([exchange.requesting_profile_id], 'SHIFT_OFFER', 'Repasse Recusado', 'Um colega recusou o seu repasse direcionado.');
         }
     }
 };
@@ -1638,6 +1766,8 @@ export const updateShiftExchangeStatus = async (exchangeId: string, status: Trad
             is_read: false,
             metadata: { exchange_id: exchangeId }
         }]);
+        const rejectTitle = exchange.type === TradeType.DIRECT_SWAP ? 'Troca Recusada' : 'Repasse Recusado';
+        await sendPushToUsers([exchange.requesting_profile_id], 'SHIFT_OFFER', rejectTitle, 'Sua solicitação de plantão foi recusada.');
     }
     // NOTE: Actual swap logic (changing assignments) should happen transactionally
     // For now, we update status here, and consumer of this function performs the swap if ACCEPTED
@@ -1701,6 +1831,11 @@ export async function executeExchangeTransaction(exchange: ShiftExchange, accept
         is_read: false,
         metadata: { exchange_id: exchange.id }
     }]);
+    const execTitle = exchange.type === TradeType.DIRECT_SWAP ? 'Troca Confirmada!' : 'Repasse Aceito!';
+    const execMsg = exchange.type === TradeType.DIRECT_SWAP
+        ? 'Sua solicitação de troca de plantão foi concluída com sucesso.'
+        : 'Um colega aceitou o seu repasse de plantão.';
+    await sendPushToUsers([exchange.requesting_profile_id], 'SHIFT_OFFER', execTitle, execMsg);
 }
 
 // --- CHAT ---
@@ -2005,6 +2140,7 @@ export const createShiftExchangeRequest = async (
         is_read: false,
         metadata: { exchange_request_id: data.id }
     }]);
+    await sendPushToUsers([targetUserId], 'SHIFT_SWAP', 'Nova Solicitação de Troca', 'Você recebeu uma solicitação de troca de plantão.');
 
     return data as ShiftExchangeRequest;
 };
@@ -2192,6 +2328,12 @@ export const respondToExchangeRequest = async (
                 is_read: false
             }
         ]);
+        await sendPushToUsers(
+            [request.requesting_user_id, request.target_user_id],
+            'SHIFT_SWAP',
+            'Troca Confirmada',
+            'A troca de plantão foi confirmada com sucesso.'
+        );
     } else {
         // Reject
         const { error: updateError } = await supabase
@@ -2209,6 +2351,7 @@ export const respondToExchangeRequest = async (
             type: 'SHIFT_SWAP',
             is_read: false
         }]);
+        await sendPushToUsers([request.requesting_user_id], 'SHIFT_SWAP', 'Troca Recusada', 'Sua solicitação de troca foi recusada.');
     }
 };
 
@@ -2369,6 +2512,7 @@ export const cancelExchangeRequest = async (requestId: string): Promise<void> =>
             is_read: false,
             metadata: { exchange_request_id: requestId }
         }]);
+        await sendPushToUsers([request.target_user_id], 'SHIFT_SWAP', 'Solicitação de Troca Cancelada', 'A solicitação de troca enviada para você foi cancelada pelo remetente.');
     }
 };
 
