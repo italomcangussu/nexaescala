@@ -80,7 +80,7 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
       >
 
         {/* Animated Decorative Background Orb */}
-        <div className={`absolute -right-12 -top-12 w-48 h-48 bg-gradient-to-br rounded-full blur-3xl transition-all duration-700 group-hover:scale-125 ${cardStyles.orb1}`}></div>
+        <div className={`absolute -right-12 -top-12 w-48 h-48 bg-linear-to-br rounded-full blur-3xl transition-all duration-700 group-hover:scale-125 ${cardStyles.orb1}`}></div>
         <div className={`absolute -left-8 bottom-0 w-32 h-32 rounded-full blur-2xl transition-all duration-700 group-hover:scale-110 ${cardStyles.orb2}`}></div>
 
         <div className="relative z-10 p-5">
@@ -127,7 +127,7 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
             {/* Animated Icon */}
             <div className="relative w-14 h-14 flex items-center justify-center">
               <div
-                className={`absolute inset-0 bg-gradient-to-tr ${isNightShift ? 'from-indigo-500/20 to-purple-500/10' : 'from-emerald-100 to-green-50 dark:from-emerald-900/30 dark:to-green-900/20'} rounded-full opacity-50 animate-pulse-slow`}
+                className={`absolute inset-0 bg-linear-to-tr ${isNightShift ? 'from-indigo-500/20 to-purple-500/10' : 'from-emerald-100 to-green-50 dark:from-emerald-900/30 dark:to-green-900/20'} rounded-full opacity-50 animate-pulse-slow`}
                 style={!isNightShift && accentColor ? { background: `radial-gradient(circle, ${accentColor}20 0%, ${accentColor}05 70%)` } : {}}
               ></div>
               <Icon
@@ -231,7 +231,7 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
                     }}
                     className={`relative overflow-hidden group/btn flex items-center justify-center w-full px-5 py-2 rounded-xl text-white shadow-lg active:scale-95 transition-all duration-300 ${isNightShift ? 'bg-sky-600 hover:bg-sky-700 shadow-sky-900/40' : 'bg-blue-500 hover:bg-blue-600 shadow-blue-200 hover:shadow-blue-300 dark:shadow-none'}`}
                   >
-                    <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer"></div>
+                    <div className="absolute inset-0 w-full h-full bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer"></div>
                     <Megaphone size={14} className="mr-2 group-hover/btn:rotate-12 transition-transform duration-500" />
                     <span className="text-xs font-bold uppercase tracking-wide">Repassar</span>
                   </button>
@@ -247,7 +247,7 @@ const ShiftCard: React.FC<ShiftCardProps> = ({ shift, assignment, currentUserRol
                   }}
                   className={`relative overflow-hidden group/btn flex items-center justify-center w-full px-5 py-2 rounded-xl text-white shadow-lg active:scale-95 transition-all duration-300 ${cardStyles.buttonBg}`}
                 >
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer delay-75"></div>
+                  <div className="absolute inset-0 w-full h-full bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer delay-75"></div>
                   <ArrowRightLeft size={14} className="mr-2 group-hover/btn:rotate-180 transition-transform duration-500" />
                   <span className="text-xs font-bold uppercase tracking-wide">Trocar</span>
                 </button>

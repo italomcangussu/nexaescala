@@ -45,8 +45,20 @@ npm install --legacy-peer-deps || { echo "❌ npm install failed"; exit 1; }
 
 # 3. Web App Build
 echo "🏗️ Building web application..."
+echo "📍 Environment variables check:"
+echo "  VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-(not set)}"
+echo "  VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:+[set]}"
+echo "  VITE_VAPID_PUBLIC_KEY: ${VITE_VAPID_PUBLIC_KEY:+[set]}"
+
 # Use CI=false to prevent warnings from failing the build in some environments
-CI=false npm run build || { echo "❌ npm run build failed"; exit 1; }
+# Capture build output for better error diagnosis
+BUILD_OUTPUT=$(CI=false npm run build 2>&1) || {
+    echo "❌ npm run build failed"
+    echo "📋 Build output:"
+    echo "$BUILD_OUTPUT"
+    exit 1
+}
+echo "$BUILD_OUTPUT"
 
 # Verify build output
 if [ ! -d "dist" ]; then
