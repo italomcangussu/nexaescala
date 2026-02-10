@@ -64,5 +64,7 @@
 	<string>O NexaEscala precisa acessar sua câmera para tirar uma foto de perfil.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>O NexaEscala precisa acessar suas fotos para escolher uma foto de perfil.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>O NexaEscala precisa salvar a sua foto de perfil.</string>
 </dict>
 </plist>

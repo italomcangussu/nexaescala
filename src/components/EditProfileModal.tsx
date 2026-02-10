@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Profile } from '../types';
 import { X, Camera, Save, Image as ImageIcon } from 'lucide-react';
 import PermissionSoftPrompt from './PermissionSoftPrompt';
+import { Capacitor } from '@capacitor/core';
+import { pickImageNative, requestPushNotificationsIfNeeded } from '../services/nativePermissions';
 
 const InputGroup = ({ label, value, onChange, textarea, icon }: any) => (
   <div>
@@ -41,6 +43,23 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
   const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
+  const pickNativeAvatar = async () => {
+    try {
+      const picked = await pickImageNative();
+      if (picked?.file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFormData(prev => ({ ...prev, avatar_url: reader.result as string }));
+        };
+        reader.readAsDataURL(picked.file);
+      }
+    } catch (e) {
+      console.error('Erro ao selecionar foto (nativo):', e);
+    }
+
+    void requestPushNotificationsIfNeeded();
+  };
+
   const handleChange = (field: keyof Profile, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -51,6 +70,17 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
   };
 
   const handlePhotoClick = () => {
+    if (Capacitor.isNativePlatform()) {
+      const hasPermission = localStorage.getItem('nexa_photo_permission_granted');
+      if (!hasPermission) {
+        setShowPermissionPrompt(true);
+        return;
+      }
+
+      void pickNativeAvatar();
+      return;
+    }
+
     const hasPermission = localStorage.getItem('nexa_photo_permission_granted');
     if (!hasPermission) {
       setShowPermissionPrompt(true);
@@ -59,12 +89,16 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
     }
   };
 
-  const handlePermissionConfirm = () => {
+  const handlePermissionConfirm = async () => {
     localStorage.setItem('nexa_photo_permission_granted', 'true');
     setShowPermissionPrompt(false);
-    setTimeout(() => {
-      fileInputRef.current?.click();
-    }, 300);
+
+    if (Capacitor.isNativePlatform()) {
+      await pickNativeAvatar();
+      return;
+    }
+
+    fileInputRef.current?.click();
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

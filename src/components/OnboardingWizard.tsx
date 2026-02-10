@@ -2,6 +2,8 @@ import React, { useState, useRef } from 'react';
 import { Profile } from '../types';
 import { supabase } from '../lib/supabase';
 import { uploadAvatar, createPreviewUrl } from '../lib/imageUtils';
+import { Capacitor } from '@capacitor/core';
+import { pickImageNative, requestPushNotificationsIfNeeded } from '../services/nativePermissions';
 import {
     ChevronRight,
     ChevronLeft,
@@ -112,7 +114,37 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
         }
     };
 
+    const pickNativeAvatar = async () => {
+        try {
+            const picked = await pickImageNative();
+            if (picked?.file) {
+                const preview = await createPreviewUrl(picked.file);
+                if (isMountedRef.current) {
+                    setAvatarPreview(preview);
+                    setAvatarFile(picked.file);
+                }
+            }
+        } catch (e) {
+            console.error('Erro ao selecionar foto (nativo):', e);
+        }
+
+        // Optional: ask for push notifications right after a clear user action.
+        void requestPushNotificationsIfNeeded();
+    };
+
     const handlePhotoClick = () => {
+        // Native iOS/Android: use Capacitor Camera plugin so the OS permission prompt is shown.
+        if (Capacitor.isNativePlatform()) {
+            const hasPermission = localStorage.getItem('nexa_photo_permission_granted');
+            if (!hasPermission) {
+                setShowPermissionPrompt(true);
+                return;
+            }
+
+            void pickNativeAvatar();
+            return;
+        }
+
         // Check if we've already shown the prompt
         const hasPermission = localStorage.getItem('nexa_photo_permission_granted');
 
@@ -123,15 +155,17 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
         }
     };
 
-    const handlePermissionConfirm = () => {
+    const handlePermissionConfirm = async () => {
         localStorage.setItem('nexa_photo_permission_granted', 'true');
         setShowPermissionPrompt(false);
-        // Small delay to ensure modal close animation doesn't jitter with file picker open
-        setTimeout(() => {
-            if (isMountedRef.current) {
-                fileInputRef.current?.click();
-            }
-        }, 300);
+
+        if (Capacitor.isNativePlatform()) {
+            await pickNativeAvatar();
+            return;
+        }
+
+        // Web: open file picker
+        if (isMountedRef.current) fileInputRef.current?.click();
     };
 
     const handleNext = async () => {

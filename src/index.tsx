@@ -4,6 +4,7 @@ import App from './App';
 
 import { AuthProvider } from './context/AuthContext';
 import './index.css';
+import { initNativeDeepLinks } from './lib/nativeDeepLinks';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -13,15 +14,26 @@ if (!rootElement) {
 import ErrorBoundary from './components/ErrorBoundary';
 
 const root = ReactDOM.createRoot(rootElement);
-root.render(
-  <React.StrictMode>
-    <ErrorBoundary>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </ErrorBoundary>
-  </React.StrictMode>
-);
+async function bootstrap() {
+  // Must run at app startup (not inside components) so OAuth deep links work on iOS cold start.
+  try {
+    await initNativeDeepLinks();
+  } catch (e) {
+    console.warn('Falha ao inicializar deep links nativos:', e);
+  }
+
+  root.render(
+    <React.StrictMode>
+      <ErrorBoundary>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </ErrorBoundary>
+    </React.StrictMode>
+  );
+}
+
+void bootstrap();
 
 // Register Service Worker for PWA/Push
 if ('serviceWorker' in navigator) {
