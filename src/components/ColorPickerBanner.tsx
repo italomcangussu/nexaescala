@@ -26,8 +26,8 @@ const ColorPickerBanner: React.FC<ColorPickerBannerProps> = ({
     };
 
     return (
-        <div className="fixed top-0 left-0 right-0 z-50 animate-fade-in-down">
-            <div className="bg-gradient-to-r from-primary/10 to-purple-500/10 dark:from-primary/20 dark:to-purple-500/20 backdrop-blur-sm border-b border-primary/20 dark:border-primary/30">
+        <div className="fixed top-0 left-0 right-0 z-50 pt-safe animate-fade-in-down">
+            <div className="bg-linear-to-r from-primary/10 to-purple-500/10 dark:from-primary/20 dark:to-purple-500/20 backdrop-blur-sm border-b border-primary/20 dark:border-primary/30">
                 <div className="max-w-4xl mx-auto px-4 py-4">
                     <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-6">
                         {/* Header */}

@@ -207,7 +207,7 @@ const RepasseModal: React.FC<RepasseModalProps> = ({ isOpen, onClose, onSuccess,
 
                         {step === 'CONFIRM_GLOBAL' && (
                             <div className="space-y-8 animate-fade-in text-center py-4">
-                                <div className="mx-auto w-24 h-24 bg-sky-100 dark:bg-sky-900/30 rounded-[2rem] flex items-center justify-center mb-6">
+                                <div className="mx-auto w-24 h-24 bg-sky-100 dark:bg-sky-900/30 rounded-4xl flex items-center justify-center mb-6">
                                     <Megaphone className="text-sky-600 dark:text-sky-400" size={48} />
                                 </div>
                                 <div className="space-y-4">
@@ -220,7 +220,7 @@ const RepasseModal: React.FC<RepasseModalProps> = ({ isOpen, onClose, onSuccess,
                                 <button
                                     onClick={() => handleConfirm(null)}
                                     disabled={isSubmitting}
-                                    className="w-full py-5 bg-sky-600 hover:bg-sky-700 text-white rounded-[1.5rem] font-black shadow-xl shadow-sky-500/20 active:scale-95 transition-all text-lg flex items-center justify-center gap-3 disabled:opacity-70"
+                                    className="w-full py-5 bg-sky-600 hover:bg-sky-700 text-white rounded-3xl font-black shadow-xl shadow-sky-500/20 active:scale-95 transition-all text-lg flex items-center justify-center gap-3 disabled:opacity-70"
                                 >
                                     {isSubmitting ? (
                                         <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -244,7 +244,7 @@ const RepasseModal: React.FC<RepasseModalProps> = ({ isOpen, onClose, onSuccess,
                                         placeholder="Buscar colega..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full pl-14 pr-6 py-4 bg-surface dark:bg-slate-800/50 border-2 border-slate-100 dark:border-slate-800 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-3xl outline-none font-bold text-slate-700 dark:text-white transition-all text-sm transition-all"
+                                        className="w-full pl-14 pr-6 py-4 bg-surface dark:bg-slate-800/50 border-2 border-slate-100 dark:border-slate-800 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-3xl outline-none font-bold text-slate-700 dark:text-white text-sm transition-all"
                                     />
                                 </div>
 
@@ -259,7 +259,7 @@ const RepasseModal: React.FC<RepasseModalProps> = ({ isOpen, onClose, onSuccess,
                                             <button
                                                 key={member.id}
                                                 onClick={() => setSelectedMember(member)}
-                                                className={`w-full flex items-center p-4 rounded-[1.5rem] border-2 transition-all active:scale-[0.98] ${selectedMember?.id === member.id
+                                                className={`w-full flex items-center p-4 rounded-3xl border-2 transition-all active:scale-[0.98] ${selectedMember?.id === member.id
                                                     ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500'
                                                     : 'bg-white dark:bg-surface-dark border-slate-50 dark:border-slate-800'
                                                     }`}
@@ -297,7 +297,7 @@ const RepasseModal: React.FC<RepasseModalProps> = ({ isOpen, onClose, onSuccess,
                                     <button
                                         onClick={() => handleConfirm(selectedMember?.profile.id)}
                                         disabled={isSubmitting}
-                                        className="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-[1.5rem] font-black shadow-xl shadow-blue-500/20 active:scale-95 transition-all text-lg flex items-center justify-center gap-3"
+                                        className="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl font-black shadow-xl shadow-blue-500/20 active:scale-95 transition-all text-lg flex items-center justify-center gap-3"
                                     >
                                         {isSubmitting ? (
                                             <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -314,7 +314,7 @@ const RepasseModal: React.FC<RepasseModalProps> = ({ isOpen, onClose, onSuccess,
                     </div>
 
                     {/* Footer Safe Area */}
-                    <div className="h-8 shrink-0 sm:hidden"></div>
+                    <div className="pb-safe shrink-0 sm:hidden"></div>
                 </div>
             </div>
         </Portal>

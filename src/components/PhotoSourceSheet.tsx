@@ -18,7 +18,7 @@ const PhotoSourceSheet: React.FC<PhotoSourceSheetProps> = ({
 
   return (
     <div className="fixed inset-0 z-100 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
-      <div className="w-full max-w-md bg-white dark:bg-surface-dark rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up">
+      <div className="w-full max-w-md bg-white dark:bg-surface-dark rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up pb-safe">
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide">
             Escolher Fonte

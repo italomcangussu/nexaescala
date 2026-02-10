@@ -138,7 +138,7 @@ const DayDetailSheet: React.FC<DayDetailSheetProps> = ({
         onClick={onClose}
       />
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-surface-dark rounded-t-3xl z-50 max-h-[85vh] overflow-y-auto shadow-2xl animate-slide-up transition-colors duration-300 ring-1 ring-black/5 dark:ring-white/10">
+      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-surface-dark rounded-t-3xl z-50 max-h-[85vh] overflow-y-auto shadow-2xl animate-slide-up transition-colors duration-300 ring-1 ring-black/5 dark:ring-white/10 pb-safe">
 
         <div className="w-full flex justify-center pt-3 pb-2" onClick={onClose}>
           <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full"></div>

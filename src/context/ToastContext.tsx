@@ -31,10 +31,9 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return (
         <ToastContext.Provider value={contextValue}>
             {children}
-            {/* Toast Container - Top Center */}
-            <div className="fixed top-4 inset-x-0 z-100 flex flex-col items-center gap-2 pointer-events-none px-4">
-                {/* Pointer events auto on children to allow clicks */}
-                <div className="flex flex-col gap-2 pointer-events-auto w-full max-w-md items-center">
+            {/* Toast Container - Top Center, safe area aware */}
+            <div className="fixed top-0 inset-x-0 z-100 pt-safe pointer-events-none">
+                <div className="flex flex-col items-center gap-2 px-4 pt-2 pointer-events-auto w-full max-w-md mx-auto">
                     {toasts.map(toast => (
                         <Toast
                             key={toast.id}

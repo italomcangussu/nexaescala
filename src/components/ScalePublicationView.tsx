@@ -157,7 +157,7 @@ const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
 
 
     return (
-        <div className="fixed inset-0 z-80 bg-surface dark:bg-black flex flex-col animate-fade-in overflow-hidden">
+        <div className="fixed inset-0 z-80 bg-surface dark:bg-black flex flex-col animate-fade-in overflow-hidden pt-safe">
 
             {/* HEADER */}
             <div className="bg-white dark:bg-surface-dark border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between shadow-sm z-20">
@@ -220,7 +220,7 @@ const ScalePublicationView: React.FC<ScalePublicationViewProps> = ({
                     </div>
 
                     {/* Calendar View (Centerpiece) */}
-                    <div className="md:col-span-2 lg:col-span-3 bg-white dark:bg-surface-dark rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm p-6 overflow-hidden">
+                    <div className="md:col-span-2 lg:col-span-3 bg-white dark:bg-surface-dark rounded-4xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 overflow-hidden">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="font-bold text-slate-700 dark:text-slate-200">Visão Geral do Mês</h3>
                             <div className="flex gap-2">

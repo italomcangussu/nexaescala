@@ -86,9 +86,9 @@ const ScaleMonthSelector: React.FC<ScaleMonthSelectorProps> = ({ group, onSelect
     const currentIndex = years.indexOf(selectedYear);
 
     return (
-        <div className="fixed inset-0 z-70 flex flex-col h-full bg-white dark:bg-background-dark overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="fixed inset-0 z-70 flex flex-col h-full bg-white dark:bg-background-dark overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500 pt-safe">
             {/* Minimalist Header */}
-            <div className="px-5 pt-8 pb-4 flex items-center justify-between shrink-0 max-w-[1600px] mx-auto w-full">
+            <div className="px-5 pt-4 pb-4 flex items-center justify-between shrink-0 max-w-[1600px] mx-auto w-full">
                 <div className="flex items-center gap-6">
                     <button
                         onClick={onBack}

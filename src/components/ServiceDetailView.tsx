@@ -105,7 +105,7 @@ const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ group, currentUse
   };
 
   return (
-    <div className="fixed inset-0 z-60 bg-white dark:bg-surface-dark flex flex-col animate-fade-in-up overflow-hidden pt-safe">
+    <div className="fixed inset-0 z-60 bg-white dark:bg-surface-dark flex flex-col animate-fade-in-up overflow-hidden pt-safe pb-safe">
       {/* Color Picker Banner */}
       {showColorBanner && (
         <ColorPickerBanner

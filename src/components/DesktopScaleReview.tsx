@@ -261,7 +261,7 @@ const DesktopScaleReview: React.FC<DesktopScaleReviewProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-80 bg-surface dark:bg-background-dark flex flex-col animate-fade-in overflow-hidden">
+        <div className="fixed inset-0 z-80 bg-surface dark:bg-background-dark flex flex-col animate-fade-in overflow-hidden pt-safe">
             {/* HEADER */}
             <div className="bg-white dark:bg-surface-dark border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between shadow-sm z-20 shrink-0">
                 <div className="flex items-center gap-4">

@@ -29,7 +29,7 @@ const ShiftCheckoutModal: React.FC<ShiftCheckoutModalProps> = ({ shift, config, 
          <div className="relative bg-white dark:bg-surface-dark w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col animate-slide-up sm:animate-fade-in-up overflow-hidden max-h-[90vh]">
 
             {/* Header Graphic */}
-            <div className="bg-gradient-to-r from-emerald-600 to-teal-500 p-6 pt-8 text-white text-center relative overflow-hidden">
+            <div className="bg-linear-to-r from-emerald-600 to-teal-500 p-6 pt-8 text-white text-center relative overflow-hidden">
                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
                <div className="relative z-10">
                   <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 backdrop-blur-md">
@@ -137,7 +137,7 @@ const ShiftCheckoutModal: React.FC<ShiftCheckoutModalProps> = ({ shift, config, 
             </div>
 
             {/* Footer Total */}
-            <div className="p-6 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-slate-800 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+            <div className="p-6 pb-safe bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-slate-800 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
                <div className="flex justify-between items-end mb-4">
                   <div>
                      <p className="text-xs font-bold text-slate-400 uppercase">Total Líquido (Estimado)</p>

@@ -72,7 +72,7 @@ const TransferStatusSheet: React.FC<TransferStatusSheetProps> = ({
                 />
 
                 {/* Sheet Content */}
-                <div className="relative w-full max-w-lg bg-white dark:bg-surface-dark rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl animate-slide-up sm:animate-zoom-in overflow-hidden border-t sm:border border-slate-100 dark:border-slate-800">
+                <div className="relative w-full max-w-lg bg-white dark:bg-surface-dark rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl animate-slide-up sm:animate-zoom-in overflow-hidden border-t sm:border border-slate-100 dark:border-slate-800 pb-safe">
 
                     {/* Visual Header / Indicator */}
                     <div className="h-1.5 w-12 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mt-4 mb-2 sm:hidden" />
