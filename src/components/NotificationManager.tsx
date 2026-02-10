@@ -15,6 +15,7 @@ const NotificationManager: React.FC = () => {
     const [isStandalone, setIsStandalone] = useState(false);
     const { profile: currentUser } = useAuth();
     const navigate = useNavigate();
+    const [pendingNativeToken, setPendingNativeToken] = useState<string | null>(null);
 
     const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || '';
 
@@ -30,34 +31,21 @@ const NotificationManager: React.FC = () => {
         const setupNotifications = async () => {
             if (Capacitor.isNativePlatform()) {
                 // --- NATIVE (CAPACITOR) LOGIC ---
-
-                // Check current status
-                const permStatus = await PushNotifications.checkPermissions();
-                setPermission(permStatus.receive);
-
-                if (permStatus.receive === 'granted') {
-                    PushNotifications.register();
-                } else if (permStatus.receive === 'prompt') {
-                    // Apple HIG: Don't ask for notification permission on first app session.
-                    // Let the user experience the app's value first.
-                    const sessionKey = 'nexa_app_session_count';
-                    const count = parseInt(localStorage.getItem(sessionKey) || '0', 10) + 1;
-                    localStorage.setItem(sessionKey, String(count));
-
-                    if (count < 2) return; // Skip first session
-
-                    const timer = setTimeout(() => setShowBanner(true), 3000);
-                    return () => clearTimeout(timer);
-                }
-
-                // Add Listeners
+                // Attach listeners before registering so we don't miss the token event.
                 await PushNotifications.removeAllListeners();
 
                 PushNotifications.addListener('registration', async (token) => {
                     console.log('Push registration success, token: ' + token.value);
+                    setPendingNativeToken(token.value);
+
+                    // If the user isn't loaded yet, we'll persist and retry once it is.
+                    try {
+                        localStorage.setItem('nexa_pending_native_push_token', token.value);
+                    } catch {
+                        // ignore
+                    }
+
                     if (currentUser) {
-                        // Create a hybrid subscription object to store the native token
-                        // We map 'p256dh' to platform and 'auth' to token for retrieval on backend
                         const nativeSub = {
                             endpoint: 'native',
                             expirationTime: null,
@@ -65,9 +53,14 @@ const NotificationManager: React.FC = () => {
                                 p256dh: Capacitor.getPlatform(), // 'ios' or 'android'
                                 auth: token.value
                             }
-                        } as any; // Cast to any to satisfy PushSubscription type signature
+                        } as any;
 
                         await updatePushSubscription(currentUser.id, nativeSub);
+                        try {
+                            localStorage.removeItem('nexa_pending_native_push_token');
+                        } catch {
+                            // ignore
+                        }
                     }
                 });
 
@@ -84,14 +77,37 @@ const NotificationManager: React.FC = () => {
                     console.log('Push action performed:', notification.notification.data);
                     const data = notification.notification.data;
 
-                    // Handle Navigation
                     if (data?.url) {
                         navigate(data.url);
-                    } else if (data?.group_id) {
-                        // Example: Navigate to specific group if ID is present
-                        // You might need a more complex routing logic here
                     }
                 });
+
+                // Check current status
+                const permStatus = await PushNotifications.checkPermissions();
+                setPermission(permStatus.receive);
+
+                if (permStatus.receive === 'granted') {
+                    await PushNotifications.register();
+                } else if (permStatus.receive === 'prompt') {
+                    const isNativeIOS = Capacitor.getPlatform() === 'ios';
+                    const autoKey = currentUser ? `nexa_native_ios_push_autoprompt_done:${currentUser.id}` : null;
+                    const hasAutoPrompted = autoKey ? localStorage.getItem(autoKey) === '1' : false;
+
+                    // Requirement: after login, and only the first time the user opens the app,
+                    // trigger the native iOS authorization dialog automatically.
+                    if (isNativeIOS && currentUser && !hasAutoPrompted) {
+                        localStorage.setItem(autoKey!, '1');
+                        const requested = await PushNotifications.requestPermissions();
+                        setPermission(requested.receive);
+                        if (requested.receive === 'granted') {
+                            await PushNotifications.register();
+                        }
+                        return;
+                    }
+
+                    const timer = setTimeout(() => setShowBanner(true), 3000);
+                    return () => clearTimeout(timer);
+                }
 
             } else {
                 // --- WEB (PWA) LOGIC ---
@@ -120,6 +136,34 @@ const NotificationManager: React.FC = () => {
             }
         };
     }, [currentUser, navigate]);
+
+    useEffect(() => {
+        // If we got a native token before the profile finished loading, persist it once we have user id.
+        const syncPendingToken = async () => {
+            if (!Capacitor.isNativePlatform() || !currentUser) return;
+            const token = pendingNativeToken || localStorage.getItem('nexa_pending_native_push_token');
+            if (!token) return;
+
+            const nativeSub = {
+                endpoint: 'native',
+                expirationTime: null,
+                keys: {
+                    p256dh: Capacitor.getPlatform(),
+                    auth: token
+                }
+            } as any;
+
+            await updatePushSubscription(currentUser.id, nativeSub);
+            setPendingNativeToken(null);
+            try {
+                localStorage.removeItem('nexa_pending_native_push_token');
+            } catch {
+                // ignore
+            }
+        };
+
+        void syncPendingToken();
+    }, [currentUser, pendingNativeToken]);
 
     const urlBase64ToUint8Array = (base64String: string) => {
         const padding = '='.repeat((4 - base64String.length % 4) % 4);
