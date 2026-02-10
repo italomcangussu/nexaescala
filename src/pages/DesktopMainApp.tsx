@@ -15,12 +15,15 @@ import SettingsNotifications from '../components/settings/SettingsNotifications'
 import SettingsHelp from '../components/settings/SettingsHelp';
 import SettingsAbout from '../components/settings/SettingsAbout';
 import SettingsPassword from '../components/settings/SettingsPassword';
-import { getFinancialConfig, saveFinancialConfig } from '../services/api';
+import { getFinancialConfig, saveFinancialConfig, updateProfile } from '../services/api';
+import { uploadAvatar } from '../lib/imageUtils';
+import { useToast } from '../context/ToastContext';
 import FinancialConfigModal from '../components/FinancialConfigModal';
 import { AppRole, FinancialConfig, ServiceRole } from '../types';
 
 const DesktopMainApp: React.FC = () => {
     const { profile: currentUser, signOut, refetchProfile } = useAuth();
+    const { showToast } = useToast();
     const { userGroups, shifts, assignments, isLoading, profiles, setProfiles, userRole } = useDashboardData(currentUser);
 
     const [activeTab, setActiveTab] = useState('home');
@@ -228,12 +231,31 @@ const DesktopMainApp: React.FC = () => {
         </div>
     );
 
-    const handleSaveProfile = async (updatedProfile: any) => {
-        setProfiles(prev => prev.map(p => p.id === updatedProfile.id ? updatedProfile : p));
-        if (currentUser && updatedProfile.id === currentUser.id) {
-            await refetchProfile();
+    const handleSaveProfile = async (updatedProfile: any, avatarFile?: File) => {
+        if (!currentUser) return;
+        try {
+            let avatarUrl = updatedProfile.avatar_url;
+
+            if (avatarFile) {
+                showToast('Enviando foto...', 'info');
+                const publicUrl = await uploadAvatar(currentUser.id, avatarFile);
+                avatarUrl = `${publicUrl}?t=${Date.now()}`;
+            }
+
+            const finalProfile = { ...updatedProfile, avatar_url: avatarUrl };
+            
+            await updateProfile(updatedProfile.id, finalProfile);
+            
+            setProfiles(prev => prev.map(p => p.id === updatedProfile.id ? finalProfile : p));
+            if (currentUser.id === updatedProfile.id) {
+                await refetchProfile();
+            }
+            setIsEditingProfile(false);
+            showToast('Perfil atualizado!', 'success');
+        } catch (error) {
+            console.error(error);
+            showToast('Erro ao salvar perfil', 'error');
         }
-        setIsEditingProfile(false);
     };
 
     const handleSaveFinConfig = async (config: FinancialConfig) => {

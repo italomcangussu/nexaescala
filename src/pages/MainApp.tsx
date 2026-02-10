@@ -25,7 +25,8 @@ import { useDashboardData } from '../hooks/useDashboardData';
 
 import { Profile, Shift, ServiceRole, Group, FinancialConfig, ShiftPreset, Notification as AppNotification } from '../types';
 import { Search, FilePlus, Share2, X, Calendar, Users, Sparkles } from 'lucide-react';
-import { getFinancialConfig, createFinancialRecord, saveFinancialConfig } from '../services/api';
+import { getFinancialConfig, createFinancialRecord, saveFinancialConfig, updateProfile } from '../services/api';
+import { uploadAvatar } from '../lib/imageUtils';
 
 const Dashboard: React.FC = () => {
   // Navigation State
@@ -35,7 +36,7 @@ const Dashboard: React.FC = () => {
 
 
   // Data State
-  const { profile: currentUser, signOut } = useAuth();
+  const { profile: currentUser, signOut, refetchProfile } = useAuth();
   const { showToast } = useToast();
   const currentUserId = currentUser?.id;
 
@@ -124,10 +125,34 @@ const Dashboard: React.FC = () => {
     setViewingProfileId(profileId);
   }, []);
 
-  const handleSaveProfile = useCallback((updatedProfile: Profile) => {
-    setProfiles(prev => prev.map(p => p.id === updatedProfile.id ? updatedProfile : p));
-    setIsEditingProfile(false);
-  }, [setProfiles]);
+  const handleSaveProfile = useCallback(async (updatedProfile: Profile, avatarFile?: File) => {
+    if (!currentUser) return;
+    try {
+      let avatarUrl = updatedProfile.avatar_url;
+
+      if (avatarFile) {
+        showToast('Enviando foto...', 'info');
+        const publicUrl = await uploadAvatar(currentUser.id, avatarFile);
+        avatarUrl = `${publicUrl}?t=${Date.now()}`;
+      }
+
+      const finalProfile = { ...updatedProfile, avatar_url: avatarUrl };
+      
+      await updateProfile(updatedProfile.id, finalProfile);
+
+      setProfiles(prev => prev.map(p => p.id === updatedProfile.id ? finalProfile : p));
+      
+      if (currentUser.id === updatedProfile.id) {
+        await refetchProfile();
+      }
+
+      setIsEditingProfile(false);
+      showToast('Perfil atualizado!', 'success');
+    } catch (error) {
+      console.error(error);
+      showToast('Erro ao salvar perfil', 'error');
+    }
+  }, [setProfiles, currentUser, showToast, refetchProfile]);
 
   const handleFinishWizard = useCallback(async (group?: Group, navigate?: boolean, presets?: ShiftPreset[]) => {
     await refresh();
@@ -172,7 +197,7 @@ const Dashboard: React.FC = () => {
     }
   }, [myShifts, currentUser, userGroups, showToast]);
 
-  const onActionAccept = useCallback(async (item: unknown) => {
+  const onActionAccept = useCallback(async (item: any) => {
     const result = await handleAccept(item);
     if (result?.type === 'OPEN_MODAL') {
       setRespondingToSwap(result.item);
@@ -181,7 +206,7 @@ const Dashboard: React.FC = () => {
     }
   }, [handleAccept, refresh]);
 
-  const onActionDecline = useCallback(async (item: unknown) => {
+  const onActionDecline = useCallback(async (item: any) => {
     await handleDecline(item);
     await refresh();
   }, [handleDecline, refresh]);
@@ -222,8 +247,8 @@ const Dashboard: React.FC = () => {
   }, [checkoutShift, currentUser, showToast]);
 
   const handleNotificationClick = useCallback((notification: AppNotification) => {
-    if (notification.metadata && notification.metadata.group_id) {
-      const group = userGroups.find(g => g.id === notification.metadata.group_id);
+    if (notification.metadata?.group_id) {
+      const group = userGroups.find(g => g.id === notification.metadata?.group_id);
       if (group) {
         setSelectedService(group);
         setActiveBottomTab('home');

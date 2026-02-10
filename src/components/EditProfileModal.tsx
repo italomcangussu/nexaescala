@@ -38,11 +38,12 @@ const Edit2Icon = ({ size }: { size: number }) => (
 interface EditProfileModalProps {
   profile: Profile;
   onClose: () => void;
-  onSave: (updatedProfile: Profile) => void;
+  onSave: (updatedProfile: Profile, avatarFile?: File) => void;
 }
 
 const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, onSave }) => {
   const [formData, setFormData] = useState<Profile>(profile);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [isSourceSheetOpen, setIsSourceSheetOpen] = useState(false);
   const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
   const [pendingSource, setPendingSource] = useState<NativePhotoSource | null>(null);
@@ -55,6 +56,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
     try {
       const picked = await pickImageNative(source);
       if (picked?.file) {
+        setAvatarFile(picked.file);
         const reader = new FileReader();
         reader.onloadend = () => {
           setFormData(prev => ({ ...prev, avatar_url: reader.result as string }));
@@ -78,7 +80,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    onSave(formData, avatarFile || undefined);
   };
 
   const openWebPicker = (source: NativePhotoSource) => {
@@ -105,7 +107,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
         return;
       }
 
-      if (current === 'denied' || current === 'restricted') {
+      if (current === 'denied') {
         setDeniedType(source);
         return;
       }
@@ -148,8 +150,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // In a real app, you would upload to Supabase here. 
-      // For now we'll just show the preview to stay within scope of the permission request task.
+      setAvatarFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData(prev => ({ ...prev, avatar_url: reader.result as string }));
