@@ -12,6 +12,17 @@ export type PickedImage = {
 export async function pickImageNative(): Promise<PickedImage | null> {
   if (!Capacitor.isNativePlatform()) return null;
 
+  // Try to trigger the iOS Photos permission prompt up-front (when applicable),
+  // so the user doesn't get a silent "no prompt" experience with PHPicker flows.
+  try {
+    const perm = await Camera.checkPermissions();
+    if (perm.photos === 'prompt') {
+      await Camera.requestPermissions({ permissions: ['photos'] });
+    }
+  } catch {
+    // Ignore permission check/request errors; Camera.getPhoto will still handle the flow.
+  }
+
   const photo = await Camera.getPhoto({
     quality: 85,
     allowEditing: true,
@@ -51,4 +62,3 @@ export async function requestPushNotificationsIfNeeded(): Promise<'granted' | 'd
     return 'unknown';
   }
 }
-

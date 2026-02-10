@@ -37,6 +37,7 @@ const Dashboard: React.FC = () => {
   // Data State
   const { profile: currentUser, signOut } = useAuth();
   const { showToast } = useToast();
+  const currentUserId = currentUser?.id;
 
   // Custom Hooks for Data
   const {
@@ -96,11 +97,6 @@ const Dashboard: React.FC = () => {
     }
   }, [userGroups, selectedService]);
 
-  // Guard clause - MUST be after all hooks
-  if (!currentUser) return null;
-
-
-
   // Hydrate data - memoized to avoid recalculation on every render
   const hydratedAssignments = useMemo(() => assignments.map(a => ({
     ...a,
@@ -108,16 +104,17 @@ const Dashboard: React.FC = () => {
   })), [assignments, profiles]);
 
   const myShifts = useMemo(() => shifts.filter(s => {
+    if (!currentUserId) return false;
     // Only show published shifts
     if (!s.is_published) return false;
 
-    return assignments.some(a => a.shift_id === s.id && a.profile_id === currentUser.id);
+    return assignments.some(a => a.shift_id === s.id && a.profile_id === currentUserId);
   }).sort((a, b) => {
     const dateA = new Date(a.date).getTime();
     const dateB = new Date(b.date).getTime();
     if (dateA !== dateB) return dateA - dateB;
     return a.start_time.localeCompare(b.start_time);
-  }), [shifts, assignments, currentUser.id]);
+  }), [shifts, assignments, currentUserId]);
 
   const handleEditShift = useCallback((shift: Shift) => {
     showToast(`Editar configurações do plantão: ${shift.date}`, 'info');
@@ -236,6 +233,9 @@ const Dashboard: React.FC = () => {
       setActiveHomeTab('requests');
     }
   }, [userGroups]);
+
+  // Guard clause - keep it AFTER all hooks to avoid React error #310.
+  if (!currentUser) return null;
 
   const renderHomeContent = () => {
     return (
