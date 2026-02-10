@@ -2,5 +2,10 @@
     "appId": "com.nexaescala.app",
     "appName": "NexaEscala",
     "webDir": "dist",
-    "npmClient": "npm"
+    "npmClient": "npm",
+    "plugins": {
+        "PushNotifications": {
+            "presentationOptions": ["badge", "sound", "banner", "list"]
+        }
+    }
 }

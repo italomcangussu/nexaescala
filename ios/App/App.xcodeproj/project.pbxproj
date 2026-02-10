@@ -21,10 +21,12 @@
 			8FFB44872F30D444009E5694 /* Capacitor in Frameworks */ = {isa = PBXBuildFile; productRef = 8FFB44862F30D444009E5694 /* Capacitor */; };
 			8FFB44892F30D444009E5694 /* Cordova in Frameworks */ = {isa = PBXBuildFile; productRef = 8FFB44882F30D444009E5694 /* Cordova */; };
 			8FFB448D2F30D666009E5694 /* SignInWithApplePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FFB448E2F30D666009E5694 /* SignInWithApplePlugin.swift */; };
-			52E0E50758B641EEB17224E4 /* CameraTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B63135411A774827AF67F709 /* CameraTypes.swift */; };
-			E9548A5A70DC473E9997E8AC /* ImageSaver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC4E0650304481FBB853B28 /* ImageSaver.swift */; };
-			E86D3B33329E49B5A31AF8F6 /* NativeSettingsPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272F36B66B96479ABC6B0225 /* NativeSettingsPlugin.swift */; };
-	/* End PBXBuildFile section */
+				52E0E50758B641EEB17224E4 /* CameraTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B63135411A774827AF67F709 /* CameraTypes.swift */; };
+				E9548A5A70DC473E9997E8AC /* ImageSaver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC4E0650304481FBB853B28 /* ImageSaver.swift */; };
+				E86D3B33329E49B5A31AF8F6 /* NativeSettingsPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272F36B66B96479ABC6B0225 /* NativeSettingsPlugin.swift */; };
+				9A1E2CFCB56340F29337194B /* PushNotificationsPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AAE8781B39842FCB8B4D477 /* PushNotificationsPlugin.swift */; };
+				36680AF43DDC48C18E9A1139 /* PushNotificationsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0533BC28A46D40A3B92E0669 /* PushNotificationsHandler.swift */; };
+		/* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		8F020D492F2919DF0061254E /* Embed Frameworks */ = {
@@ -71,8 +73,10 @@
 			B63135411A774827AF67F709 /* CameraTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapacitorCameraPlugin/CameraTypes.swift; sourceTree = "<group>"; };
 		8F7DB4E72F27D20800FEA6E3 /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
 		8F7DB4F82F27D7DD00FEA6E3 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
-		8FFB448E2F30D666009E5694 /* SignInWithApplePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInWithApplePlugin.swift; sourceTree = "<group>"; };
-/* End PBXFileReference section */
+				8FFB448E2F30D666009E5694 /* SignInWithApplePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInWithApplePlugin.swift; sourceTree = "<group>"; };
+				0AAE8781B39842FCB8B4D477 /* PushNotificationsPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapacitorPushNotificationsPlugin/PushNotificationsPlugin.swift; sourceTree = "<group>"; };
+				0533BC28A46D40A3B92E0669 /* PushNotificationsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapacitorPushNotificationsPlugin/PushNotificationsHandler.swift; sourceTree = "<group>"; };
+	/* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		8F7DB4E92F27D20800FEA6E3 /* NexaEscala */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = NexaEscala; sourceTree = "<group>"; };
@@ -101,19 +105,21 @@
 			};
 			504EC2FB1FED79650016851F = {
 				isa = PBXGroup;
-				children = (
-					8F28A9302F3B5C100050E33C /* BrowserPlugin.swift */,
-					8F28A92E2F3B5BB00050E33C /* Browser.swift */,
-					272F36B66B96479ABC6B0225 /* NativeSettingsPlugin.swift */,
-					8F28A9322F3B80650050E33C /* CameraPlugin.swift */,
-					8F28A9342F3B824F0050E33C /* CameraExtensions.swift */,
-					B63135411A774827AF67F709 /* CameraTypes.swift */,
-					5BC4E0650304481FBB853B28 /* ImageSaver.swift */,
-					8F020D3A2F28EC5A0061254E /* com.nexaescala.appDebug.entitlements */,
-					504EC3061FED79650016851F /* App */,
-					8F7DB4E92F27D20800FEA6E3 /* NexaEscala */,
-					504EC3051FED79650016851F /* Products */,
-				27E2DDA53C4D2A4D1A88CE4A /* Frameworks */,
+					children = (
+						8F28A9302F3B5C100050E33C /* BrowserPlugin.swift */,
+						8F28A92E2F3B5BB00050E33C /* Browser.swift */,
+						272F36B66B96479ABC6B0225 /* NativeSettingsPlugin.swift */,
+						8F28A9322F3B80650050E33C /* CameraPlugin.swift */,
+						8F28A9342F3B824F0050E33C /* CameraExtensions.swift */,
+						B63135411A774827AF67F709 /* CameraTypes.swift */,
+						5BC4E0650304481FBB853B28 /* ImageSaver.swift */,
+						0AAE8781B39842FCB8B4D477 /* PushNotificationsPlugin.swift */,
+						0533BC28A46D40A3B92E0669 /* PushNotificationsHandler.swift */,
+						8F020D3A2F28EC5A0061254E /* com.nexaescala.appDebug.entitlements */,
+						504EC3061FED79650016851F /* App */,
+						8F7DB4E92F27D20800FEA6E3 /* NexaEscala */,
+						504EC3051FED79650016851F /* Products */,
+					27E2DDA53C4D2A4D1A88CE4A /* Frameworks */,
 				8F020D562F29376A0061254E /* Podfile 2 */,
 				8F020D6B2F2940FF0061254E /* Podfile 3 */,
 				D67B1496AD812C04E1257927 /* Pods */,
@@ -236,17 +242,19 @@
 		504EC3001FED79650016851F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
-				files = (
-					504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
-					E86D3B33329E49B5A31AF8F6 /* NativeSettingsPlugin.swift in Sources */,
-					8F28A9332F3B80650050E33C /* CameraPlugin.swift in Sources */,
-					8F28A9352F3B824F0050E33C /* CameraExtensions.swift in Sources */,
-					52E0E50758B641EEB17224E4 /* CameraTypes.swift in Sources */,
-					E9548A5A70DC473E9997E8AC /* ImageSaver.swift in Sources */,
-					8F28A9312F3B5C100050E33C /* BrowserPlugin.swift in Sources */,
-					8FFB448D2F30D666009E5694 /* SignInWithApplePlugin.swift in Sources */,
-					8F28A92F2F3B5BB00050E33C /* Browser.swift in Sources */,
-				);
+					files = (
+						504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
+						E86D3B33329E49B5A31AF8F6 /* NativeSettingsPlugin.swift in Sources */,
+						8F28A9332F3B80650050E33C /* CameraPlugin.swift in Sources */,
+						8F28A9352F3B824F0050E33C /* CameraExtensions.swift in Sources */,
+						52E0E50758B641EEB17224E4 /* CameraTypes.swift in Sources */,
+						E9548A5A70DC473E9997E8AC /* ImageSaver.swift in Sources */,
+						9A1E2CFCB56340F29337194B /* PushNotificationsPlugin.swift in Sources */,
+						36680AF43DDC48C18E9A1139 /* PushNotificationsHandler.swift in Sources */,
+						8F28A9312F3B5C100050E33C /* BrowserPlugin.swift in Sources */,
+						8FFB448D2F30D666009E5694 /* SignInWithApplePlugin.swift in Sources */,
+						8F28A92F2F3B5BB00050E33C /* Browser.swift in Sources */,
+					);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */

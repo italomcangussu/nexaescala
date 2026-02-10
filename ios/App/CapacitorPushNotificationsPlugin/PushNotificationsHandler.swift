@@ -30,19 +30,24 @@ public class PushNotificationsHandler: NSObject, NotificationHandlerProtocol {
         }
 
         if let optionsArray = self.plugin?.getConfig().getArray("presentationOptions") as? [String] {
-            var presentationOptions = UNNotificationPresentationOptions.init()
+            var presentationOptions = UNNotificationPresentationOptions()
 
             optionsArray.forEach { option in
                 switch option {
                 case "alert":
-                    presentationOptions.insert(.alert)
+                    // For iOS 15+, use banner/list instead of the deprecated .alert
+                    presentationOptions.insert(.banner)
+                    presentationOptions.insert(.list)
+                case "banner":
+                    presentationOptions.insert(.banner)
+                case "list":
+                    presentationOptions.insert(.list)
                 case "badge":
                     presentationOptions.insert(.badge)
-
                 case "sound":
                     presentationOptions.insert(.sound)
                 default:
-                    print("Unrecogizned presentation option: \(option)")
+                    print("Unrecognized presentation option: \(option)")
                 }
             }
 
