@@ -1,9 +1,8 @@
 import React from 'react';
-import { LucideIcon, X } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
 
 interface PermissionSoftPromptProps {
     isOpen: boolean;
-    onClose: () => void;
     onConfirm: () => void;
     title: string;
     description: string;
@@ -15,7 +14,6 @@ interface PermissionSoftPromptProps {
 
 const PermissionSoftPrompt: React.FC<PermissionSoftPromptProps> = ({
     isOpen,
-    onClose,
     onConfirm,
     title,
     description,
@@ -30,15 +28,6 @@ const PermissionSoftPrompt: React.FC<PermissionSoftPromptProps> = ({
         <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
             <div className="bg-white dark:bg-surface-dark w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden animate-scale-in">
                 <div className="p-8 text-center">
-                    <div className="flex justify-end -mt-4 -mr-4">
-                        <button
-                            onClick={onClose}
-                            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-                        >
-                            <X size={20} />
-                        </button>
-                    </div>
-
                     <div className={`mx-auto w-20 h-20 ${iconBgClass} rounded-3xl flex items-center justify-center mb-6`}>
                         <Icon className={iconColorClass} size={40} />
                     </div>
@@ -51,21 +40,12 @@ const PermissionSoftPrompt: React.FC<PermissionSoftPromptProps> = ({
                         {description}
                     </p>
 
-                    <nav className="space-y-3">
-                        <button
-                            onClick={onConfirm}
-                            className="w-full py-4 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primary-dark transition-all active:scale-[0.98]"
-                        >
-                            {confirmText}
-                        </button>
-
-                        <button
-                            onClick={onClose}
-                            className="w-full py-3 text-slate-400 dark:text-slate-500 font-bold text-sm hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-                        >
-                            Agora não
-                        </button>
-                    </nav>
+                    <button
+                        onClick={onConfirm}
+                        className="w-full py-4 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primary-dark transition-all active:scale-[0.98]"
+                    >
+                        {confirmText}
+                    </button>
                 </div>
 
                 {/* Visual Hint for Apple Guidelines - Transparency */}

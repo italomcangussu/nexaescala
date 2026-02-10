@@ -3,6 +3,8 @@ import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { Profile } from '../types';
 import { createAppLog } from '../services/api';
+import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
 
 interface AuthContextType {
     user: User | null;
@@ -56,9 +58,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         });
 
+        // Listen for deep link redirects (OAuth callback on native)
+        let appUrlListener: { remove: () => void } | undefined;
+        if (Capacitor.isNativePlatform()) {
+            App.addListener('appUrlOpen', async ({ url }) => {
+                // Expected: com.nexaescala.app://auth/callback#access_token=...&refresh_token=...
+                const hashIndex = url.indexOf('#');
+                if (hashIndex === -1) return;
+
+                const params = new URLSearchParams(url.substring(hashIndex + 1));
+                const accessToken = params.get('access_token');
+                const refreshToken = params.get('refresh_token');
+
+                if (accessToken && refreshToken) {
+                    await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+                }
+            }).then(listener => {
+                appUrlListener = listener;
+            });
+        }
+
         return () => {
             isMounted = false;
             subscription.unsubscribe();
+            appUrlListener?.remove();
         };
     }, []);
 

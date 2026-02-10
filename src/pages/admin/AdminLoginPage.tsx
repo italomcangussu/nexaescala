@@ -110,7 +110,7 @@ const AdminLoginPage: React.FC = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 ${loading ? 'opacity-70 cursor-not-allowed' : ''
+                            className={`w-full bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 ${loading ? 'opacity-70 cursor-not-allowed' : ''
                                 }`}
                         >
                             {loading ? (

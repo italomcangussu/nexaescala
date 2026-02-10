@@ -89,7 +89,9 @@ const LoginPage: React.FC = () => {
                     password,
                     options: {
                         data: { full_name: fullName },
-                        emailRedirectTo: window.location.origin
+                        emailRedirectTo: Capacitor.isNativePlatform()
+                            ? 'com.nexaescala.app://auth/callback'
+                            : window.location.origin
                     }
                 });
                 if (error) throw error;
@@ -120,15 +122,32 @@ const LoginPage: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: window.location.origin
+            if (Capacitor.isNativePlatform()) {
+                // Native: get the OAuth URL without redirecting, then open in-app browser
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: 'com.nexaescala.app://auth/callback',
+                        skipBrowserRedirect: true
+                    }
+                });
+                if (error) throw error;
+                if (data?.url) {
+                    window.open(data.url, '_blank');
                 }
-            });
-            if (error) throw error;
+            } else {
+                // Web: standard redirect flow
+                const { error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: window.location.origin
+                    }
+                });
+                if (error) throw error;
+            }
         } catch (err: any) {
             setError(getErrorMessage(err.message || 'Erro ao conectar com Google'));
+        } finally {
             setLoading(false);
         }
     };
@@ -202,8 +221,12 @@ const LoginPage: React.FC = () => {
         setSuccessMessage(null);
 
         try {
+            const redirectTo = Capacitor.isNativePlatform()
+                ? 'com.nexaescala.app://reset-password'
+                : `${window.location.origin}/reset-password`;
+
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}/reset-password`
+                redirectTo
             });
             if (error) throw error;
             setSuccessMessage('Email de recuperação enviado! Verifique sua caixa de entrada.');

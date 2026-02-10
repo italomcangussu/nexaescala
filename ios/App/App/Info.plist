@@ -49,6 +49,17 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.nexaescala.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.nexaescala.app</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>O NexaEscala precisa acessar sua câmera para tirar uma foto de perfil.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

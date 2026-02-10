@@ -2,6 +2,7 @@ import { supabase } from '../../lib/supabase';
 import { Group, GroupMember, ServiceRole, AppRole, TeamMember, ShiftPreset, GroupRelationship } from '../../types';
 import { fetchWithCache, invalidateCache } from './cache';
 import { validateServiceInput, validateColorHex, sanitizeFilterValue } from './validation';
+import { createNotificationsBulk, sendPushToUsers } from './notifications';
 
 // --- GROUPS ---
 
@@ -524,8 +525,6 @@ export const updateServiceComplete = async (
         .eq('group_id', groupId);
 
     if (allMembers && allMembers.length > 0) {
-        // Import dynamically to avoid circular dependency
-        const { createNotificationsBulk, sendPushToUsers } = await import('./notifications');
 
         const serviceName = updates.name || 'seu serviço';
         const memberIds = allMembers.map(m => m.profile_id);

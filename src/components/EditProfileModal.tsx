@@ -179,12 +179,11 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
       </div>
       <PermissionSoftPrompt
         isOpen={showPermissionPrompt}
-        onClose={() => setShowPermissionPrompt(false)}
         onConfirm={handlePermissionConfirm}
         title="Acesso à Galeria e Câmera"
         description="Para que você possa personalizar seu perfil com uma foto, o NexaEscala precisa de acesso à sua galeria ou câmera."
         icon={ImageIcon}
-        confirmText="Permitir Acesso"
+        confirmText="Continuar"
       />
     </div>
   );

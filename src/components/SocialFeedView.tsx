@@ -27,7 +27,7 @@ const SocialFeedView: React.FC<SocialFeedViewProps> = ({ posts, profiles, onProf
       {/* Stories / Quick Access (Mock) */}
       <div className="py-4 pl-4 overflow-x-auto no-scrollbar flex space-x-4 border-b border-gray-50 dark:border-slate-800 bg-white dark:bg-surface-dark mb-2 transition-colors">
         <div className="flex flex-col items-center space-y-1 min-w-[64px]">
-           <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-primary to-emerald-300 p-0.5 cursor-pointer">
+           <div className="w-16 h-16 rounded-full bg-linear-to-tr from-primary to-emerald-300 p-0.5 cursor-pointer">
               <div className="w-full h-full bg-white dark:bg-slate-800 rounded-full p-0.5">
                 <img src={currentUser.avatar_url} className="w-full h-full rounded-full object-cover" alt="Me" />
               </div>
@@ -36,7 +36,7 @@ const SocialFeedView: React.FC<SocialFeedViewProps> = ({ posts, profiles, onProf
         </div>
         {profiles.filter(p => p.id !== currentUser.id).map(profile => (
            <div key={profile.id} className="flex flex-col items-center space-y-1 min-w-[64px]" onClick={() => onProfileClick(profile.id)}>
-              <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-indigo-400 to-purple-400 p-0.5 cursor-pointer">
+              <div className="w-16 h-16 rounded-full bg-linear-to-tr from-indigo-400 to-purple-400 p-0.5 cursor-pointer">
                  <div className="w-full h-full bg-white dark:bg-slate-800 rounded-full p-0.5">
                    <img src={profile.avatar_url} className="w-full h-full rounded-full object-cover" alt={profile.full_name} />
                  </div>
