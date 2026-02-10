@@ -3,7 +3,10 @@ import { Profile } from '../types';
 import { X, Camera, Save, Image as ImageIcon } from 'lucide-react';
 import PermissionSoftPrompt from './PermissionSoftPrompt';
 import { Capacitor } from '@capacitor/core';
-import { pickImageNative, requestPushNotificationsIfNeeded } from '../services/nativePermissions';
+import { Camera as NativeCamera } from '@capacitor/camera';
+import PhotoSourceSheet from './PhotoSourceSheet';
+import PermissionDeniedPrompt from './PermissionDeniedPrompt';
+import { ensurePermission, pickImageNative, type NativePhotoSource, requestPushNotificationsIfNeeded } from '../services/nativePermissions';
 
 const InputGroup = ({ label, value, onChange, textarea, icon }: any) => (
   <div>
@@ -40,12 +43,17 @@ interface EditProfileModalProps {
 
 const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, onSave }) => {
   const [formData, setFormData] = useState<Profile>(profile);
+  const [isSourceSheetOpen, setIsSourceSheetOpen] = useState(false);
   const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [pendingSource, setPendingSource] = useState<NativePhotoSource | null>(null);
+  const [deniedType, setDeniedType] = useState<'camera' | 'photos' | null>(null);
 
-  const pickNativeAvatar = async () => {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const cameraInputRef = React.useRef<HTMLInputElement>(null);
+
+  const pickNativeAvatar = async (source: NativePhotoSource) => {
     try {
-      const picked = await pickImageNative();
+      const picked = await pickImageNative(source);
       if (picked?.file) {
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -55,6 +63,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
       }
     } catch (e) {
       console.error('Erro ao selecionar foto (nativo):', e);
+      const msg = String((e as any)?.message ?? e);
+      if (msg.toLowerCase().includes('denied') || msg.toLowerCase().includes('restricted')) {
+        setDeniedType(source);
+      }
     }
 
     void requestPushNotificationsIfNeeded();
@@ -69,36 +81,68 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
     onSave(formData);
   };
 
-  const handlePhotoClick = () => {
-    if (Capacitor.isNativePlatform()) {
-      const hasPermission = localStorage.getItem('nexa_photo_permission_granted');
-      if (!hasPermission) {
+  const openWebPicker = (source: NativePhotoSource) => {
+    // On web, both actions map to file inputs; camera tries to hint to open camera.
+    if (source === 'camera') cameraInputRef.current?.click();
+    else fileInputRef.current?.click();
+  };
+
+  const startPick = async (source: NativePhotoSource) => {
+    setDeniedType(null);
+
+    if (!Capacitor.isNativePlatform()) {
+      openWebPicker(source);
+      return;
+    }
+
+    try {
+      const perm = await NativeCamera.checkPermissions();
+      const current = source === 'camera' ? perm.camera : perm.photos;
+
+      if (current === 'prompt') {
+        setPendingSource(source);
         setShowPermissionPrompt(true);
         return;
       }
 
-      void pickNativeAvatar();
+      if (current === 'denied' || current === 'restricted') {
+        setDeniedType(source);
+        return;
+      }
+    } catch (e) {
+      console.warn('Falha ao checar permissoes da camera/fotos:', e);
+      // If native plugin isn't linked, we may still be on web fallback. Try web picker.
+      openWebPicker(source);
       return;
     }
 
-    const hasPermission = localStorage.getItem('nexa_photo_permission_granted');
-    if (!hasPermission) {
-      setShowPermissionPrompt(true);
-    } else {
-      fileInputRef.current?.click();
-    }
+    await pickNativeAvatar(source);
+  };
+
+  const handlePhotoClick = () => {
+    setIsSourceSheetOpen(true);
   };
 
   const handlePermissionConfirm = async () => {
-    localStorage.setItem('nexa_photo_permission_granted', 'true');
     setShowPermissionPrompt(false);
 
-    if (Capacitor.isNativePlatform()) {
-      await pickNativeAvatar();
+    if (!pendingSource) return;
+
+    const needed = pendingSource;
+    setPendingSource(null);
+
+    if (!Capacitor.isNativePlatform()) {
+      openWebPicker(needed);
       return;
     }
 
-    fileInputRef.current?.click();
+    const state = await ensurePermission(needed);
+    if (state === 'denied') {
+      setDeniedType(needed);
+      return;
+    }
+
+    await pickNativeAvatar(needed);
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -135,6 +179,14 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
               ref={fileInputRef}
               className="hidden"
               accept="image/*"
+              onChange={handleFileChange}
+            />
+            <input
+              type="file"
+              ref={cameraInputRef}
+              className="hidden"
+              accept="image/*"
+              capture="environment"
               onChange={handleFileChange}
             />
             <div
@@ -218,6 +270,17 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
         description="Para que você possa personalizar seu perfil com uma foto, o NexaEscala precisa de acesso à sua galeria ou câmera."
         icon={ImageIcon}
         confirmText="Continuar"
+      />
+      <PhotoSourceSheet
+        isOpen={isSourceSheetOpen}
+        onClose={() => setIsSourceSheetOpen(false)}
+        onPickCamera={() => void startPick('camera')}
+        onPickPhotos={() => void startPick('photos')}
+      />
+      <PermissionDeniedPrompt
+        isOpen={!!deniedType}
+        onClose={() => setDeniedType(null)}
+        permissionType={deniedType || 'photos'}
       />
     </div>
   );

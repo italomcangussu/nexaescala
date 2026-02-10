@@ -9,24 +9,44 @@ export type PickedImage = {
   webPath?: string;
 };
 
-export async function pickImageNative(): Promise<PickedImage | null> {
-  if (!Capacitor.isNativePlatform()) return null;
+export type NativePhotoSource = 'camera' | 'photos';
+export type NativePermissionState = 'granted' | 'limited' | 'denied';
 
-  // Try to trigger the iOS Photos permission prompt up-front (when applicable),
-  // so the user doesn't get a silent "no prompt" experience with PHPicker flows.
+function toPermissionState(raw: string | undefined): NativePermissionState {
+  if (raw === 'granted') return 'granted';
+  if (raw === 'limited') return 'limited';
+  return 'denied';
+}
+
+export async function ensurePermission(type: NativePhotoSource): Promise<NativePermissionState> {
+  if (!Capacitor.isNativePlatform()) return 'denied';
+
   try {
     const perm = await Camera.checkPermissions();
-    if (perm.photos === 'prompt') {
-      await Camera.requestPermissions({ permissions: ['photos'] });
+    const current = type === 'camera' ? perm.camera : perm.photos;
+
+    if (current === 'prompt') {
+      const next = await Camera.requestPermissions({
+        permissions: [type],
+      });
+      const nextState = type === 'camera' ? next.camera : next.photos;
+      return toPermissionState(nextState);
     }
+
+    return toPermissionState(current);
   } catch {
-    // Ignore permission check/request errors; Camera.getPhoto will still handle the flow.
+    return 'denied';
   }
+}
+
+export async function pickImageNative(source: NativePhotoSource): Promise<PickedImage | null> {
+  if (!Capacitor.isNativePlatform()) return null;
 
   const photo = await Camera.getPhoto({
     quality: 85,
-    allowEditing: true,
-    source: CameraSource.Prompt,
+    // iOS only supports allowEditing for CameraSource.Camera (not Photos).
+    allowEditing: source === 'camera',
+    source: source === 'camera' ? CameraSource.Camera : CameraSource.Photos,
     resultType: CameraResultType.Uri,
   });
 

@@ -3,7 +3,8 @@ import { Profile } from '../types';
 import { supabase } from '../lib/supabase';
 import { uploadAvatar, createPreviewUrl } from '../lib/imageUtils';
 import { Capacitor } from '@capacitor/core';
-import { pickImageNative, requestPushNotificationsIfNeeded } from '../services/nativePermissions';
+import { Camera as NativeCamera } from '@capacitor/camera';
+import { ensurePermission, pickImageNative, type NativePhotoSource, requestPushNotificationsIfNeeded } from '../services/nativePermissions';
 import {
     ChevronRight,
     ChevronLeft,
@@ -16,6 +17,8 @@ import {
     Image as ImageIcon
 } from 'lucide-react';
 import PermissionSoftPrompt from './PermissionSoftPrompt';
+import PhotoSourceSheet from './PhotoSourceSheet';
+import PermissionDeniedPrompt from './PermissionDeniedPrompt';
 
 // Logo URLs from Supabase Storage
 const LOGO_LIGHT = 'https://vjlcfkkyfeteljutwfet.supabase.co/storage/v1/object/public/logo/logo1.PNG';
@@ -83,8 +86,12 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
     const [avatarPreview, setAvatarPreview] = useState<string | null>(initialProfile?.avatar_url || null);
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
+    const [isSourceSheetOpen, setIsSourceSheetOpen] = useState(false);
+    const [pendingSource, setPendingSource] = useState<NativePhotoSource | null>(null);
+    const [deniedType, setDeniedType] = useState<'camera' | 'photos' | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const cameraInputRef = useRef<HTMLInputElement>(null);
 
     // Sync fullName if initialProfile or user metadata updates after mount (e.g. Apple Sign In race condition)
     React.useEffect(() => {
@@ -114,9 +121,9 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
         }
     };
 
-    const pickNativeAvatar = async () => {
+    const pickNativeAvatar = async (source: NativePhotoSource) => {
         try {
-            const picked = await pickImageNative();
+            const picked = await pickImageNative(source);
             if (picked?.file) {
                 const preview = await createPreviewUrl(picked.file);
                 if (isMountedRef.current) {
@@ -126,6 +133,10 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
             }
         } catch (e) {
             console.error('Erro ao selecionar foto (nativo):', e);
+            const msg = String((e as any)?.message ?? e);
+            if (msg.toLowerCase().includes('denied') || msg.toLowerCase().includes('restricted')) {
+                setDeniedType(source);
+            }
         }
 
         // Optional: ask for push notifications right after a clear user action.
@@ -133,39 +144,63 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
     };
 
     const handlePhotoClick = () => {
-        // Native iOS/Android: use Capacitor Camera plugin so the OS permission prompt is shown.
-        if (Capacitor.isNativePlatform()) {
-            const hasPermission = localStorage.getItem('nexa_photo_permission_granted');
-            if (!hasPermission) {
+        setIsSourceSheetOpen(true);
+    };
+
+    const handlePermissionConfirm = async () => {
+        setShowPermissionPrompt(false);
+
+        if (!pendingSource) return;
+        const needed = pendingSource;
+        setPendingSource(null);
+
+        if (!Capacitor.isNativePlatform()) {
+            if (needed === 'camera') cameraInputRef.current?.click();
+            else fileInputRef.current?.click();
+            return;
+        }
+
+        const state = await ensurePermission(needed);
+        if (state === 'denied') {
+            setDeniedType(needed);
+            return;
+        }
+
+        await pickNativeAvatar(needed);
+    };
+
+    const startPick = async (source: NativePhotoSource) => {
+        setDeniedType(null);
+
+        if (!Capacitor.isNativePlatform()) {
+            if (source === 'camera') cameraInputRef.current?.click();
+            else fileInputRef.current?.click();
+            return;
+        }
+
+        try {
+            const perm = await NativeCamera.checkPermissions();
+            const current = source === 'camera' ? perm.camera : perm.photos;
+
+            if (current === 'prompt') {
+                setPendingSource(source);
                 setShowPermissionPrompt(true);
                 return;
             }
 
-            void pickNativeAvatar();
+            if (current === 'denied' || current === 'restricted') {
+                setDeniedType(source);
+                return;
+            }
+        } catch (e) {
+            console.warn('Falha ao checar permissoes da camera/fotos:', e);
+            // Native plugin not linked; fallback to file input so onboarding still works.
+            if (source === 'camera') cameraInputRef.current?.click();
+            else fileInputRef.current?.click();
             return;
         }
 
-        // Check if we've already shown the prompt
-        const hasPermission = localStorage.getItem('nexa_photo_permission_granted');
-
-        if (!hasPermission) {
-            setShowPermissionPrompt(true);
-        } else {
-            fileInputRef.current?.click();
-        }
-    };
-
-    const handlePermissionConfirm = async () => {
-        localStorage.setItem('nexa_photo_permission_granted', 'true');
-        setShowPermissionPrompt(false);
-
-        if (Capacitor.isNativePlatform()) {
-            await pickNativeAvatar();
-            return;
-        }
-
-        // Web: open file picker
-        if (isMountedRef.current) fileInputRef.current?.click();
+        await pickNativeAvatar(source);
     };
 
     const handleNext = async () => {
@@ -328,6 +363,14 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
                             onChange={handleFileSelect}
                             className="hidden"
                         />
+                        <input
+                            type="file"
+                            ref={cameraInputRef}
+                            accept="image/*"
+                            capture="environment"
+                            onChange={handleFileSelect}
+                            className="hidden"
+                        />
 
                         <div
                             onClick={handlePhotoClick}
@@ -462,6 +505,17 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, initialProfil
                 description="Para que você possa personalizar seu perfil com uma foto, o NexaEscala precisa de acesso à sua galeria ou câmera."
                 icon={ImageIcon}
                 confirmText="Continuar"
+            />
+            <PhotoSourceSheet
+                isOpen={isSourceSheetOpen}
+                onClose={() => setIsSourceSheetOpen(false)}
+                onPickCamera={() => void startPick('camera')}
+                onPickPhotos={() => void startPick('photos')}
+            />
+            <PermissionDeniedPrompt
+                isOpen={!!deniedType}
+                onClose={() => setDeniedType(null)}
+                permissionType={deniedType || 'photos'}
             />
         </div>
     );
