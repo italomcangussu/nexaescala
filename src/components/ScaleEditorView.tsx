@@ -762,71 +762,73 @@ const ScaleEditorView: React.FC<ScaleEditorViewProps> = ({
                 </div>
             )}
 
-            {/* Header Section - Compact Liquid Glass */}
-            <div className="bg-white/70 dark:bg-surface-dark/70 backdrop-blur-xl py-3 px-4 pt-safe shadow-sm border-b border-white/20 dark:border-slate-800/50 z-20 sticky top-0 flex items-center justify-between gap-3 transition-colors duration-300 supports-backdrop-filter:bg-white/60">
+            {/* Header Section - Compact Liquid Glass, safe area aware */}
+            <div className="bg-white/70 dark:bg-surface-dark/70 backdrop-blur-xl pt-safe shadow-sm border-b border-white/20 dark:border-slate-800/50 z-20 sticky top-0 transition-colors duration-300 supports-backdrop-filter:bg-white/60">
+                <div className="py-3 px-4 flex items-center justify-between gap-3">
 
-                {/* Left: Back Btn + Title & Group Info */}
-                <div className="flex items-center gap-3 min-w-0">
-                    <button
-                        onClick={() => {
-                            if (viewMode === 'editor') {
-                                setViewMode('selector');
-                            } else {
-                                handleSaveAndExit(false);
-                            }
-                        }}
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                        title={viewMode === 'editor' ? "Voltar para seleção de mês" : "Sair"}
-                    >
-                        <ChevronLeft size={20} />
-                    </button>
+                    {/* Left: Back Btn + Title & Group Info */}
+                    <div className="flex items-center gap-3 min-w-0">
+                        <button
+                            onClick={() => {
+                                if (viewMode === 'editor') {
+                                    setViewMode('selector');
+                                } else {
+                                    handleSaveAndExit(false);
+                                }
+                            }}
+                            className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                            title={viewMode === 'editor' ? "Voltar para seleção de mês" : "Sair"}
+                        >
+                            <ChevronLeft size={20} />
+                        </button>
 
-                    <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100 leading-none">
-                                Escala
-                            </h1>
-                            <span className="text-[10px] font-bold text-primary/80 bg-primary/10 px-1.5 py-0.5 rounded uppercase tracking-wider">
-                                Beta
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate max-w-[150px]">
-                                {selectedGroup?.name || "Selecione um Serviço"}
-                            </span>
-                            <button
-                                onClick={() => setIsAddMemberModalOpen(true)}
-                                className="w-6 h-6 flex items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
-                                title="Adicionar Membro"
-                            >
-                                <UserPlus size={14} />
-                            </button>
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                                <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100 leading-none">
+                                    Escala
+                                </h1>
+                                <span className="text-[10px] font-bold text-primary/80 bg-primary/10 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                    Beta
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate max-w-[150px]">
+                                    {selectedGroup?.name || "Selecione um Serviço"}
+                                </span>
+                                <button
+                                    onClick={() => setIsAddMemberModalOpen(true)}
+                                    className="w-6 h-6 flex items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
+                                    title="Adicionar Membro"
+                                >
+                                    <UserPlus size={14} />
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Right: Compact Month Selector - Glassy */}
-                <div className="flex items-center bg-white/50 dark:bg-slate-800/50 p-0.5 rounded-lg border border-white/20 dark:border-slate-700/50 shrink-0 backdrop-blur-md shadow-sm">
-                    <button
-                        onClick={handlePrevMonth}
-                        className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white/80 dark:hover:bg-slate-700 text-slate-500 transition-all active:scale-95"
-                    >
-                        <ChevronLeft size={14} />
-                    </button>
-                    <div className="px-2 text-center min-w-[70px]">
-                        <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block leading-tight">
-                            {monthNames[currentDate.getMonth()].substring(0, 3)}
-                        </span>
-                        <span className="text-[9px] text-slate-400 font-medium leading-none">
-                            {currentDate.getFullYear()}
-                        </span>
+                    {/* Right: Compact Month Selector - Glassy */}
+                    <div className="flex items-center bg-white/50 dark:bg-slate-800/50 p-0.5 rounded-lg border border-white/20 dark:border-slate-700/50 shrink-0 backdrop-blur-md shadow-sm">
+                        <button
+                            onClick={handlePrevMonth}
+                            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white/80 dark:hover:bg-slate-700 text-slate-500 transition-all active:scale-95"
+                        >
+                            <ChevronLeft size={14} />
+                        </button>
+                        <div className="px-2 text-center min-w-[70px]">
+                            <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block leading-tight">
+                                {monthNames[currentDate.getMonth()].substring(0, 3)}
+                            </span>
+                            <span className="text-[9px] text-slate-400 font-medium leading-none">
+                                {currentDate.getFullYear()}
+                            </span>
+                        </div>
+                        <button
+                            onClick={handleNextMonth}
+                            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white/80 dark:hover:bg-slate-700 text-slate-500 transition-all active:scale-95"
+                        >
+                            <ChevronRight size={14} />
+                        </button>
                     </div>
-                    <button
-                        onClick={handleNextMonth}
-                        className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white/80 dark:hover:bg-slate-700 text-slate-500 transition-all active:scale-95"
-                    >
-                        <ChevronRight size={14} />
-                    </button>
                 </div>
             </div>
 
