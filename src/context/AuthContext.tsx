@@ -5,6 +5,7 @@ import { Profile } from '../types';
 import { createAppLog } from '../services/api';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
+import { Browser } from '@capacitor/browser';
 
 interface AuthContextType {
     user: User | null;
@@ -62,16 +63,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         let appUrlListener: { remove: () => void } | undefined;
         if (Capacitor.isNativePlatform()) {
             App.addListener('appUrlOpen', async ({ url }) => {
-                // Expected: com.nexaescala.app://auth/callback#access_token=...&refresh_token=...
+                // Close the SFSafariViewController opened by Browser.open
+                try { await Browser.close(); } catch { /* no-op if already closed */ }
+
+                // Handle token fragment (implicit flow): ...#access_token=...&refresh_token=...
                 const hashIndex = url.indexOf('#');
-                if (hashIndex === -1) return;
+                if (hashIndex !== -1) {
+                    const params = new URLSearchParams(url.substring(hashIndex + 1));
+                    const accessToken = params.get('access_token');
+                    const refreshToken = params.get('refresh_token');
+                    if (accessToken && refreshToken) {
+                        await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+                        return;
+                    }
+                }
 
-                const params = new URLSearchParams(url.substring(hashIndex + 1));
-                const accessToken = params.get('access_token');
-                const refreshToken = params.get('refresh_token');
-
-                if (accessToken && refreshToken) {
-                    await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+                // Handle code parameter (PKCE flow): ...?code=...
+                const codeMatch = url.match(/[?&]code=([^&#]+)/);
+                if (codeMatch) {
+                    await supabase.auth.exchangeCodeForSession(codeMatch[1]);
                 }
             }).then(listener => {
                 appUrlListener = listener;

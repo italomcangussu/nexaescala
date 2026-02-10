@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { SignInWithApple } from '@capacitor-community/apple-sign-in';
 import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import Logo from '../components/Logo';
 import LegalModal from '../components/LegalModal';
@@ -133,7 +134,7 @@ const LoginPage: React.FC = () => {
                 });
                 if (error) throw error;
                 if (data?.url) {
-                    window.open(data.url, '_blank');
+                    await Browser.open({ url: data.url, presentationStyle: 'popover' });
                 }
             } else {
                 // Web: standard redirect flow
