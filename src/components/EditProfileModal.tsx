@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Profile } from '../types';
-import { X, Camera, Save, Image as ImageIcon } from 'lucide-react';
+import { Camera, Image as ImageIcon } from 'lucide-react';
 import PermissionSoftPrompt from './PermissionSoftPrompt';
 import { Capacitor } from '@capacitor/core';
 import { Camera as NativeCamera } from '@capacitor/camera';
@@ -161,14 +161,23 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
 
   return (
     <div className="fixed inset-0 z-70 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4">
-      <div className="bg-white dark:bg-surface-dark w-full max-w-lg h-[90vh] sm:h-auto sm:max-h-[85vh] sm:rounded-3xl rounded-t-3xl overflow-hidden flex flex-col shadow-2xl animate-fade-in-up transition-colors">
+      <div className="bg-white dark:bg-surface-dark w-full max-w-lg h-full sm:h-auto sm:max-h-[85vh] sm:rounded-3xl rounded-t-3xl overflow-hidden flex flex-col shadow-2xl animate-fade-in-up transition-colors">
 
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-surface-dark z-10 transition-colors">
-          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Editar Perfil</h2>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:bg-surface dark:hover:bg-slate-800 rounded-full transition-colors">
-            <X size={20} />
-          </button>
+        {/* Header - iOS safe area aware */}
+        <div className="pt-safe bg-white dark:bg-surface-dark">
+          <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between z-10 transition-colors">
+            <button onClick={onClose} className="text-primary dark:text-primary-light font-semibold text-base">
+              Cancelar
+            </button>
+            <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">Editar Perfil</h2>
+            <button
+              type="submit"
+              form="edit-profile-form"
+              className="text-primary dark:text-primary-light font-bold text-base"
+            >
+              Salvar
+            </button>
+          </div>
         </div>
 
         {/* Scrollable Form */}
@@ -249,18 +258,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, onClose, o
             </div>
 
           </form>
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-surface-dark transition-colors">
-          <button
-            type="submit"
-            form="edit-profile-form"
-            className="w-full bg-primary text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-primary-dark transition-colors flex items-center justify-center space-x-2"
-          >
-            <Save size={18} />
-            <span>Salvar Alterações</span>
-          </button>
         </div>
 
       </div>

@@ -69,19 +69,32 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
     const loadFeed = useCallback(async () => {
         try {
             setIsLoading(true);
-            const [messages, exchanges] = await Promise.all([
+            const [messagesResult, exchangesResult] = await Promise.allSettled([
                 fetchGroupMessages(group.id),
                 getShiftExchanges(group.id)
             ]);
+
+            const messages = messagesResult.status === 'fulfilled' ? messagesResult.value : [];
+            const exchanges = exchangesResult.status === 'fulfilled' ? exchangesResult.value : [];
+
+            if (messagesResult.status === 'rejected') {
+                console.error("Failed to load messages:", messagesResult.reason);
+            }
+            if (exchangesResult.status === 'rejected') {
+                console.error("Failed to load exchanges:", exchangesResult.reason);
+            }
 
             const items: UnifiedFeedItem[] = [
                 ...messages.map(m => ({ type: 'message' as const, data: m, timestamp: m.created_at })),
                 ...exchanges.map(e => ({ type: 'exchange' as const, data: e, timestamp: e.created_at }))
             ];
 
-            // Sort by timestamp descending
             items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
             setFeedItems(items);
+
+            if (messagesResult.status === 'rejected' && exchangesResult.status === 'rejected') {
+                showToast("Erro ao carregar o feed.", "error");
+            }
         } catch (error) {
             console.error("Failed to load feed:", error);
             showToast("Erro ao carregar o feed.", "error");
@@ -231,6 +244,7 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
         if (item.type === 'message') {
             const msg = item.data;
             const isSystem = msg.message_type === 'SHIFT_OFFER' || msg.message_type === 'SHIFT_SWAP';
+            const metadata = msg.metadata as { shift_id?: string; date?: string } | undefined;
 
             return (
                 <div key={msg.id} className="mb-6 animate-fade-in-up">
@@ -278,7 +292,7 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                                     })()}
                                 </p>
 
-                                {msg.metadata?.shift_id && (
+                                {metadata?.shift_id && (
                                     <div
                                         style={{ borderTopColor: hexToRgba(displayColor, 0.2) }}
                                         className="mt-3 pt-3 border-t flex items-center justify-between"
@@ -286,7 +300,7 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                                         <div className="flex items-center gap-2">
                                             <Calendar size={14} style={{ color: displayColor }} />
                                             <span style={{ color: displayColor }} className="text-xs font-bold opacity-80">
-                                                {new Date(msg.metadata.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                                                {metadata.date && new Date(metadata.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
                                             </span>
                                         </div>
                                         <span style={{ color: displayColor }} className="text-[10px] font-black uppercase tracking-tighter">
@@ -426,7 +440,7 @@ const ServiceFeedView: React.FC<ServiceFeedViewProps> = ({
                         {/* System Header Update Placeholder */}
                         <div
                             style={{ backgroundColor: displayColor, boxShadow: `0 20px 25px -5px ${hexToRgba(displayColor, 0.3)}` }}
-                            className="mb-8 p-4 rounded-[2rem] shadow-xl flex items-center gap-4 animate-scale-in"
+                            className="mb-8 p-4 rounded-4xl shadow-xl flex items-center gap-4 animate-scale-in"
                         >
                             <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-white backdrop-blur-md">
                                 <Rocket size={24} />
